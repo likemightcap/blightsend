@@ -1,3 +1,31 @@
+/* Header Layout */
+#siteHeader {
+  display: flex;
+  flex-direction: column;    /* Logo on top, subtitle below */
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  text-align: center;
+}
+
+/* Logo Appearance */
+#siteLogo {
+  height: 60px;              /* Adjust as needed */
+  width: auto;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  margin-bottom: 6px;
+}
+
+/* Subtitle Style (optional) */
+header .subtitle {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  letter-spacing: 0.5px;
+}
+
+
 :root {
   --bg-main: #050607;
   --bg-panel: #111318;
