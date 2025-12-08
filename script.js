@@ -3,208 +3,807 @@
    (These are EXAMPLES – expand/replace with full lists)
 ----------------------------------------------------*/
 
-const echoes = [
+const echoesData = [
   {
-    id: "force-dart",
     name: "Force Dart",
-    type: "Attack",
-    tier: 1,
-    ephemCost: "2 (1 per bolt)",
+    ephemCost: 2,
     damage: "1 per bolt",
     range: '12"',
-    tags: ["Direct", "Multi-Target"],
-    summary:
-      "Fire bolts of arcane force that automatically hit targets in range and line of sight.",
-    rules: [
-      "As an action, you fire 2 bolts of magical energy from your hands that always hit as long as the target is within range and line of sight.",
-      "You may split the bolts between multiple targets or direct them all at one target.",
-      "You may spend additional action points to fire more bolts, 1 AP for 1 additional bolt."
-    ],
-    tierUpgrades: [
-      "+1 Ephem: Each Force Dart deals 2 damage instead of 1.",
-      "+2 Ephem: Each Force Dart deals 3 damage instead of 1."
-    ]
+    description: "Fire 2 bolts of magical energy from your hands that always hit their target so long as they are in range and line of sight. Bolts can be split between targets or all hit the same target. You may spend additional Action Points to fire more bolts, 1 AP for 1 extra bolt.",
+    tier2: "+1 Mana makes all Force Darts deal 2 damage per bolt.",
+    tier3: "+2 Mana makes all Force Darts deal 3 damage per bolt."
   },
   {
-    id: "acid-bath",
+    name: "Fire Spray",
+    ephemCost: 2,
+    damage: "2 (base)",
+    range: '6" spray template',
+    description: "Spray fire from your fingertips. Place the thin end of the spray template against your Ender’s base in the front arc, pick a target and center the template over their base. The target and all other models under the template take 2 damage and suffer the Burning effect. Starting on your next Upkeep, all Burning models take 1 damage, then Burning ends.",
+    tier2: "+2 Mana: spray becomes 8\" and damage becomes 3; Burning deals 2 damage then expires.",
+    tier3: "+4 Mana: spray becomes 10\" and damage becomes 4; Burning deals 2 damage and lasts 2 rounds, ending at the beginning of your turn."
+  },
+  {
     name: "Acid Bath",
-    type: "Area",
-    tier: 1,
-    ephemCost: "2",
-    damage: "3",
-    range: "Throw",
-    tags: ["AOE", "Hazard", "Corrosive"],
-    summary:
-      "Hurl a ball of acid that burns everything in a small area and leaves a lingering hazard.",
-    rules: [
-      "Make a Throw action and place a 3\" AOE template centered where the throw lands.",
-      "All creatures under the template take 3 damage and suffer the Corrosive effect.",
-      "The AOE remains in play for 3 turns. Any model that enters the AOE suffers the Corrosive effect.",
-      "Starting on the player's next Upkeep Phase, any model suffering from Corrosive permanently reduces its Armor Class and Damage by 1. Corrosive lasts for 2 rounds."
-    ],
-    tierUpgrades: [
-      "+2 Ephem: Increase the AOE template to 4\". Models suffering Corrosive reduce Armor Class and Damage by 2 instead."
-    ]
+    ephemCost: 2,
+    damage: "3 (base)",
+    range: "Throw (3\" AOE)",
+    description: "Make a Throw action and place a 3\" AOE circle template centered on where the throw lands. All creatures under the template take 3 damage and suffer the Corrosive effect. The AOE remains for 3 turns; any model that enters the AOE suffers the Corrosive effect. Starting on your next Upkeep, any model suffering Corrosive has its Armor Class and Damage permanently reduced by 1. Corrosive lasts 2 rounds.",
+    tier2: "+2 Mana: AOE becomes 4\"; Corrosive reduces Armor Class and Damage by 2 instead.",
+    tier3: "+2 more Mana: AOE becomes 5\" and damage becomes 4; Corrosive still reduces Armor Class and Damage by 2."
   },
-  // Add the rest of your Echoes here in the same structure
+  {
+    name: "Frost Bite",
+    ephemCost: 2,
+    damage: "5 (base)",
+    range: '10"',
+    description: "Target a model within range and line of sight. If hit, it suffers 5 damage. That model and any other models within 1\" of it become Stationary during their next turn and have movement halved the following turn.",
+    tier2: "+1 Mana: range becomes 13\" and damage becomes 6.",
+    tier3: "+1 more Mana: range stays 13\" and damage 6; any other models within 2\" of the hit target become Stationary next turn and have movement halved the following turn."
+  },
+  {
+    name: "Arc Bolt",
+    ephemCost: 2,
+    damage: "4 (base)",
+    range: '6"',
+    description: "Make a Cast action targeting a model within range and line of sight. Arc Bolt then jumps to another model of your choice within 3\" of the first, then arcs one more time to a third model within 3\" of that one. Each model hit takes 4 damage. A model cannot be hit more than once by the same casting. Models hit become Stunned for one round.",
+    tier2: "+1 Mana: Arc Bolt jumps one additional time.",
+    tier3: "+2 Mana: Arc Bolt jumps one additional time and damage becomes 5."
+  },
+  {
+    name: "Chill Lock",
+    ephemCost: 2,
+    damage: "—",
+    range: '8"',
+    description: "Target up to 3 models within range and line of sight. Targets become Stationary until the beginning of your next turn.",
+    tier2: "+1 Mana: target up to 4 models.",
+    tier3: "+2 Mana: target up to 6 models."
+  },
+  {
+    name: "Cripple",
+    ephemCost: 2,
+    damage: "—",
+    range: '10"',
+    description: "Make a Cast action targeting up to 2 models in range and line of sight. Models hit cannot make any attacks for 2 rounds, ending on your turn.",
+    tier2: null,
+    tier3: null
+  },
+  {
+    name: "Arcane Armor",
+    ephemCost: 2,
+    damage: "—",
+    range: '6"',
+    description: "Choose a friendly model within range and line of sight. Target gains +2 Armor Class until the spell expires. The effect lasts one round, but you may spend 1 Mana at the beginning of each Player Upkeep to maintain it. You can only have 1 copy of this spell active at a time, and a model cannot have multiple copies from different sources; a new instance replaces the old.",
+    tier2: "+2 Mana: Armor Class bonus becomes +4.",
+    tier3: "+4 Mana: Armor Class +4 and you may have 2 active Arcane Armor effects at a time. You may spend 1 Mana for each active effect in Upkeep to maintain them."
+  },
+  {
+    name: "Revive",
+    ephemCost: 2,
+    damage: "—",
+    range: '½" (base contact)',
+    description: "Target a friendly model in base contact that has fallen to 0 HP. That model gains 1 HP and becomes Prone.",
+    tier2: "+2 Mana: HP restored becomes 5.",
+    tier3: "+4 Mana: restore 5 HP and heal 1 Injury."
+  },
+  {
+    name: "Light Barrier",
+    ephemCost: 2,
+    damage: "—",
+    range: "Self (3\" AOE base)",
+    description: "Summon a barrier of light to protect from ranged attacks. Place a 3\" AOE circle template centered on your base. The barrier blocks any ranged attacks; it has 8 HP and ends if that HP is exceeded or after 1 round.",
+    tier2: "+2 Mana: AOE becomes 4\" and HP becomes 12.",
+    tier3: "+4 Mana: AOE becomes 5\" and HP becomes 18."
+  },
+  {
+    name: "Hasten",
+    ephemCost: 2,
+    damage: "—",
+    range: '8"',
+    description: "Choose a friendly model within range and line of sight. That model gains 2 extra Action Points; the spell expires at the end of the Player turn.",
+    tier2: "+1 Mana: target also gains +1 movement speed.",
+    tier3: "+2 Mana: target instead gains +3 movement speed."
+  },
+  {
+    name: "Smoke Screen",
+    ephemCost: null,
+    damage: "—",
+    range: "TBD",
+    description: "Placeholder – rules for Smoke Screen are not yet fully defined in the current document. Refer to your latest design notes.",
+    tier2: null,
+    tier3: null
+  }
 ];
 
-const weapons = [
+
+const weaponsData = [
+  // Melee
   {
-    id: "longsword",
-    name: "Longsword",
+    name: "Short Sword",
     category: "Melee",
+    dieSize: "d8",
+    diePool: 4,
+    damage: 2,
+    penetration: 3,
+    durability: 4,
     type: "Slashing",
-    dicePool: "2d6",
-    damage: "2",
-    penetration: "2",
-    reach: '1"',
-    tags: ["Versatile", "Reliable"],
-    summary: "A balanced blade favored by trained Enders.",
-    rules: [
-      "Standard melee weapon used in close combat.",
-      "Can be used with many advanced skills that require a Slashing weapon."
-    ]
+    range: '½"',
+    hands: 1,
+    cost: null,
+    notes: ""
   },
   {
-    id: "warhammer",
-    name: "Warhammer",
+    name: "Long Sword",
     category: "Melee",
-    type: "Blunt",
-    dicePool: "2d6",
-    damage: "3",
-    penetration: "3",
-    reach: '1"',
-    tags: ["Armorbreaker"],
-    summary: "A brutal hammer designed to crush armor and bone.",
-    rules: [
-      "On a Direct Hit against armored targets, narrate or note visible dents, cracks, or buckled plates."
-    ]
+    dieSize: "d6",
+    diePool: 3,
+    damage: 3,
+    penetration: 3,
+    durability: 4,
+    type: "Slashing",
+    range: '1"',
+    hands: 1,
+    cost: null,
+    notes: ""
   },
   {
-    id: "hunting-bow",
-    name: "Hunting Bow",
-    category: "Ranged",
+    name: "Great Sword",
+    category: "Melee",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 4,
+    penetration: 4,
+    durability: 4,
+    type: "Slashing",
+    range: '2"',
+    hands: 2,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Rapier",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: 4,
+    damage: 2,
+    penetration: 6,
+    durability: 3,
     type: "Piercing",
-    dicePool: "2d6",
-    damage: "2",
-    penetration: "1",
-    reach: '18"',
-    tags: ["Ranged", "Silent"],
-    summary: "A reliable bow for ranged engagements.",
-    rules: [
-      "Requires clear line of sight to the target.",
-      "Affected by cover, elevation, and visibility as normal."
-    ]
+    range: '1"',
+    hands: 1,
+    cost: null,
+    notes: ""
   },
-  // Add full melee/ranged table here
+  {
+    name: "Dagger",
+    category: "Melee",
+    dieSize: "d10",
+    diePool: 5,
+    damage: 2,
+    penetration: 5,
+    durability: 4,
+    type: "Piercing",
+    range: '½"',
+    hands: 1,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Hatchet",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: 3,
+    damage: 3,
+    penetration: 3,
+    durability: 5,
+    type: "Cleave",
+    range: '½"',
+    hands: 1,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Battle Axe",
+    category: "Melee",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 4,
+    penetration: 4,
+    durability: 5,
+    type: "Cleave",
+    range: '1"',
+    hands: 2,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Hammer",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: 4,
+    damage: 4,
+    penetration: 2,
+    durability: 6,
+    type: "Blunt",
+    range: '½"',
+    hands: 1,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Great Hammer",
+    category: "Melee",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 5,
+    penetration: 2,
+    durability: 6,
+    type: "Blunt",
+    range: '1"',
+    hands: 2,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Mace",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: 3,
+    damage: 3,
+    penetration: 3,
+    durability: 6,
+    type: "Blunt",
+    range: '½"',
+    hands: 1,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Flail",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: 3,
+    damage: 3,
+    penetration: 3,
+    durability: 6,
+    type: "Blunt",
+    range: '1"',
+    hands: 1,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Halberd",
+    category: "Melee",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 4,
+    penetration: 4,
+    durability: 5,
+    type: "Cleave",
+    range: '2"',
+    hands: 2,
+    cost: null,
+    notes: ""
+  },
+  {
+    name: "Spear",
+    category: "Melee",
+    dieSize: "d8",
+    diePool: "3/4",
+    damage: 3,
+    penetration: 6,
+    durability: 4,
+    type: "Piercing",
+    range: '2"',
+    hands: 2,
+    cost: null,
+    notes: ""
+  },
+
+  // Ranged
+  {
+    name: "Short Bow",
+    category: "Ranged",
+    dieSize: "d8",
+    diePool: 3,
+    damage: 3,
+    penetration: 5,
+    durability: null,
+    type: "Piercing",
+    description: "Drawn",
+    hands: 2,
+    cost: null,
+    rangeBands: {
+      close: "1–5\" (-1 TN)",
+      effective: "5–15\" (0)",
+      far: "15–20\" (-1)",
+      max: "20–25\" (-2)"
+    }
+  },
+  {
+    name: "Longbow",
+    category: "Ranged",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 4,
+    penetration: 6,
+    durability: null,
+    type: "Piercing",
+    description: "Drawn",
+    hands: 2,
+    cost: null,
+    rangeBands: {
+      close: "2–6\" (-1)",
+      effective: "6–18\" (0)",
+      far: "18–26\" (-1)",
+      max: "26–32\" (-2)"
+    }
+  },
+  {
+    name: "Crossbow",
+    category: "Ranged",
+    dieSize: "d8",
+    diePool: 1,
+    damage: 5,
+    penetration: 3,
+    durability: null,
+    type: "Piercing",
+    description: "Mechanical",
+    hands: 1,
+    cost: null,
+    rangeBands: {
+      close: "1–4\" (-1)",
+      effective: "4–12\" (0)",
+      far: "12–16\" (-1)",
+      max: "16–20\" (-2)"
+    }
+  },
+  {
+    name: "Heavy Crossbow",
+    category: "Ranged",
+    dieSize: "d6",
+    diePool: 1,
+    damage: 6,
+    penetration: 4,
+    durability: null,
+    type: "Piercing",
+    description: "Mechanical",
+    hands: 2,
+    cost: null,
+    rangeBands: {
+      close: "1–6\" (-1)",
+      effective: "6–16\" (0)",
+      far: "16–20\" (-1)",
+      max: "20–24\" (-2)"
+    }
+  },
+  {
+    name: "Sling",
+    category: "Ranged",
+    dieSize: "d8",
+    diePool: 2,
+    damage: 4,
+    penetration: 2,
+    durability: null,
+    type: "Blunt",
+    description: "Sling",
+    hands: 1,
+    cost: null,
+    rangeBands: {
+      close: "1–6\" (-1)",
+      effective: "6–14\" (0)",
+      far: "14–20\" (-1)",
+      max: "20–24\" (-2)"
+    }
+  },
+  {
+    name: "Pistol",
+    category: "Ranged",
+    dieSize: "d10",
+    diePool: 2,
+    damage: 4,
+    penetration: 4,
+    durability: null,
+    type: "Piercing",
+    description: "Mechanical",
+    hands: 1,
+    cost: null,
+    rangeBands: {
+      close: "1–8\" (-1)",
+      effective: "8–12\" (0)",
+      far: "12–16\" (-1)",
+      max: null
+    }
+  },
+  {
+    name: "Rifle",
+    category: "Ranged",
+    dieSize: "d6",
+    diePool: 2,
+    damage: 5,
+    penetration: 6,
+    durability: null,
+    type: "Piercing",
+    description: "Mechanical",
+    hands: 2,
+    cost: null,
+    rangeBands: {
+      close: "2–8\" (-1)",
+      effective: "8–18\" (0)",
+      far: "18–24\" (-1)",
+      max: "24–30\" (-2)"
+    }
+  },
+
+  // Thrown placeholder
+  {
+    name: "Javelin",
+    category: "Thrown",
+    dieSize: null,
+    diePool: null,
+    damage: null,
+    penetration: null,
+    durability: null,
+    type: "Piercing",
+    range: "TBD",
+    hands: 1,
+    cost: 1,
+    notes: "Stats not fully defined in current sheet; treat as thrown weapon per your latest rules."
+  }
 ];
 
-const skills = [
+
+const advancedSkillsData = [
   {
-    id: "circle-of-iron",
+    name: "Stat Upgrade",
+    requirement: null,
+    cost: "—",
+    effect: "Raise any one stat (Fight, Volley, Guts, Grit, or Focus) by +1, up to a maximum of 3."
+  },
+  {
+    name: "Fleet Step",
+    requirement: null,
+    cost: "—",
+    effect: "Increase Walk and Run speeds (per your latest movement table; originally 4\"→5\" and 6\"→7\" in an older draft)."
+  },
+  {
+    name: "Iron Reserves",
+    requirement: null,
+    cost: "—",
+    effect: "Raise your Stamina pool by +1."
+  },
+  {
+    name: "Ephem Pool (Initial)",
+    requirement: null,
+    cost: "—",
+    effect: "Unlocks Echo Channeling and grants an Ephem pool based on rank (I–IV) and Echoes Prepared limits."
+  },
+  {
+    name: "Ephem Pool Upgrade",
+    requirement: null,
+    cost: "—",
+    effect: "Increase your maximum Ephem pool (exact increments TBD)."
+  },
+  {
+    name: "Ephem Regeneration Upgrade",
+    requirement: null,
+    cost: "—",
+    effect: "Increase Ephem regeneration per turn (1→2, then 2→3)."
+  },
+  {
+    name: "Weapon Second Function",
+    requirement: null,
+    cost: "—",
+    effect: "Placeholder – mechanics and options still to be defined."
+  },
+  {
     name: "Circle of Iron",
-    category: "Combat",
+    requirement: "Two-handed Slashing, Blunt, or Cleave weapon (not Piercing).",
     cost: "2 AP + 2 Stamina",
-    requirement:
-      "Two-handed Slashing, Blunt, or Cleave weapon (not usable with Piercing weapons).",
-    summary:
-      "Turn your weapon into a full-circle crash of force, striking any foes in reach.",
-    rules: [
-      "Make a Fight action.",
-      "Roll a number of melee attack dice equal to your weapon's normal dice pool plus the number of enemies within your melee range (360°).",
-      "Assign hits to any enemies within range regardless of facing."
-    ],
-    flavor:
-      "Momentum, weight, and will turn your weapon into a full-circle crash of force."
+    effect: "Make a Fight action. Roll your normal melee dice pool plus 1 extra die for each enemy within melee range (360°). Hits may be assigned to any enemies in range regardless of facing."
   },
   {
-    id: "fleet-footed",
-    name: "Fleet-Footed",
-    category: "Movement",
-    cost: "Passive",
-    requirement: "Ender, Walk 4\"+",
-    summary: "Your training pushes your movement beyond normal limits.",
-    rules: [
-      "Increase your Walk distance by +1\".",
-      "Increase your Run distance by +1\"."
-    ],
-    flavor:
-      "Your stride becomes practiced and relentless, carrying you farther with every step."
+    name: "Shadow Step",
+    requirement: null,
+    cost: "1 Ephem",
+    effect: "Teleport up to 3\" ignoring terrain and models as long as your base fits in the destination."
   },
-  // Add more advanced skills here
+  {
+    name: "Lunge",
+    requirement: "Piercing weapon",
+    cost: "2 AP + 1 Stamina",
+    effect: "Increase melee range of your attack by +1\"."
+  },
+  {
+    name: "Phantom Shot",
+    requirement: null,
+    cost: "2 AP (Volley) + 1 Ephem",
+    effect: "When you make a Volley action, the attack ignores line of sight."
+  },
+  {
+    name: "Ground Slam",
+    requirement: "Blunt weapon",
+    cost: "2 AP + scaling Ephem (1–3)",
+    effect: "Create a shockwave around you: 1 Ephem = 3\" radius, 2 = 4\", 3 = 5\". All enemies in radius take 3 damage; Small/Medium enemies are pushed out of the radius."
+  },
+  {
+    name: "Earthshatter",
+    requirement: "Blunt weapon",
+    cost: "2 AP + 2 Ephem",
+    effect: "Create a 6\" spray template from your base. All enemies in the template take 3 damage and are knocked Prone."
+  },
+  {
+    name: "Shield Bash",
+    requirement: "Shield equipped",
+    cost: "2 AP (sometimes noted 1 AP in draft)",
+    effect: "Make a Fight action using 1d8. Small and Medium enemies hit are knocked Prone."
+  },
+  {
+    name: "Heavy Bash",
+    requirement: "Blunt weapon",
+    cost: "2 AP",
+    effect: "Make a Fight action targeting a shielded enemy. On a hit, their shield provides no benefit until the end of your turn."
+  },
+  {
+    name: "Intimidating Shout",
+    requirement: null,
+    cost: "2 AP",
+    effect: "All enemies within 10\" must target you on their next activation if able, moving toward you and attacking if possible. Place a Two-Turn token next to your model."
+  },
+  {
+    name: "Sharpened Instinct",
+    requirement: null,
+    cost: "1 Stamina",
+    effect: "Before a Fight, Volley, or targeted Echo attack roll, spend 1 Stamina to increase your Direct Hit window by +1 for that action (e.g., d8 Direct Hits on 7–8). Stacks with other modifiers."
+  },
+  {
+    name: "Dual Wield",
+    requirement: "Two one-handed weapons equipped",
+    cost: "—",
+    effect: "When making a Fight action while dual-wielding, halve the dice pool of each weapon (round up) and roll them together. Die sizes stay the same; allocate hits following normal melee rules."
+  },
+  {
+    name: "Leap",
+    requirement: null,
+    cost: "1 AP + 1 Ephem",
+    effect: "Choose a facing, then jump up to 6\" straight ahead (including vertically). You may leap over terrain and Small/Medium enemies if the landing space is clear. End facing unchanged."
+  },
+  {
+    name: "Riposte",
+    requirement: "You must have successfully Parried a melee attack",
+    cost: "1 Stamina",
+    effect: "After a successful Parry, roll 1d8 with Fight as TN adjustment. On success, deal your weapon’s base damage to the attacker; Direct Hits apply."
+  },
+  {
+    name: "Grinding Edge",
+    requirement: "Cleave weapon",
+    cost: "1 Stamina",
+    effect: "When you score a Direct Hit with a Cleave weapon, after resolving damage against the primary target, choose one enemy within 1\" of that target; it takes 2 damage ignoring armor."
+  },
+  {
+    name: "Reflexive Guard",
+    requirement: "Shield equipped",
+    cost: "1 Stamina",
+    effect: "After an enemy’s attack roll against you is made but before damage, cancel that attack entirely. Your shield takes 1 Durability damage. You may use this multiple times per enemy turn while you can pay Stamina and have Durability."
+  },
+  {
+    name: "Veil Point",
+    requirement: "Spear",
+    cost: "1 Ephem",
+    effect: "When making a Fight action with a spear, increase melee range by +1\" as a blade of force extends from the tip."
+  },
+  {
+    name: "Reaving Cut",
+    requirement: "Slashing weapon",
+    cost: "1 Stamina",
+    effect: "Before a Fight action with a Slashing weapon, spend 1 Stamina. If that attack scores any Direct Hits, choose one enemy that took a Direct Hit; that enemy suffers +1 Bleed in addition to normal Bleed from Slashing (once per attack)."
+  }
 ];
 
-const armorPieces = [
+
+const armorData = [
+  // Full armor class table
   {
-    id: "padded-jacket",
-    name: "Padded Jacket",
-    class: "Light",
-    layers: ["Soft"],
-    armorValue: 2,
-    location: "Torso",
-    summary: "Quilted cloth armor that blunts blows without restricting movement.",
-    rules: [
-      "Counts as Light Armor.",
-      "While worn, increase Walk and Run distances by +1\" (Light Armor bonus)."
-    ]
-  },
-  {
-    id: "chain-shirt",
-    name: "Chain Shirt",
-    class: "Medium",
-    layers: ["Soft", "Flexible"],
-    armorValue: 4,
-    location: "Torso",
-    summary:
-      "A mesh of interlocking rings layered over padding to absorb and spread impact.",
-    rules: [
-      "Counts as Medium Armor.",
-      "No movement adjustment from armor (baseline)."
-    ]
-  },
-  {
-    id: "plate-mail",
-    name: "Plate Mail",
-    class: "Heavy",
-    layers: ["Soft", "Flexible", "Hard"],
+    name: "Padded",
     armorValue: 6,
-    location: "Torso",
-    summary:
-      "Layered steel plates bolted over chain and padding, turning you into a walking bulwark.",
-    rules: [
-      "Counts as Heavy Armor.",
-      "While worn, reduce Walk and Run distances by 1\"."
-    ]
+    reduction: 2,
+    durability: 5,
+    resistance: "None",
+    armorClass: "Light",
+    location: "Torso, Arms, Legs (generic set)",
+    cost: null,
+    weight: null
   },
-  // Add full armor catalog here
+  {
+    name: "Leather",
+    armorValue: 7,
+    reduction: 3,
+    durability: 6,
+    resistance: "Slashing",
+    armorClass: "Light",
+    location: "Torso, Arms, Legs",
+    cost: null,
+    weight: null
+  },
+  {
+    name: "Brigandine",
+    armorValue: 8,
+    reduction: 3,
+    durability: 6,
+    resistance: "Slashing, Blunt",
+    armorClass: "Medium",
+    location: "Torso, Arms, Legs",
+    cost: null,
+    weight: null
+  },
+  {
+    name: "Chain Mail",
+    armorValue: 9,
+    reduction: 4,
+    durability: 7,
+    resistance: "Slashing, Blunt",
+    armorClass: "Medium",
+    location: "Torso, Arms, Legs",
+    cost: null,
+    weight: null
+  },
+  {
+    name: "Scale",
+    armorValue: 10,
+    reduction: 5,
+    durability: 8,
+    resistance: "Slashing, Piercing",
+    armorClass: "Heavy",
+    location: "Torso, Arms, Legs",
+    cost: null,
+    weight: null
+  },
+  {
+    name: "Plate",
+    armorValue: 11,
+    reduction: 5,
+    durability: 8,
+    resistance: "Slashing, Piercing",
+    armorClass: "Heavy",
+    location: "Torso, Arms, Legs",
+    cost: null,
+    weight: null
+  },
+
+  // Modular soft layers (numbers only where the sheet had them)
+  {
+    name: "Padded Jacket",
+    armorValue: 3,
+    reduction: 1,
+    durability: 3,
+    resistance: "—",
+    armorClass: "Soft layer",
+    location: "Torso, Arms",
+    layer: "Base",
+    cost: 3,
+    weight: null
+  },
+  {
+    name: "Gambeson",
+    armorValue: 4,
+    reduction: 2,
+    durability: 4,
+    resistance: "Blunt",
+    armorClass: "Soft layer",
+    location: "Torso, Arms",
+    layer: "Base",
+    cost: 4,
+    weight: null
+  },
+  {
+    name: "Arming Coat",
+    armorValue: 5,
+    reduction: 2,
+    durability: 4,
+    resistance: "Blunt",
+    armorClass: "Soft layer",
+    location: "Torso, Arms",
+    layer: "Base",
+    cost: 5,
+    weight: null
+  },
+  {
+    name: "Padded Coif",
+    armorValue: null,
+    reduction: null,
+    durability: null,
+    resistance: null,
+    armorClass: "Soft layer",
+    location: "Head",
+    layer: "Base",
+    cost: null,
+    weight: null,
+    notes: "Stats TBD in design doc."
+  },
+  {
+    name: "Gambeson Hood",
+    armorValue: null,
+    reduction: null,
+    durability: null,
+    resistance: null,
+    armorClass: "Soft layer",
+    location: "Head",
+    layer: "Base",
+    cost: null,
+    weight: null,
+    notes: "Stats TBD."
+  },
+  {
+    name: "Arming Cap",
+    armorValue: null,
+    reduction: null,
+    durability: null,
+    resistance: null,
+    armorClass: "Soft layer",
+    location: "Head",
+    layer: "Base",
+    cost: null,
+    weight: null,
+    notes: "Stats TBD."
+  },
+  {
+    name: "Chainmail Vest",
+    armorValue: null,
+    reduction: null,
+    durability: null,
+    resistance: "—",
+    armorClass: "Flexible mid layer",
+    location: "Torso",
+    layer: "Mid",
+    cost: 10,
+    weight: null
+  },
+  {
+    name: "Chainmail Shirt",
+    armorValue: null,
+    reduction: null,
+    durability: null,
+    resistance: "—",
+    armorClass: "Flexible mid layer",
+    location: "Torso, Arms",
+    layer: "Mid",
+    cost: 15,
+    weight: null
+  }
 ];
 
-const conditions = [
+
+const conditionsData = [
   {
-    id: "burning",
+    name: "Bleed",
+    description: "Ongoing damage from Slashing weapons or certain skills. Typically causes damage during Upkeep until removed; exact damage and duration per effect (e.g., Bleed 1, extra Bleed from Reaving Cut)."
+  },
+  {
     name: "Burning",
-    severity: "Ongoing",
-    summary: "You are engulfed by unnatural flame.",
-    rules: [
-      "At the start of each of your turns, you take 2 damage.",
-      "Lasts for 2 rounds, ending at the beginning of the player's turn when it expires.",
-      "Some effects or terrain can extend or intensify Burning."
-    ]
+    description: "Applied by Fire Spray and similar effects. Burning models take damage during the next Upkeep (often 1–2 damage depending on Echo tier) then the effect expires unless otherwise stated."
   },
   {
-    id: "corrosive",
     name: "Corrosive",
-    severity: "Ongoing",
-    summary: "Your armor and weapons are eaten away by acid.",
-    rules: [
-      "While affected, your Armor Class and Damage are reduced by 1.",
-      "Starting on the affected model's next Upkeep Phase, the reduction is permanent unless otherwise noted by the Echo or effect.",
-      "Corrosive typically lasts for 2 rounds."
-    ]
+    description: "Applied by Acid Bath. While affected, a model’s Armor Class and Damage are permanently reduced (usually by 1 or 2 depending on tier) over 2 rounds."
   },
-  // Add other key conditions (Stunned, Prone, Bleeding, etc.)
+  {
+    name: "Stunned",
+    description: "Applied by Arc Bolt and other effects. A Stunned model loses actions for one round or suffers attack/defense penalties (use your current rules text)."
+  },
+  {
+    name: "Stationary",
+    description: "From Frost Bite and Chill Lock. Stationary models cannot move during their turn; some effects also halve movement on the following turn."
+  },
+  {
+    name: "Prone",
+    description: "From Earthshatter, Shield Bash, Revive, etc. Prone models are on the ground; attacks against them or their movement are usually affected per your core rules."
+  },
+  {
+    name: "Broken Armor",
+    description: "When a location’s armor Durability reaches 0, its Armor Value is reduced by 3, Damage Reduction by 2, and it loses all Resistances until repaired."
+  }
 ];
+
 
 /* ---------------------------------------------------
    STATE
