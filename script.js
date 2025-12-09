@@ -1038,11 +1038,29 @@ function renderList() {
       meta.textContent =
         "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
     } else if (currentPage === "armor") {
-      meta.textContent =
-        (item.armorClass || "Armor") +
-        (item.location ? " · " + item.location : "") +
-        (item.armorValue != null ? " · AV " + item.armorValue : "");
-    } else if (currentPage === "conditions") {
+  // Build a concise armor stat line:
+  // e.g. "Torso, Arms, Legs · AV 6 · Red 2 · Dur 5 · Res Slashing"
+  const parts = [];
+
+  if (item.location) {
+    parts.push(item.location);
+  }
+  if (item.armorValue != null) {
+    parts.push(`AV ${item.armorValue}`);
+  }
+  if (item.reduction != null) {
+    parts.push(`Red ${item.reduction}`);
+  }
+  if (item.durability != null) {
+    parts.push(`Dur ${item.durability}`);
+  }
+  if (item.resistance) {
+    parts.push(`Res ${item.resistance}`);
+  }
+
+  meta.textContent = parts.join(" · ");
+} else if (currentPage === "conditions") {
+
       meta.textContent = "Condition";
     }
 
