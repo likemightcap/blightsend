@@ -86,15 +86,21 @@
     </div>
   </div>
 
-  <script>
+<script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("./sw.js")
-        .catch((err) => console.error("SW registration failed:", err));
+        .register("/blightsend/sw.js")   // 🔥 key change: absolute path with repo name
+        .then((reg) => {
+          console.log("Service worker registered:", reg);
+        })
+        .catch((err) => {
+          console.error("SW registration failed:", err);
+        });
     });
   }
 </script>
+
 
 
 </body>
