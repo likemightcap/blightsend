@@ -20,11 +20,6 @@
 </head>
 
 <body>
-  <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/blightsend-compendium/sw.js");
-  }
-</script>
 
   <div id="app">
   <header id="siteHeader">
@@ -90,5 +85,17 @@
       <div class="modal-body" id="modalBody"></div>
     </div>
   </div>
+
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch((err) => console.error("SW registration failed:", err));
+    });
+  }
+</script>
+
+
 </body>
 </html>
