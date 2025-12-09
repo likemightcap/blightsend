@@ -989,7 +989,13 @@ function renderList() {
 
     const title = document.createElement("div");
     title.className = "item-title";
-    title.textContent = item.name;
+
+    let displayName = item.name || "";
+    if (currentPage === "weapons" && item.type) {
+    displayName = `${item.name} - ${item.type}`;
+    }
+    title.textContent = displayName;
+
 
     const meta = document.createElement("div");
     meta.className = "item-meta";
@@ -1001,16 +1007,34 @@ function renderList() {
         (item.ephemCost != null ? item.ephemCost : "?") +
         (item.range ? " · Range " + item.range : "");
     } else if (currentPage === "weapons") {
-      const pool =
-        item.diePool != null
-          ? item.diePool + (item.dieSize ? item.dieSize : "")
-          : null;
-      meta.textContent =
-        (item.category || "Weapon") +
-        (item.type ? " · " + item.type : "") +
-        (pool ? " · " + pool : "") +
-        (item.penetration != null ? " · Pen " + item.penetration : "");
-    } else if (currentPage === "skills") {
+  // Build a concise stat line, e.g. "4d8 · Damage 2 · Pen 3 · Range 1\""
+  const stats = [];
+
+  // 4d8 from diePool + dieSize
+  if (item.diePool && item.dieSize) {
+    stats.push(`${item.diePool}${item.dieSize}`);
+  } else if (item.diePool) {
+    stats.push(String(item.diePool));
+  }
+
+  // Damage
+  if (item.damage != null) {
+    stats.push(`Damage ${item.damage}`);
+  }
+
+  // Penetration
+  if (item.penetration != null) {
+    stats.push(`Pen ${item.penetration}`);
+  }
+
+  // Range
+  if (item.range) {
+    stats.push(`Range ${item.range}`);
+  }
+
+  meta.textContent = stats.join(" · ");
+} else if (currentPage === "skills") {
+
       meta.textContent =
         "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
     } else if (currentPage === "armor") {
