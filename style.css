@@ -687,8 +687,8 @@ main {
 .armor-modal {
   width: 100%;
   max-width: 760px;
-  /* tealish background similar to the core stats panel */
-  background: linear-gradient(180deg, rgba(80,140,170,0.18), rgba(40,110,130,0.95));
+  /* richer, less-transparent teal background */
+  background: linear-gradient(180deg, rgba(80,140,170,0.95), rgba(40,110,130,1));
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.06);
   padding: 0.6rem;
@@ -733,12 +733,15 @@ main {
   .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; }
   /* center the avatar and allow text to wrap around it; make the avatar slightly smaller */
   .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; display:flex; justify-content:center; align-items:center; margin-top:0.6rem; }
-  .armor-avatar { max-width:56%; width:auto; height:auto; }
+  /* nudge right a little so silhouette visually centers with equal column widths */
+  .armor-avatar { max-width:56%; width:auto; height:auto; margin-left:6%; }
   .armor-section { justify-self: stretch; }
   .armor-select { width: 100%; }
   /* slightly smaller text to ensure everything fits without horizontal scrolling */
   .armor-slot-title { font-size:0.95rem; }
   .armor-stats { font-size:0.85rem; }
+  /* constrain left and right column contents to the same max width as the left column */
+  .armor-section { max-width: 160px; }
 }
 
 /* Compendium back button in header */
