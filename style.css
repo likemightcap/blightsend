@@ -687,9 +687,10 @@ main {
 .armor-modal {
   width: 100%;
   max-width: 760px;
-  background: linear-gradient(180deg, rgba(20,24,28,0.98), rgba(12,14,16,0.98));
+  /* tealish background similar to the core stats panel */
+  background: linear-gradient(180deg, rgba(80,140,170,0.18), rgba(40,110,130,0.95));
   border-radius: 12px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(255,255,255,0.06);
   padding: 0.6rem;
   color: var(--text-main);
 }
@@ -700,7 +701,7 @@ main {
 .armor-body { padding:0.6rem; }
 .armor-stage { display: grid; grid-template-columns: 1fr 260px 1fr; grid-template-rows: auto 1fr auto; gap: 0.4rem; align-items: center; }
 .armor-avatar-wrap { grid-column: 2 / 3; grid-row: 1 / 4; display:flex; align-items:center; justify-content:center; }
-.armor-avatar { max-width:220px; width:100%; height:auto; }
+.armor-avatar { max-width:200px; width:100%; height:auto; display:block; }
 .armor-section { background: transparent; border-radius:0; padding:0.25rem; border:0; color:var(--text-main); }
 .armor-section[data-grid="head"] { grid-column: 1 / 2; grid-row: 1 / 2; justify-self: start; }
 .armor-section[data-grid="torso"] { grid-column: 3 / 4; grid-row: 1 / 2; justify-self: end; }
@@ -708,8 +709,8 @@ main {
 .armor-section[data-grid="l_arm"] { grid-column: 3 / 4; grid-row: 2 / 3; justify-self: end; }
 .armor-section[data-grid="r_leg"] { grid-column: 1 / 2; grid-row: 3 / 4; justify-self: start; }
 .armor-section[data-grid="l_leg"] { grid-column: 3 / 4; grid-row: 3 / 4; justify-self: end; }
-.armor-slot-title { font-weight:800; margin-bottom:0.25rem; }
-.armor-select { width: 160px; padding:0.35rem; border-radius:6px; border:1px solid var(--border-soft); background:rgba(255,255,255,0.02); color:var(--text-main); }
+.armor-slot-title { font-weight:800; margin-bottom:0.25rem; font-size:1.05rem; }
+.armor-select { width: 160px; padding:0.35rem; border-radius:6px; border:1px solid var(--border-soft); background:rgba(255,255,255,0.02); color:var(--text-main); font-size:0.95rem; }
 .armor-stats { margin-top:0.25rem; font-size:0.9rem; color:var(--text-muted); }
 .armor-slot-title { font-weight:800; margin-bottom:0.35rem; }
 .armor-select { width:100%; padding:0.45rem; border-radius:6px; border:1px solid var(--border-soft); background:rgba(255,255,255,0.02); color:var(--text-main); }
@@ -730,9 +731,14 @@ main {
   .hp-pair .be-num { width: 60px; }
   /* Armor stage becomes single-column stack on narrow screens to avoid horizontal scrolling */
   .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; }
+  /* center the avatar and allow text to wrap around it; make the avatar slightly smaller */
+  .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; display:flex; justify-content:center; align-items:center; margin-top:0.6rem; }
+  .armor-avatar { max-width:56%; width:auto; height:auto; }
   .armor-section { justify-self: stretch; }
   .armor-select { width: 100%; }
+  /* slightly smaller text to ensure everything fits without horizontal scrolling */
+  .armor-slot-title { font-size:0.95rem; }
+  .armor-stats { font-size:0.85rem; }
 }
 
 /* Compendium back button in header */
