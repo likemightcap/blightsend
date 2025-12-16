@@ -1308,6 +1308,190 @@ function ensureScreens() {
   // Bind steppers + local persistence
   bindAllSteppers();
   loadActiveCharacterIfAny();
+
+  // Armor overlay: create/inject markup (if not present)
+  if (!$("#armorOverlay")) {
+    const armorOverlay = document.createElement('div');
+    armorOverlay.id = 'armorOverlay';
+    armorOverlay.className = 'armor-backdrop';
+    armorOverlay.setAttribute('aria-hidden','true');
+    armorOverlay.innerHTML = `
+      <div class="armor-modal">
+        <div class="armor-modal-header">
+          <div class="armor-title">Armor</div>
+          <button class="armor-close" id="armorCloseBtn">✕</button>
+        </div>
+        <div class="armor-body">
+          <div class="armor-canvas">
+            <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
+          </div>
+          <div class="armor-sections">
+            <div class="armor-section" data-slot="head">
+              <div class="armor-slot-title">Head</div>
+              <input class="armor-select" data-slot="head" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="head" /></div>
+              </div>
+            </div>
+            <div class="armor-section" data-slot="torso">
+              <div class="armor-slot-title">Torso</div>
+              <input class="armor-select" data-slot="torso" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="torso" /></div>
+              </div>
+            </div>
+            <div class="armor-section" data-slot="r_arm">
+              <div class="armor-slot-title">R. Arm</div>
+              <input class="armor-select" data-slot="r_arm" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_arm" /></div>
+              </div>
+            </div>
+            <div class="armor-section" data-slot="l_arm">
+              <div class="armor-slot-title">L. Arm</div>
+              <input class="armor-select" data-slot="l_arm" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_arm" /></div>
+              </div>
+            </div>
+            <div class="armor-section" data-slot="r_leg">
+              <div class="armor-slot-title">R. Leg</div>
+              <input class="armor-select" data-slot="r_leg" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_leg" /></div>
+              </div>
+            </div>
+            <div class="armor-section" data-slot="l_leg">
+              <div class="armor-slot-title">L. Leg</div>
+              <input class="armor-select" data-slot="l_leg" placeholder="Armor piece" />
+              <div class="armor-stats">
+                <div>Armor Value: <span class="stat av">-</span></div>
+                <div>Reduction: <span class="stat red">-</span></div>
+                <div>Durability: <span class="stat dur">-</span></div>
+                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_leg" /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(armorOverlay);
+
+    // Bind open/close
+    const armorBtn = $("#cs_btn_armor");
+    const armorClose = $("#armorCloseBtn");
+    if (armorBtn && !armorBtn.dataset.bound) {
+      armorBtn.dataset.bound = '1';
+      armorBtn.disabled = false; // enable the button
+      armorBtn.addEventListener('click', () => {
+        armorOverlay.classList.add('show');
+        armorOverlay.setAttribute('aria-hidden','false');
+      });
+    }
+    if (armorClose) {
+      armorClose.addEventListener('click', () => {
+        armorOverlay.classList.remove('show');
+        armorOverlay.setAttribute('aria-hidden','true');
+      });
+    }
+    // Simple autocomplete/suggestion behavior for armor selects
+    const suggestionBox = document.createElement('div');
+    suggestionBox.className = 'armor-suggestions';
+    suggestionBox.style.position = 'absolute';
+    suggestionBox.style.zIndex = 1300;
+    suggestionBox.style.background = 'rgba(10,10,10,0.98)';
+    suggestionBox.style.border = '1px solid rgba(255,255,255,0.06)';
+    suggestionBox.style.display = 'none';
+    suggestionBox.style.maxHeight = '200px';
+    suggestionBox.style.overflow = 'auto';
+    suggestionBox.style.width = '240px';
+    document.body.appendChild(suggestionBox);
+
+    const slotMap = { head: ['head'], torso: ['torso'], r_arm: ['arms','arm'], l_arm: ['arms','arm'], r_leg: ['legs','leg'], l_leg: ['legs','leg'] };
+
+    function findMatchesForSlot(slot, q) {
+      const keywords = slotMap[slot] || [slot];
+      const term = (q || '').toLowerCase();
+      return armorData.filter(a => {
+        const loc = (a.location || '').toLowerCase();
+        const ok = keywords.some(k => loc.includes(k));
+        if (!ok) return false;
+        if (!term) return true;
+        return a.name.toLowerCase().includes(term);
+      });
+    }
+
+    function showSuggestions(inputEl, slot) {
+      const rect = inputEl.getBoundingClientRect();
+      suggestionBox.style.left = rect.left + 'px';
+      suggestionBox.style.top = rect.bottom + 'px';
+      suggestionBox.style.width = Math.max(200, rect.width) + 'px';
+      suggestionBox.innerHTML = '';
+      const matches = findMatchesForSlot(slot, inputEl.value).slice(0, 20);
+      if (!matches.length) {
+        suggestionBox.style.display = 'none';
+        return;
+      }
+      matches.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'armor-suggestion-row';
+        row.textContent = m.name;
+        row.style.padding = '0.4rem 0.6rem';
+        row.style.cursor = 'pointer';
+        row.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+        row.addEventListener('click', () => {
+          inputEl.value = m.name;
+          populateArmorStatsForSlot(slot, m);
+          suggestionBox.style.display = 'none';
+        });
+        suggestionBox.appendChild(row);
+      });
+      suggestionBox.style.display = 'block';
+    }
+
+    function populateArmorStatsForSlot(slot, armor) {
+      const section = document.querySelector(`.armor-section[data-slot="${slot}"]`);
+      if (!section) return;
+      const av = section.querySelector('.stat.av');
+      const red = section.querySelector('.stat.red');
+      const dur = section.querySelector('.stat.dur');
+      av.textContent = armor.armorValue != null ? String(armor.armorValue) : '-';
+      red.textContent = armor.reduction != null ? String(armor.reduction) : '-';
+      dur.textContent = armor.durability != null ? String(armor.durability) : '-';
+      // mark the input's dataset
+      const input = section.querySelector('.armor-select');
+      if (input) input.dataset.selected = armor.name;
+    }
+
+    // Attach listeners to inputs
+    $all('.armor-select').forEach((inp) => {
+      const slot = inp.dataset.slot;
+      inp.addEventListener('input', (e) => {
+        showSuggestions(e.target, slot);
+      });
+      inp.addEventListener('focus', (e) => {
+        showSuggestions(e.target, slot);
+      });
+      inp.addEventListener('blur', () => {
+        setTimeout(() => { suggestionBox.style.display = 'none'; }, 150);
+      });
+    });
+  }
 }
 
 function numField(id) {
@@ -1382,6 +1566,21 @@ function getSheetState() {
     grit: getNum("cs_grit"),
     focus: getNum("cs_focus"),
     coins: getNum("cs_coins"),
+    armor: (function() {
+      const slots = ['head','torso','r_arm','l_arm','r_leg','l_leg'];
+      const out = {};
+      slots.forEach(s => {
+        const section = document.querySelector(`.armor-section[data-slot="${s}"]`);
+        if (!section) return;
+        const name = (section.querySelector('.armor-select')||{}).value || '';
+        const av = (section.querySelector('.stat.av')||{}).textContent || '-';
+        const red = (section.querySelector('.stat.red')||{}).textContent || '-';
+        const dur = (section.querySelector('.stat.dur')||{}).textContent || '-';
+        const inj = !!(section.querySelector('.armor-injury') && section.querySelector('.armor-injury').checked);
+        out[s] = { name: name, armorValue: av === '-' ? null : Number(av), reduction: red === '-' ? null : Number(red), durability: dur === '-' ? null : Number(dur), injury: inj };
+      });
+      return out;
+    })(),
     updatedAt: Date.now()
   };
 }
@@ -1409,6 +1608,28 @@ function setSheetState(state) {
   setNum("cs_grit", state.grit);
   setNum("cs_focus", state.focus);
   setNum("cs_coins", state.coins);
+
+  // Load armor slots if present
+  if (state.armor) {
+    Object.keys(state.armor).forEach((slot) => {
+      const data = state.armor[slot];
+      const section = document.querySelector(`.armor-section[data-slot="${slot}"]`);
+      if (!section) return;
+      const inp = section.querySelector('.armor-select');
+      if (inp && data && data.name) {
+        inp.value = data.name;
+        inp.dataset.selected = data.name;
+      }
+      const av = section.querySelector('.stat.av');
+      const red = section.querySelector('.stat.red');
+      const dur = section.querySelector('.stat.dur');
+      if (av) av.textContent = data && data.armorValue != null ? String(data.armorValue) : '-';
+      if (red) red.textContent = data && data.reduction != null ? String(data.reduction) : '-';
+      if (dur) dur.textContent = data && data.durability != null ? String(data.durability) : '-';
+      const inj = section.querySelector('.armor-injury');
+      if (inj) inj.checked = !!(data && data.injury);
+    });
+  }
 }
 
 function saveCharacter() {
