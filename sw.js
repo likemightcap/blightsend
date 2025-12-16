@@ -1,12 +1,15 @@
-const CACHE_NAME = "blightsend-v1";
+const CACHE_NAME = "blightsend-v2";
 const ASSETS = [
   "./",
   "./index.html",
+  "./compendium.html",
+  "./character.html",
   "./style.css",
   "./script.js",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./Icons/icon-192.png",
+  "./Icons/icon-512.png",
+  "./assets/BlightsEnd-Logo.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -18,11 +21,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
 });

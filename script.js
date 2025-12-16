@@ -1175,12 +1175,16 @@ function ensureScreens() {
     sheetScreen.classList.add("be-hidden");
     sheetScreen.innerHTML = `
       <div class="sheet-header">
-        <button class="sheet-menu-btn" id="openSheetMenu" type="button">
-          <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
-        </button>
-        <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-        <div style="width:64px;"></div>
-      </div>
+  <button class="menu-btn">☰ MENU</button>
+
+  <img class="sheet-logo" src="assets/BlightsEnd-Logo.png">
+
+  <div class="sheet-right">
+    <img class="coin-icon" src="Icons/coin-icon.png" alt="Coins">
+    ${numField("cs_coin")}
+  </div>
+</div>
+
 
       <section class="sheet-card">
         <div class="sheet-grid-top">
@@ -1190,8 +1194,12 @@ function ensureScreens() {
           </div>
           <div>
             <div class="field-label">HP</div>
-            ${numField("cs_hp")}
-          </div>
+<div class="hp-pair">
+  ${numField("cs_hp")}
+  ${numField("cs_hp_max")}
+</div>
+</div>
+
         </div>
 
         <div class="sheet-row">
@@ -1361,19 +1369,21 @@ function getSheetState() {
     return Number.isFinite(v) ? v : 0;
   };
   return {
-    name: ($("#cs_name")?.value || "").trim(),
-    hp: getNum("cs_hp"),
-    stamina: getNum("cs_stamina"),
-    ephem: getNum("cs_ephem"),
-    walk: getNum("cs_walk"),
-    run: getNum("cs_run"),
-    fight: getNum("cs_fight"),
-    volley: getNum("cs_volley"),
-    guts: getNum("cs_guts"),
-    grit: getNum("cs_grit"),
-    focus: getNum("cs_focus"),
-    updatedAt: Date.now()
-  };
+  name: ($("#cs_name")?.value || "").trim(),
+  hp: getNum("cs_hp"),
+  hpMax: getNum("cs_hp_max"),
+  coin: getNum("cs_coin"),
+  stamina: getNum("cs_stamina"),
+  ephem: getNum("cs_ephem"),
+  walk: getNum("cs_walk"),
+  run: getNum("cs_run"),
+  fight: getNum("cs_fight"),
+  volley: getNum("cs_volley"),
+  guts: getNum("cs_guts"),
+  grit: getNum("cs_grit"),
+  focus: getNum("cs_focus"),
+  updatedAt: Date.now()
+};
 }
 
 function setSheetState(state) {
@@ -1388,6 +1398,8 @@ function setSheetState(state) {
   };
 
   setNum("cs_hp", state.hp);
+  setNum("cs_hp_max", state.hpMax);
+  setNum("cs_coin", state.coin);
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
