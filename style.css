@@ -729,12 +729,12 @@ main {
   .sheet-coin-icon { width: 24px; height: 24px; }
   .sheet-coin-label { display: none; }
   .hp-pair .be-num { width: 60px; }
-  /* Armor stage becomes single-column stack on narrow screens; use flex so we can order the avatar below sections */
-  .armor-stage { display: flex; flex-direction: column; gap: 0.6rem; }
-  /* move avatar to the end and make it a subtle background element */
-  .armor-avatar-wrap { order: 9999; display:flex; justify-content:center; align-items:center; margin-top:0.6rem; position: relative; z-index: 1; }
-  /* avatar larger but faint and non-interactive so it reads as background */
-  .armor-avatar { max-width: 90%; width: auto; height: auto; opacity: 0.12; pointer-events: none; margin: 0.6rem auto 0 auto; }
+  /* Armor stage stacks on narrow screens; keep the avatar visually centered but layered behind sections */
+  .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; position: relative; }
+  /* place the avatar absolutely in the center column and behind the stat sections */
+  .armor-avatar-wrap { position: absolute; left: 50%; top: 6%; transform: translateX(-50%); width: 100%; display:flex; justify-content:center; align-items:center; z-index: 1; pointer-events: none; }
+  /* avatar larger but faint so it reads as background */
+  .armor-avatar { max-width: 92%; width: auto; height: auto; opacity: 0.12; filter: grayscale(10%); }
   .armor-section { justify-self: stretch; position: relative; z-index: 2; }
   .armor-select { width: 100%; }
   /* slightly smaller text to ensure everything fits without horizontal scrolling */
