@@ -1179,7 +1179,12 @@ function ensureScreens() {
           <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
         </button>
         <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-        <div style="width:64px;"></div>
+        <!-- Coins field: icon + numeric input (uses existing numField for steppers) -->
+        <div class="sheet-coins" id="sheetCoins">
+          <img class="sheet-coin-icon" src="Icons/coin-icon.png" alt="Coins">
+          <label class="sheet-coin-label" for="cs_coins">Coins</label>
+          ${numField("cs_coins")}
+        </div>
       </div>
 
       <section class="sheet-card">
@@ -1372,6 +1377,7 @@ function getSheetState() {
     guts: getNum("cs_guts"),
     grit: getNum("cs_grit"),
     focus: getNum("cs_focus"),
+    coins: getNum("cs_coins"),
     updatedAt: Date.now()
   };
 }
@@ -1397,6 +1403,7 @@ function setSheetState(state) {
   setNum("cs_guts", state.guts);
   setNum("cs_grit", state.grit);
   setNum("cs_focus", state.focus);
+  setNum("cs_coins", state.coins);
 }
 
 function saveCharacter() {
