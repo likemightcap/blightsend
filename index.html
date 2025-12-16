@@ -33,7 +33,10 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/blightsend/sw.js").catch(console.error);
+        // Use a relative registration so the same code works on localhost, root, or a subpath.
+        navigator.serviceWorker.register("./sw.js")
+          .then(reg => console.log('ServiceWorker registered with scope:', reg.scope))
+          .catch(err => console.error('ServiceWorker registration failed:', err));
       });
     }
   </script>

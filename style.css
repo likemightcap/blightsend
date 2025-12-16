@@ -634,19 +634,3 @@ main {
   .cs-small-stats { grid-template-columns: repeat(2, 1fr); }
   .cs-core-grid { grid-template-columns: repeat(3, 1fr); }
 }
-.sheet-right{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.coin-icon{
-  width:26px;
-  height:26px;
-  object-fit:contain;
-}
-
-.hp-pair{
-  display:flex;
-  gap:10px;
-}
