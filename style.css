@@ -729,19 +729,21 @@ main {
   .sheet-coin-icon { width: 24px; height: 24px; }
   .sheet-coin-label { display: none; }
   .hp-pair .be-num { width: 60px; }
-  /* Armor stage becomes single-column stack on narrow screens to avoid horizontal scrolling */
-  .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; }
-  /* center the avatar and allow text to wrap around it; make the avatar slightly smaller */
-  .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; display:flex; justify-content:center; align-items:center; margin-top:0.6rem; }
-  /* nudge right a little so silhouette visually centers with equal column widths */
-  .armor-avatar { max-width:56%; width:auto; height:auto; margin-left:6%; }
-  .armor-section { justify-self: stretch; }
+  /* Armor stage becomes single-column stack on narrow screens; use flex so we can order the avatar below sections */
+  .armor-stage { display: flex; flex-direction: column; gap: 0.6rem; }
+  /* move avatar to the end and make it a subtle background element */
+  .armor-avatar-wrap { order: 9999; display:flex; justify-content:center; align-items:center; margin-top:0.6rem; position: relative; z-index: 1; }
+  /* avatar larger but faint and non-interactive so it reads as background */
+  .armor-avatar { max-width: 90%; width: auto; height: auto; opacity: 0.12; pointer-events: none; margin: 0.6rem auto 0 auto; }
+  .armor-section { justify-self: stretch; position: relative; z-index: 2; }
   .armor-select { width: 100%; }
   /* slightly smaller text to ensure everything fits without horizontal scrolling */
   .armor-slot-title { font-size:0.95rem; }
   .armor-stats { font-size:0.85rem; }
   /* constrain left and right column contents to the same max width as the left column */
   .armor-section { max-width: 160px; }
+  /* prevent horizontal scrolling when avatar is large */
+  .armor-modal { overflow-x: hidden; }
 }
 
 /* Compendium back button in header */
