@@ -733,8 +733,6 @@ main {
   .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; }
   .armor-section { justify-self: stretch; }
   .armor-select { width: 100%; }
-  /* Move avatar to the end of the sections on mobile */
-  .armor-avatar-wrap { order: 9999; }
 }
 
 /* Compendium back button in header */
