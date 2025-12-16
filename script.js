@@ -1168,108 +1168,99 @@ function ensureScreens() {
     homeScreen = $("#homeScreen");
   }
 
-// Create Character Sheet screen (insert after home, before compendium)
-if (!$("#sheetScreen")) {
-  sheetScreen = document.createElement("div");
-  sheetScreen.id = "sheetScreen";
-  sheetScreen.classList.add("be-hidden");
-  sheetScreen.innerHTML = `
-    <div class="sheet-header">
-      <button class="menu-btn">☰ MENU</button>
-
-      <img class="sheet-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd">
-
-      <div class="sheet-right">
-        <img class="coin-icon" src="Icons/coin-icon.png" alt="Coins">
-        ${numField("cs_coin")}
+  // Create Character Sheet screen (insert after home, before compendium)
+  if (!$("#sheetScreen")) {
+    sheetScreen = document.createElement("div");
+    sheetScreen.id = "sheetScreen";
+    sheetScreen.classList.add("be-hidden");
+    sheetScreen.innerHTML = `
+      <div class="sheet-header">
+        <button class="sheet-menu-btn" id="openSheetMenu" type="button">
+          <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
+        </button>
+        <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
+        <div style="width:64px;"></div>
       </div>
-    </div>
 
-    <section class="sheet-card">
-      <div class="sheet-grid-top">
-        <div>
-          <div class="field-label">Name</div>
-          <input class="be-text" id="cs_name" type="text" placeholder="Name" autocomplete="off" />
+      <section class="sheet-card">
+        <div class="sheet-grid-top">
+          <div>
+            <div class="field-label">Name</div>
+            <input class="be-text" id="cs_name" type="text" placeholder="Name" autocomplete="off" />
+          </div>
+          <div>
+            <div class="field-label">HP</div>
+            ${numField("cs_hp")}
+          </div>
         </div>
 
-        <div>
-          <div class="field-label">HP</div>
-          <div class="hp-pair">
-            ${numField("cs_hp")}
-            ${numField("cs_hp_max")}
+        <div class="sheet-row">
+          <div>
+            <div class="field-label">Stamina</div>
+            ${numField("cs_stamina")}
+          </div>
+          <div>
+            <div class="field-label">Ephem</div>
+            ${numField("cs_ephem")}
+          </div>
+          <div>
+            <div class="field-label">Walk</div>
+            ${numField("cs_walk")}
+          </div>
+          <div>
+            <div class="field-label">Run</div>
+            ${numField("cs_run")}
+          </div>
+        </div>
+
+        <div class="stat-strip">
+          <div>
+            <div class="field-label">Fight</div>
+            ${numField("cs_fight")}
+          </div>
+          <div>
+            <div class="field-label">Volley</div>
+            ${numField("cs_volley")}
+          </div>
+          <div>
+            <div class="field-label">Guts</div>
+            ${numField("cs_guts")}
+          </div>
+          <div>
+            <div class="field-label">Grit</div>
+            ${numField("cs_grit")}
+          </div>
+          <div>
+            <div class="field-label">Focus</div>
+            ${numField("cs_focus")}
+          </div>
+        </div>
+
+        <div class="sheet-buttons">
+          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
+          <button class="sheet-action" type="button" id="cs_btn_armor">Armor</button>
+          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
+          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
+        </div>
+      </section>
+
+      <div id="sheetMenuOverlay" aria-hidden="true">
+        <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
+          <div class="sheet-menu-title">Menu</div>
+          <div class="sheet-menu-list">
+            <button class="sheet-menu-item" type="button" data-action="home">Home</button>
+            <button class="sheet-menu-item" type="button" data-action="save">Save Character</button>
+            <button class="sheet-menu-item" type="button" data-action="load">Load Character</button>
+            <button class="sheet-menu-item" type="button" data-action="compendium">Open Compendium</button>
+            <button class="sheet-menu-item" type="button" data-action="close">Close</button>
           </div>
         </div>
       </div>
-
-      <div class="sheet-row">
-        <div>
-          <div class="field-label">Stamina</div>
-          ${numField("cs_stamina")}
-        </div>
-        <div>
-          <div class="field-label">Ephem</div>
-          ${numField("cs_ephem")}
-        </div>
-        <div>
-          <div class="field-label">Walk</div>
-          ${numField("cs_walk")}
-        </div>
-        <div>
-          <div class="field-label">Run</div>
-          ${numField("cs_run")}
-        </div>
-      </div>
-
-      <div class="stat-strip">
-        <div>
-          <div class="field-label">Fight</div>
-          ${numField("cs_fight")}
-        </div>
-        <div>
-          <div class="field-label">Volley</div>
-          ${numField("cs_volley")}
-        </div>
-        <div>
-          <div class="field-label">Guts</div>
-          ${numField("cs_guts")}
-        </div>
-        <div>
-          <div class="field-label">Grit</div>
-          ${numField("cs_grit")}
-        </div>
-        <div>
-          <div class="field-label">Focus</div>
-          ${numField("cs_focus")}
-        </div>
-      </div>
-
-      <div class="sheet-buttons">
-        <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
-        <button class="sheet-action" type="button" id="cs_btn_armor">Armor</button>
-        <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
-        <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
-      </div>
-    </section>
-
-    <div id="sheetMenuOverlay" aria-hidden="true">
-      <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
-        <div class="sheet-menu-title">Menu</div>
-        <div class="sheet-menu-list">
-          <button class="sheet-menu-item" type="button" data-action="home">Home</button>
-          <button class="sheet-menu-item" type="button" data-action="save">Save Character</button>
-          <button class="sheet-menu-item" type="button" data-action="load">Load Character</button>
-          <button class="sheet-menu-item" type="button" data-action="compendium">Open Compendium</button>
-          <button class="sheet-menu-item" type="button" data-action="close">Close</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  compendiumRoot.parentNode.insertBefore(sheetScreen, compendiumRoot);
-} else {
-  sheetScreen = $("#sheetScreen");
-}
-
+    `;
+    compendiumRoot.parentNode.insertBefore(sheetScreen, compendiumRoot);
+  } else {
+    sheetScreen = $("#sheetScreen");
+  }
 
   // Hide compendium by default (home first)
   compendiumRoot.classList.add("be-hidden");
@@ -1370,21 +1361,19 @@ function getSheetState() {
     return Number.isFinite(v) ? v : 0;
   };
   return {
-  name: ($("#cs_name")?.value || "").trim(),
-  hp: getNum("cs_hp"),
-  hpMax: getNum("cs_hp_max"),
-  coin: getNum("cs_coin"),
-  stamina: getNum("cs_stamina"),
-  ephem: getNum("cs_ephem"),
-  walk: getNum("cs_walk"),
-  run: getNum("cs_run"),
-  fight: getNum("cs_fight"),
-  volley: getNum("cs_volley"),
-  guts: getNum("cs_guts"),
-  grit: getNum("cs_grit"),
-  focus: getNum("cs_focus"),
-  updatedAt: Date.now()
-};
+    name: ($("#cs_name")?.value || "").trim(),
+    hp: getNum("cs_hp"),
+    stamina: getNum("cs_stamina"),
+    ephem: getNum("cs_ephem"),
+    walk: getNum("cs_walk"),
+    run: getNum("cs_run"),
+    fight: getNum("cs_fight"),
+    volley: getNum("cs_volley"),
+    guts: getNum("cs_guts"),
+    grit: getNum("cs_grit"),
+    focus: getNum("cs_focus"),
+    updatedAt: Date.now()
+  };
 }
 
 function setSheetState(state) {
@@ -1399,8 +1388,6 @@ function setSheetState(state) {
   };
 
   setNum("cs_hp", state.hp);
-  setNum("cs_hp_max", state.hpMax);
-  setNum("cs_coin", state.coin);
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
