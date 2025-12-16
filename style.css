@@ -510,6 +510,11 @@ main {
 .sheet-coins .num-wrap { display: inline-flex; align-items: center; }
 .sheet-coins .num-wrap .be-num { width: 72px; }
 
+/* HP pair: current + max, inline inputs */
+.hp-pair { display: flex; gap: 0.5rem; align-items: center; }
+.hp-pair .num-wrap { margin: 0; }
+.hp-pair .be-num { width: 72px; }
+
 .cs-main {
   padding: 1rem;
 }
@@ -675,4 +680,19 @@ main {
   .sheet-coin-input { width: 62px; padding: 0.35rem 0.45rem; font-size: 0.9rem; }
   .sheet-coin-icon { width: 24px; height: 24px; }
   .sheet-coin-label { display: none; }
+  .hp-pair .be-num { width: 60px; }
+}
+
+/* Compendium back button in header */
+.comp-back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+@media (max-width: 520px) {
+  .comp-back-btn { font-size: 0.9rem; }
 }

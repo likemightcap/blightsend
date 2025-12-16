@@ -1195,7 +1195,10 @@ function ensureScreens() {
           </div>
           <div>
             <div class="field-label">HP</div>
-            ${numField("cs_hp")}
+            <div class="hp-pair">
+              ${numField("cs_hp")}
+              ${numField("cs_hp_max")}
+            </div>
           </div>
         </div>
 
@@ -1368,6 +1371,7 @@ function getSheetState() {
   return {
     name: ($("#cs_name")?.value || "").trim(),
     hp: getNum("cs_hp"),
+  hp_max: getNum("cs_hp_max"),
     stamina: getNum("cs_stamina"),
     ephem: getNum("cs_ephem"),
     walk: getNum("cs_walk"),
@@ -1394,6 +1398,7 @@ function setSheetState(state) {
   };
 
   setNum("cs_hp", state.hp);
+  setNum("cs_hp_max", state.hp_max);
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
@@ -1834,6 +1839,13 @@ function initCompendiumOnce() {
   const chipRow = $("#chipRow");
   const searchInput = $("#searchInput");
   const listContainer = $("#listContainer");
+
+  // Back button (in-case compendium header has it)
+  const compBackBtn = $("#compBackBtn");
+  if (compBackBtn && !compBackBtn.dataset.bound) {
+    compBackBtn.dataset.bound = "1";
+    compBackBtn.addEventListener('click', () => navigate('home'));
+  }
 
   if (!topNav || !chipRow || !searchInput || !listContainer) {
     console.warn("Compendium UI elements not found. If you changed index.html structure, tell me.");
