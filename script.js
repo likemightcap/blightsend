@@ -1,6 +1,11 @@
 /* ---------------------------------------------------
-   DATA
+   BLIGHTSEND APP ROUTER + COMPENDIUM + CHARACTER SHEET
+   (Single-file script.js replacement)
 ----------------------------------------------------*/
+
+/* ===================================================
+   1) DATA (UNCHANGED)
+=================================================== */
 
 const echoesData = [
   {
@@ -637,7 +642,6 @@ const advancedSkillsData = [
 ];
 
 const armorData = [
-  // Full armor class table
   {
     name: "Padded",
     armorValue: 6,
@@ -845,20 +849,691 @@ const conditionsData = [
   }
 ];
 
-/* ---------------------------------------------------
-   STATE
-----------------------------------------------------*/
+/* ===================================================
+   2) SMALL UTILITIES
+=================================================== */
+
+function $(sel, root = document) {
+  return root.querySelector(sel);
+}
+function $all(sel, root = document) {
+  return [...root.querySelectorAll(sel)];
+}
+function normalize(str) {
+  return (str || "").toString().toLowerCase();
+}
+
+function injectSheetStylesOnce() {
+  if ($("#_beSheetStyles")) return;
+  const style = document.createElement("style");
+  style.id = "_beSheetStyles";
+  style.textContent = `
+    /* Character Sheet injected styles (kept minimal + matches your dark vibe) */
+    #homeScreen, #sheetScreen { width: 100%; max-width: 900px; margin: 0 auto; }
+    .be-hidden { display: none !important; }
+
+    .home-wrap{
+      min-height: calc(100vh - 2rem);
+      display:flex; flex-direction:column; gap:1.25rem;
+      align-items:center; justify-content:flex-start;
+      padding: 1.25rem 0.5rem;
+    }
+    .home-logo{
+      width:min(520px, 92vw);
+      height:auto;
+      margin-top: 0.25rem;
+      user-select:none;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,0.65));
+    }
+    .home-btn{
+      width:min(560px, 92vw);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.10);
+      color: var(--text-main);
+      padding: 2.25rem 1rem;
+      font-size: 1.25rem;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      cursor:pointer;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+    }
+    .home-btn:active{ transform: scale(0.985); }
+
+    .sheet-header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:0.75rem;
+      padding: 0.75rem 0.25rem 0.25rem;
+    }
+    .sheet-menu-btn{
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(14, 15, 21, 0.85);
+      color: var(--text-main);
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      white-space:nowrap;
+    }
+    .sheet-title-logo{
+      height: 44px; width:auto; object-fit:contain;
+      user-select:none; pointer-events:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.65));
+    }
+
+    .sheet-card{
+      margin-top: 0.5rem;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.55));
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 1rem;
+    }
+
+    .sheet-grid-top{
+      display:grid;
+      grid-template-columns: 1fr 110px;
+      gap: 0.75rem;
+      align-items:end;
+      margin-bottom: 0.9rem;
+    }
+    .sheet-row{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .stat-strip{
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(80, 140, 160, 0.25);
+      padding: 0.75rem;
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .sheet-buttons{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .field-label{
+      font-size: 0.85rem;
+      color: var(--text-main);
+      opacity: 0.92;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.35rem;
+      white-space:nowrap;
+    }
+
+    input[type="text"].be-text{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(7, 9, 13, 0.9);
+      color: var(--text-main);
+      padding: 0.75rem 0.8rem;
+      font-size: 1rem;
+    }
+
+    .num-wrap{
+      display:flex;
+      align-items:stretch;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(7, 9, 13, 0.9);
+      overflow:hidden;
+      height: 44px;
+    }
+    input[type="number"].be-num{
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text-main);
+      padding: 0 0.75rem;
+      font-size: 1rem;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    input[type="number"].be-num::-webkit-outer-spin-button,
+    input[type="number"].be-num::-webkit-inner-spin-button{
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .stepper{
+      display:flex;
+      flex-direction:column;
+      border-left: 1px solid rgba(255,255,255,0.10);
+      width: 44px;
+      flex: 0 0 44px;
+    }
+    .stepper button{
+      flex: 1;
+      border: 0;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-main);
+      cursor:pointer;
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+    .stepper button:active{ background: rgba(192,255,122,0.14); }
+
+    .sheet-action{
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.10);
+      color: var(--text-main);
+      padding: 1.2rem 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor:pointer;
+      font-size: 1rem;
+    }
+    .sheet-action:active{ transform: scale(0.99); }
+
+    /* Menu overlay */
+    #sheetMenuOverlay{
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(0,0,0,0.86), rgba(0,0,0,0.96));
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    #sheetMenuOverlay.show{ display:flex; }
+    .sheet-menu-modal{
+      width: 100%;
+      max-width: 520px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(192,255,122,0.35);
+      background:
+        radial-gradient(circle at top, rgba(192,255,122,0.08), transparent 60%),
+        rgba(10, 10, 12, 0.95);
+      box-shadow: 0 22px 60px rgba(0,0,0,0.95);
+      padding: 1rem;
+    }
+    .sheet-menu-title{
+      font-size: 1.0rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 0.75rem;
+    }
+    .sheet-menu-list{ display:flex; flex-direction:column; gap:0.5rem; }
+    .sheet-menu-item{
+      width:100%;
+      text-align:left;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-main);
+      padding: 0.9rem 0.9rem;
+      cursor:pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.85rem;
+    }
+    .sheet-menu-item:active{ background: rgba(192,255,122,0.14); }
+
+    /* Tiny: stack top grid if narrow */
+    @media (max-width: 420px){
+      .sheet-grid-top{ grid-template-columns: 1fr; }
+      .sheet-row{ grid-template-columns: repeat(2, 1fr); }
+      .stat-strip{ grid-template-columns: repeat(2, 1fr); }
+      .sheet-buttons{ grid-template-columns: 1fr; }
+    }
+
+    /* Toast */
+    #beToast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      z-index: 200;
+      display:none;
+      max-width: min(92vw, 520px);
+      text-align:center;
+    }
+    #beToast.show{ display:block; }
+  `;
+  document.head.appendChild(style);
+}
+
+function toast(msg) {
+  let el = $("#beToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "beToast";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add("show");
+  window.clearTimeout(toast._t);
+  toast._t = window.setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+/* ===================================================
+   3) APP “VIEWS” (HOME / SHEET / COMPENDIUM)
+=================================================== */
+
+let compendiumRoot = null;
+let homeScreen = null;
+let sheetScreen = null;
+
+function ensureScreens() {
+  injectSheetStylesOnce();
+
+  // The existing compendium is already inside #app (your current site).
+  compendiumRoot = $("#app");
+  if (!compendiumRoot) {
+    // If #app is missing, we can’t safely proceed.
+    console.error("Missing #app container. Your index.html should have <div id='app'>...</div>.");
+    return;
+  }
+
+  // Create Home screen (insert before compendium)
+  if (!$("#homeScreen")) {
+    homeScreen = document.createElement("div");
+    homeScreen.id = "homeScreen";
+    homeScreen.innerHTML = `
+      <div class="home-wrap">
+        <img class="home-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
+        <button class="home-btn" id="btnGoSheet">Character Sheet</button>
+        <button class="home-btn" id="btnGoCompendium">Compendium</button>
+      </div>
+    `;
+    compendiumRoot.parentNode.insertBefore(homeScreen, compendiumRoot);
+  } else {
+    homeScreen = $("#homeScreen");
+  }
+
+  // Create Character Sheet screen (insert after home, before compendium)
+  if (!$("#sheetScreen")) {
+    sheetScreen = document.createElement("div");
+    sheetScreen.id = "sheetScreen";
+    sheetScreen.classList.add("be-hidden");
+    sheetScreen.innerHTML = `
+      <div class="sheet-header">
+        <button class="sheet-menu-btn" id="openSheetMenu" type="button">
+          <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
+        </button>
+        <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
+        <div style="width:64px;"></div>
+      </div>
+
+      <section class="sheet-card">
+        <div class="sheet-grid-top">
+          <div>
+            <div class="field-label">Name</div>
+            <input class="be-text" id="cs_name" type="text" placeholder="Name" autocomplete="off" />
+          </div>
+          <div>
+            <div class="field-label">HP</div>
+            ${numField("cs_hp")}
+          </div>
+        </div>
+
+        <div class="sheet-row">
+          <div>
+            <div class="field-label">Stamina</div>
+            ${numField("cs_stamina")}
+          </div>
+          <div>
+            <div class="field-label">Ephem</div>
+            ${numField("cs_ephem")}
+          </div>
+          <div>
+            <div class="field-label">Walk</div>
+            ${numField("cs_walk")}
+          </div>
+          <div>
+            <div class="field-label">Run</div>
+            ${numField("cs_run")}
+          </div>
+        </div>
+
+        <div class="stat-strip">
+          <div>
+            <div class="field-label">Fight</div>
+            ${numField("cs_fight")}
+          </div>
+          <div>
+            <div class="field-label">Volley</div>
+            ${numField("cs_volley")}
+          </div>
+          <div>
+            <div class="field-label">Guts</div>
+            ${numField("cs_guts")}
+          </div>
+          <div>
+            <div class="field-label">Grit</div>
+            ${numField("cs_grit")}
+          </div>
+          <div>
+            <div class="field-label">Focus</div>
+            ${numField("cs_focus")}
+          </div>
+        </div>
+
+        <div class="sheet-buttons">
+          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
+          <button class="sheet-action" type="button" id="cs_btn_armor">Armor</button>
+          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
+          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
+        </div>
+      </section>
+
+      <div id="sheetMenuOverlay" aria-hidden="true">
+        <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
+          <div class="sheet-menu-title">Menu</div>
+          <div class="sheet-menu-list">
+            <button class="sheet-menu-item" type="button" data-action="home">Home</button>
+            <button class="sheet-menu-item" type="button" data-action="save">Save Character</button>
+            <button class="sheet-menu-item" type="button" data-action="load">Load Character</button>
+            <button class="sheet-menu-item" type="button" data-action="compendium">Open Compendium</button>
+            <button class="sheet-menu-item" type="button" data-action="close">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+    compendiumRoot.parentNode.insertBefore(sheetScreen, compendiumRoot);
+  } else {
+    sheetScreen = $("#sheetScreen");
+  }
+
+  // Hide compendium by default (home first)
+  compendiumRoot.classList.add("be-hidden");
+
+  // Wire home buttons once
+  const btnGoSheet = $("#btnGoSheet");
+  const btnGoCompendium = $("#btnGoCompendium");
+  if (btnGoSheet && !btnGoSheet.dataset.bound) {
+    btnGoSheet.dataset.bound = "1";
+    btnGoSheet.addEventListener("click", () => navigate("sheet"));
+  }
+  if (btnGoCompendium && !btnGoCompendium.dataset.bound) {
+    btnGoCompendium.dataset.bound = "1";
+    btnGoCompendium.addEventListener("click", () => navigate("compendium"));
+  }
+
+  // Wire sheet menu overlay once
+  const openSheetMenu = $("#openSheetMenu");
+  if (openSheetMenu && !openSheetMenu.dataset.bound) {
+    openSheetMenu.dataset.bound = "1";
+    openSheetMenu.addEventListener("click", () => toggleSheetMenu(true));
+  }
+  const overlay = $("#sheetMenuOverlay");
+  if (overlay && !overlay.dataset.bound) {
+    overlay.dataset.bound = "1";
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) toggleSheetMenu(false);
+    });
+    overlay.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      handleSheetMenuAction(action);
+    });
+  }
+
+  // Bind steppers + local persistence
+  bindAllSteppers();
+  loadActiveCharacterIfAny();
+}
+
+function numField(id) {
+  // numbers only + custom stepper buttons
+  return `
+    <div class="num-wrap" data-numwrap="${id}">
+      <input
+        class="be-num"
+        id="${id}"
+        type="number"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        step="1"
+        value="0"
+      />
+      <div class="stepper" aria-hidden="true">
+        <button type="button" data-step="up">▲</button>
+        <button type="button" data-step="down">▼</button>
+      </div>
+    </div>
+  `;
+}
+
+function showOnly(view) {
+  if (!homeScreen || !sheetScreen || !compendiumRoot) return;
+
+  homeScreen.classList.toggle("be-hidden", view !== "home");
+  sheetScreen.classList.toggle("be-hidden", view !== "sheet");
+  compendiumRoot.classList.toggle("be-hidden", view !== "compendium");
+
+  // close modal overlays when switching
+  toggleSheetMenu(false);
+
+  // Optional: when we enter compendium, make sure it has rendered once.
+  if (view === "compendium") {
+    initCompendiumOnce();
+  }
+}
+
+function navigate(view) {
+  // hash routing so it remembers
+  const map = { home: "#home", sheet: "#sheet", compendium: "#compendium" };
+  const h = map[view] || "#home";
+  if (location.hash !== h) location.hash = h;
+  showOnly(view);
+}
+
+/* ===================================================
+   4) CHARACTER SHEET: SAVE / LOAD / STEPPERS
+=================================================== */
+
+const STORAGE_KEY_ACTIVE = "be_active_character";
+const STORAGE_KEY_SAVED = "be_saved_characters"; // object map by name
+
+function getSheetState() {
+  const getNum = (id) => {
+    const el = $("#" + id);
+    const v = el ? Number(el.value) : 0;
+    return Number.isFinite(v) ? v : 0;
+  };
+  return {
+    name: ($("#cs_name")?.value || "").trim(),
+    hp: getNum("cs_hp"),
+    stamina: getNum("cs_stamina"),
+    ephem: getNum("cs_ephem"),
+    walk: getNum("cs_walk"),
+    run: getNum("cs_run"),
+    fight: getNum("cs_fight"),
+    volley: getNum("cs_volley"),
+    guts: getNum("cs_guts"),
+    grit: getNum("cs_grit"),
+    focus: getNum("cs_focus"),
+    updatedAt: Date.now()
+  };
+}
+
+function setSheetState(state) {
+  if (!state) return;
+  if ($("#cs_name")) $("#cs_name").value = state.name || "";
+
+  const setNum = (id, val) => {
+    const el = $("#" + id);
+    if (!el) return;
+    const n = Number(val);
+    el.value = Number.isFinite(n) ? String(n) : "0";
+  };
+
+  setNum("cs_hp", state.hp);
+  setNum("cs_stamina", state.stamina);
+  setNum("cs_ephem", state.ephem);
+  setNum("cs_walk", state.walk);
+  setNum("cs_run", state.run);
+  setNum("cs_fight", state.fight);
+  setNum("cs_volley", state.volley);
+  setNum("cs_guts", state.guts);
+  setNum("cs_grit", state.grit);
+  setNum("cs_focus", state.focus);
+}
+
+function saveCharacter() {
+  const state = getSheetState();
+  if (!state.name) {
+    toast("Give your character a Name first.");
+    return;
+  }
+  const saved = readSavedCharacters();
+  saved[state.name] = state;
+  localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+  localStorage.setItem(STORAGE_KEY_ACTIVE, state.name);
+  toast(`Saved: ${state.name}`);
+}
+
+function loadCharacter(name) {
+  const saved = readSavedCharacters();
+  const state = saved[name];
+  if (!state) {
+    toast("Could not find that character.");
+    return;
+  }
+  setSheetState(state);
+  localStorage.setItem(STORAGE_KEY_ACTIVE, name);
+  toast(`Loaded: ${name}`);
+}
+
+function loadActiveCharacterIfAny() {
+  const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+  if (!active) return;
+  const saved = readSavedCharacters();
+  if (saved[active]) setSheetState(saved[active]);
+}
+
+function readSavedCharacters() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SAVED);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function toggleSheetMenu(show) {
+  const overlay = $("#sheetMenuOverlay");
+  if (!overlay) return;
+  overlay.classList.toggle("show", !!show);
+  overlay.setAttribute("aria-hidden", show ? "false" : "true");
+}
+
+function handleSheetMenuAction(action) {
+  switch (action) {
+    case "home":
+      toggleSheetMenu(false);
+      navigate("home");
+      return;
+    case "compendium":
+      toggleSheetMenu(false);
+      navigate("compendium");
+      return;
+    case "save":
+      toggleSheetMenu(false);
+      saveCharacter();
+      return;
+    case "load": {
+      toggleSheetMenu(false);
+      const saved = readSavedCharacters();
+      const names = Object.keys(saved);
+      if (!names.length) {
+        toast("No saved characters yet.");
+        return;
+      }
+      // simple chooser prompt (we can upgrade this to a nice modal later)
+      const chosen = prompt(
+        "Type a character name to load:\n\n" + names.join("\n")
+      );
+      if (!chosen) return;
+      loadCharacter(chosen.trim());
+      return;
+    }
+    case "close":
+    default:
+      toggleSheetMenu(false);
+      return;
+  }
+}
+
+function bindAllSteppers() {
+  $all(".num-wrap").forEach((wrap) => {
+    if (wrap.dataset.bound) return;
+    wrap.dataset.bound = "1";
+
+    const input = $("input.be-num", wrap);
+    const up = $('button[data-step="up"]', wrap);
+    const down = $('button[data-step="down"]', wrap);
+
+    if (input) {
+      // keep it numeric, no decimals
+      input.addEventListener("input", () => {
+        const v = input.value;
+        if (v === "") return;
+        const n = Math.max(0, Math.floor(Number(v)));
+        input.value = Number.isFinite(n) ? String(n) : "0";
+      });
+      input.addEventListener("blur", () => {
+        if (input.value === "") input.value = "0";
+      });
+    }
+
+    const step = (dir) => {
+      if (!input) return;
+      const cur = Number(input.value || "0");
+      const next = dir === "up" ? cur + 1 : Math.max(0, cur - 1);
+      input.value = String(next);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+
+    if (up) up.addEventListener("click", () => step("up"));
+    if (down) down.addEventListener("click", () => step("down"));
+  });
+}
+
+/* ===================================================
+   5) COMPENDIUM (YOUR EXISTING CODE, WRAPPED)
+=================================================== */
+
+let compendiumInitialized = false;
 
 let currentPage = "echoes";
 let currentSearch = "";
-let currentFilter = null; // Filter value or null
+let currentFilter = null;
 
 const pagesConfig = {
   echoes: {
     label: "Echoes",
     data: () => echoesData,
     filterLabel: "Type",
-    // For now we only have "All" since no per-echo type field yet.
     chipOptions: ["All"]
   },
   weapons: {
@@ -871,7 +1546,7 @@ const pagesConfig = {
     label: "Advanced Skills",
     data: () => advancedSkillsData,
     filterLabel: "Category",
-    chipOptions: ["All"] // no categories yet on skills
+    chipOptions: ["All"]
   },
   armor: {
     label: "Armor",
@@ -883,40 +1558,18 @@ const pagesConfig = {
     label: "Conditions",
     data: () => conditionsData,
     filterLabel: "Severity",
-    chipOptions: ["All"] // no severity field yet
+    chipOptions: ["All"]
   }
 };
-
-/* ---------------------------------------------------
-   RENDER HELPERS
-----------------------------------------------------*/
-
-function normalize(str) {
-  return (str || "").toString().toLowerCase();
-}
 
 function passesFilter(item) {
   if (!currentFilter || currentFilter === "All") return true;
 
   switch (currentPage) {
-    case "echoes":
-      // no type defined yet, so no real filtering
-      return true;
-
     case "weapons":
       return normalize(item.category) === normalize(currentFilter);
-
-    case "skills":
-      // no category yet
-      return true;
-
     case "armor":
       return normalize(item.armorClass) === normalize(currentFilter);
-
-    case "conditions":
-      // no severity yet
-      return true;
-
     default:
       return true;
   }
@@ -947,7 +1600,8 @@ function passesSearch(item) {
 }
 
 function renderChips() {
-  const chipRow = document.getElementById("chipRow");
+  const chipRow = $("#chipRow");
+  if (!chipRow) return;
   chipRow.innerHTML = "";
   const config = pagesConfig[currentPage];
   if (!config || !config.chipOptions) return;
@@ -962,8 +1616,10 @@ function renderChips() {
 }
 
 function renderList() {
-  const listContainer = document.getElementById("listContainer");
-  const emptyMessage = document.getElementById("emptyMessage");
+  const listContainer = $("#listContainer");
+  const emptyMessage = $("#emptyMessage");
+  if (!listContainer || !emptyMessage) return;
+
   listContainer.innerHTML = "";
 
   const config = pagesConfig[currentPage];
@@ -981,7 +1637,7 @@ function renderList() {
   filtered.forEach((item) => {
     const card = document.createElement("article");
     card.className = "item-card";
-    card.dataset.id = item.name; // use name as key
+    card.dataset.id = item.name;
     card.dataset.page = currentPage;
 
     const main = document.createElement("div");
@@ -992,10 +1648,9 @@ function renderList() {
 
     let displayName = item.name || "";
     if (currentPage === "weapons" && item.type) {
-    displayName = `${item.name} - ${item.type}`;
+      displayName = `${item.name} - ${item.type}`;
     }
     title.textContent = displayName;
-
 
     const meta = document.createElement("div");
     meta.className = "item-meta";
@@ -1007,67 +1662,33 @@ function renderList() {
         (item.ephemCost != null ? item.ephemCost : "?") +
         (item.range ? " · Range " + item.range : "");
     } else if (currentPage === "weapons") {
-  // Build a concise stat line, e.g. "4d8 · Damage 2 · Pen 3 · Range 1\""
-  const stats = [];
+      const stats = [];
 
-  // 4d8 from diePool + dieSize
-  if (item.diePool && item.dieSize) {
-    stats.push(`${item.diePool}${item.dieSize}`);
-  } else if (item.diePool) {
-    stats.push(String(item.diePool));
-  }
+      if (item.diePool && item.dieSize) stats.push(`${item.diePool}${item.dieSize}`);
+      else if (item.diePool) stats.push(String(item.diePool));
 
-  // Damage
-  if (item.damage != null) {
-    stats.push(`Damage ${item.damage}`);
-  }
+      if (item.damage != null) stats.push(`Damage ${item.damage}`);
+      if (item.penetration != null) stats.push(`Pen ${item.penetration}`);
+      if (item.range) stats.push(`Range ${item.range}`);
 
-  // Penetration
-  if (item.penetration != null) {
-    stats.push(`Pen ${item.penetration}`);
-  }
-
-  // Range
-  if (item.range) {
-    stats.push(`Range ${item.range}`);
-  }
-
-  meta.textContent = stats.join(" · ");
-} else if (currentPage === "skills") {
-
-      meta.textContent =
-        "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
+      meta.textContent = stats.join(" · ");
+    } else if (currentPage === "skills") {
+      meta.textContent = "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
     } else if (currentPage === "armor") {
-  // Build a concise armor stat line:
-  // e.g. "Torso, Arms, Legs · AV 6 · Red 2 · Dur 5 · Res Slashing"
-  const parts = [];
-
-  if (item.location) {
-    parts.push(item.location);
-  }
-  if (item.armorValue != null) {
-    parts.push(`AV ${item.armorValue}`);
-  }
-  if (item.reduction != null) {
-    parts.push(`Red ${item.reduction}`);
-  }
-  if (item.durability != null) {
-    parts.push(`Dur ${item.durability}`);
-  }
-  if (item.resistance) {
-    parts.push(`Res ${item.resistance}`);
-  }
-
-  meta.textContent = parts.join(" · ");
-} else if (currentPage === "conditions") {
-
+      const parts = [];
+      if (item.location) parts.push(item.location);
+      if (item.armorValue != null) parts.push(`AV ${item.armorValue}`);
+      if (item.reduction != null) parts.push(`Red ${item.reduction}`);
+      if (item.durability != null) parts.push(`Dur ${item.durability}`);
+      if (item.resistance) parts.push(`Res ${item.resistance}`);
+      meta.textContent = parts.join(" · ");
+    } else if (currentPage === "conditions") {
       meta.textContent = "Condition";
     }
 
     const tagline = document.createElement("div");
     tagline.className = "item-tagline";
-    tagline.textContent =
-      item.summary || item.description || item.effect || "";
+    tagline.textContent = item.summary || item.description || item.effect || "";
 
     main.appendChild(title);
     main.appendChild(meta);
@@ -1076,17 +1697,11 @@ function renderList() {
     const pill = document.createElement("div");
     pill.className = "item-pill";
 
-    if (currentPage === "echoes") {
-      pill.textContent = "Echo";
-    } else if (currentPage === "weapons") {
-      pill.textContent = item.category || "Weapon";
-    } else if (currentPage === "skills") {
-      pill.textContent = "Skill";
-    } else if (currentPage === "armor") {
-      pill.textContent = item.armorClass || "Armor";
-    } else if (currentPage === "conditions") {
-      pill.textContent = "Condition";
-    }
+    if (currentPage === "echoes") pill.textContent = "Echo";
+    else if (currentPage === "weapons") pill.textContent = item.category || "Weapon";
+    else if (currentPage === "skills") pill.textContent = "Skill";
+    else if (currentPage === "armor") pill.textContent = item.armorClass || "Armor";
+    else pill.textContent = "Condition";
 
     card.appendChild(main);
     card.appendChild(pill);
@@ -1094,151 +1709,16 @@ function renderList() {
   });
 }
 
-/* ---------------------------------------------------
-   MODAL
-----------------------------------------------------*/
+/* Modal */
+let modalBackdrop, modalTitle, modalSubtitle, modalPills, modalBody, modalClose;
 
-const modalBackdrop = document.getElementById("modalBackdrop");
-const modalTitle = document.getElementById("modalTitle");
-const modalSubtitle = document.getElementById("modalSubtitle");
-const modalPills = document.getElementById("modalPills");
-const modalBody = document.getElementById("modalBody");
-const modalClose = document.getElementById("modalClose");
-
-function openModal(item, page) {
-  if (!item) return;
-
-  modalTitle.textContent = item.name || "";
-
-  // Subtitle by page
-  if (page === "echoes") {
-    modalSubtitle.textContent = "Echo";
-  } else if (page === "weapons") {
-    modalSubtitle.textContent =
-      (item.category || "Weapon") + (item.type ? " · " + item.type : "");
-  } else if (page === "skills") {
-    modalSubtitle.textContent = "Advanced Skill";
-  } else if (page === "armor") {
-    modalSubtitle.textContent =
-      "Armor" + (item.armorClass ? " · " + item.armorClass : "");
-  } else if (page === "conditions") {
-    modalSubtitle.textContent = "Condition";
-  } else {
-    modalSubtitle.textContent = "";
-  }
-
-  // Pills
-  modalPills.innerHTML = "";
-
-  if (page === "echoes") {
-    if (item.ephemCost != null)
-      modalPills.appendChild(makePill("Ephem: " + item.ephemCost));
-    if (item.damage)
-      modalPills.appendChild(makePill("Damage: " + item.damage));
-    if (item.range)
-      modalPills.appendChild(makePill("Range: " + item.range));
-  } else if (page === "weapons") {
-    if (item.diePool != null) {
-      modalPills.appendChild(
-        makePill(
-          "Dice Pool: " +
-            item.diePool +
-            (item.dieSize ? item.dieSize : "")
-        )
-      );
-    }
-    if (item.damage != null)
-      modalPills.appendChild(makePill("Damage: " + item.damage));
-    if (item.penetration != null)
-      modalPills.appendChild(makePill("Pen: " + item.penetration));
-    if (item.range) modalPills.appendChild(makePill("Range: " + item.range));
-    if (item.description)
-      modalPills.appendChild(makePill(item.description));
-  } else if (page === "skills") {
-    if (item.cost)
-      modalPills.appendChild(makePill("Cost: " + item.cost));
-    if (item.requirement)
-      modalPills.appendChild(makePill("Req: " + item.requirement));
-  } else if (page === "armor") {
-    if (item.armorValue != null)
-      modalPills.appendChild(makePill("Armor Value: " + item.armorValue));
-    if (item.reduction != null)
-      modalPills.appendChild(makePill("Reduction: " + item.reduction));
-    if (item.resistance)
-      modalPills.appendChild(makePill("Resist: " + item.resistance));
-    if (item.location)
-      modalPills.appendChild(makePill("Location: " + item.location));
-    if (item.layer)
-      modalPills.appendChild(makePill("Layer: " + item.layer));
-  } else if (page === "conditions") {
-    // nothing extra for now
-  }
-
-  // Body
-  const bodyParts = [];
-
-  // Main summary/description/effect
-  if (item.summary || item.description || item.effect) {
-    bodyParts.push(
-      `<p><strong>${item.summary || item.description || item.effect}</strong></p>`
-    );
-  }
-
-  // Echo tier upgrades (from tier2 / tier3)
-  if (page === "echoes") {
-    const upgrades = [item.tier2, item.tier3].filter(Boolean);
-    if (upgrades.length) {
-      bodyParts.push(
-        `<div class="modal-section-title">Tier Upgrades</div><ul>`
-      );
-      upgrades.forEach((u) => {
-        bodyParts.push(`<li>${u}</li>`);
-      });
-      bodyParts.push("</ul>");
-    }
-  }
-
-  // Skills: Effect section (if we didn't already highlight it)
-  if (page === "skills" && item.effect) {
-    bodyParts.push(
-      `<div class="modal-section-title">Effect</div><p>${item.effect}</p>`
-    );
-  }
-
-  // Weapons: Range bands table if present
-  if (page === "weapons" && item.rangeBands) {
-    bodyParts.push(
-      `<div class="modal-section-title">Range Bands</div><ul>`
-    );
-    const rb = item.rangeBands;
-    if (rb.close) bodyParts.push(`<li>Close: ${rb.close}</li>`);
-    if (rb.effective) bodyParts.push(`<li>Effective: ${rb.effective}</li>`);
-    if (rb.far) bodyParts.push(`<li>Far: ${rb.far}</li>`);
-    if (rb.max) bodyParts.push(`<li>Max: ${rb.max}</li>`);
-    bodyParts.push("</ul>");
-  }
-
-  // Armor: extra details section
-  if (page === "armor") {
-    const lines = [];
-    if (item.durability != null) lines.push(`Durability: ${item.durability}`);
-    if (item.cost != null) lines.push(`Cost: ${item.cost}`);
-    if (item.weight != null) lines.push(`Weight: ${item.weight}`);
-    if (item.notes) lines.push(item.notes);
-
-    if (lines.length) {
-      bodyParts.push(
-        `<div class="modal-section-title">Details</div><ul>`
-      );
-      lines.forEach((l) => bodyParts.push(`<li>${l}</li>`));
-      bodyParts.push("</ul>");
-    }
-  }
-
-  // Conditions: description already shown above as main text
-
-  modalBody.innerHTML = bodyParts.join("");
-  modalBackdrop.classList.add("show");
+function initModalRefs() {
+  modalBackdrop = $("#modalBackdrop");
+  modalTitle = $("#modalTitle");
+  modalSubtitle = $("#modalSubtitle");
+  modalPills = $("#modalPills");
+  modalBody = $("#modalBody");
+  modalClose = $("#modalClose");
 }
 
 function makePill(text) {
@@ -1249,78 +1729,203 @@ function makePill(text) {
 }
 
 function closeModal() {
+  if (!modalBackdrop) return;
   modalBackdrop.classList.remove("show");
 }
 
-/* ---------------------------------------------------
-   EVENT WIRING
-----------------------------------------------------*/
+function openModal(item, page) {
+  if (!item || !modalBackdrop) return;
 
-// Top nav
-document.getElementById("topNav").addEventListener("click", (e) => {
-  if (!(e.target instanceof HTMLElement)) return;
-  const btn = e.target.closest("button[data-page]");
-  if (!btn) return;
-  const page = btn.dataset.page;
-  if (!page || page === currentPage) return;
-  currentPage = page;
-  currentFilter = null;
-  currentSearch = "";
-  document.getElementById("searchInput").value = "";
+  modalTitle.textContent = item.name || "";
 
-  // Active state
-  [...document.querySelectorAll("#topNav button")].forEach((b) =>
-    b.classList.toggle("active", b.dataset.page === currentPage)
-  );
+  if (page === "echoes") modalSubtitle.textContent = "Echo";
+  else if (page === "weapons")
+    modalSubtitle.textContent = (item.category || "Weapon") + (item.type ? " · " + item.type : "");
+  else if (page === "skills") modalSubtitle.textContent = "Advanced Skill";
+  else if (page === "armor")
+    modalSubtitle.textContent = "Armor" + (item.armorClass ? " · " + item.armorClass : "");
+  else modalSubtitle.textContent = "Condition";
 
+  modalPills.innerHTML = "";
+
+  if (page === "echoes") {
+    if (item.ephemCost != null) modalPills.appendChild(makePill("Ephem: " + item.ephemCost));
+    if (item.damage) modalPills.appendChild(makePill("Damage: " + item.damage));
+    if (item.range) modalPills.appendChild(makePill("Range: " + item.range));
+  } else if (page === "weapons") {
+    if (item.diePool != null) {
+      modalPills.appendChild(makePill("Dice Pool: " + item.diePool + (item.dieSize ? item.dieSize : "")));
+    }
+    if (item.damage != null) modalPills.appendChild(makePill("Damage: " + item.damage));
+    if (item.penetration != null) modalPills.appendChild(makePill("Pen: " + item.penetration));
+    if (item.range) modalPills.appendChild(makePill("Range: " + item.range));
+    if (item.description) modalPills.appendChild(makePill(item.description));
+  } else if (page === "skills") {
+    if (item.cost) modalPills.appendChild(makePill("Cost: " + item.cost));
+    if (item.requirement) modalPills.appendChild(makePill("Req: " + item.requirement));
+  } else if (page === "armor") {
+    if (item.armorValue != null) modalPills.appendChild(makePill("Armor Value: " + item.armorValue));
+    if (item.reduction != null) modalPills.appendChild(makePill("Reduction: " + item.reduction));
+    if (item.resistance) modalPills.appendChild(makePill("Resist: " + item.resistance));
+    if (item.location) modalPills.appendChild(makePill("Location: " + item.location));
+    if (item.layer) modalPills.appendChild(makePill("Layer: " + item.layer));
+  }
+
+  const bodyParts = [];
+  if (item.summary || item.description || item.effect) {
+    bodyParts.push(`<p><strong>${item.summary || item.description || item.effect}</strong></p>`);
+  }
+
+  if (page === "echoes") {
+    const upgrades = [item.tier2, item.tier3].filter(Boolean);
+    if (upgrades.length) {
+      bodyParts.push(`<div class="modal-section-title">Tier Upgrades</div><ul>`);
+      upgrades.forEach((u) => bodyParts.push(`<li>${u}</li>`));
+      bodyParts.push(`</ul>`);
+    }
+  }
+
+  if (page === "skills" && item.effect) {
+    bodyParts.push(`<div class="modal-section-title">Effect</div><p>${item.effect}</p>`);
+  }
+
+  if (page === "weapons" && item.rangeBands) {
+    bodyParts.push(`<div class="modal-section-title">Range Bands</div><ul>`);
+    const rb = item.rangeBands;
+    if (rb.close) bodyParts.push(`<li>Close: ${rb.close}</li>`);
+    if (rb.effective) bodyParts.push(`<li>Effective: ${rb.effective}</li>`);
+    if (rb.far) bodyParts.push(`<li>Far: ${rb.far}</li>`);
+    if (rb.max) bodyParts.push(`<li>Max: ${rb.max}</li>`);
+    bodyParts.push(`</ul>`);
+  }
+
+  if (page === "armor") {
+    const lines = [];
+    if (item.durability != null) lines.push(`Durability: ${item.durability}`);
+    if (item.cost != null) lines.push(`Cost: ${item.cost}`);
+    if (item.weight != null) lines.push(`Weight: ${item.weight}`);
+    if (item.notes) lines.push(item.notes);
+    if (lines.length) {
+      bodyParts.push(`<div class="modal-section-title">Details</div><ul>`);
+      lines.forEach((l) => bodyParts.push(`<li>${l}</li>`));
+      bodyParts.push(`</ul>`);
+    }
+  }
+
+  modalBody.innerHTML = bodyParts.join("");
+  modalBackdrop.classList.add("show");
+}
+
+function initCompendiumOnce() {
+  if (compendiumInitialized) return;
+  compendiumInitialized = true;
+
+  // Wire compendium events (only if the elements exist)
+  initModalRefs();
+
+  const topNav = $("#topNav");
+  const chipRow = $("#chipRow");
+  const searchInput = $("#searchInput");
+  const listContainer = $("#listContainer");
+
+  if (!topNav || !chipRow || !searchInput || !listContainer) {
+    console.warn("Compendium UI elements not found. If you changed index.html structure, tell me.");
+    return;
+  }
+
+  // Top nav
+  topNav.addEventListener("click", (e) => {
+    if (!(e.target instanceof HTMLElement)) return;
+    const btn = e.target.closest("button[data-page]");
+    if (!btn) return;
+    const page = btn.dataset.page;
+    if (!page || page === currentPage) return;
+
+    currentPage = page;
+    currentFilter = null;
+    currentSearch = "";
+    searchInput.value = "";
+
+    $all("#topNav button").forEach((b) =>
+      b.classList.toggle("active", b.dataset.page === currentPage)
+    );
+
+    renderChips();
+    renderList();
+  });
+
+  // Chips
+  chipRow.addEventListener("click", (e) => {
+    if (!(e.target instanceof HTMLElement)) return;
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    const val = chip.dataset.value;
+    currentFilter = val === "All" ? null : val;
+
+    $all(".chip").forEach((c) => c.classList.toggle("active", c === chip));
+    renderList();
+  });
+
+  // Search
+  searchInput.addEventListener("input", (e) => {
+    currentSearch = e.target.value;
+    renderList();
+  });
+
+  // Click item -> open modal
+  listContainer.addEventListener("click", (e) => {
+    if (!(e.target instanceof HTMLElement)) return;
+    const card = e.target.closest(".item-card");
+    if (!card) return;
+
+    const key = card.dataset.id;
+    const page = card.dataset.page;
+    const config = pagesConfig[page];
+    if (!config) return;
+
+    const item = config.data().find((x) => x.name === key);
+    openModal(item, page);
+  });
+
+  // Modal close
+  if (modalClose) modalClose.addEventListener("click", closeModal);
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+      toggleSheetMenu(false);
+    }
+  });
+
+  // Initial render
   renderChips();
   renderList();
+}
+
+/* ===================================================
+   6) STARTUP + HASH ROUTING
+=================================================== */
+
+function viewFromHash() {
+  const h = (location.hash || "").toLowerCase();
+  if (h.includes("sheet")) return "sheet";
+  if (h.includes("compendium")) return "compendium";
+  return "home";
+}
+
+window.addEventListener("hashchange", () => {
+  showOnly(viewFromHash());
 });
 
-// Chips
-document.getElementById("chipRow").addEventListener("click", (e) => {
-  if (!(e.target instanceof HTMLElement)) return;
-  const chip = e.target.closest(".chip");
-  if (!chip) return;
-  const val = chip.dataset.value;
-  currentFilter = val === "All" ? null : val;
-
-  [...document.querySelectorAll(".chip")].forEach((c) =>
-    c.classList.toggle("active", c === chip)
-  );
-
-  renderList();
+document.addEventListener("DOMContentLoaded", () => {
+  ensureScreens();
+  showOnly(viewFromHash());
 });
 
-// Search
-document.getElementById("searchInput").addEventListener("input", (e) => {
-  currentSearch = e.target.value;
-  renderList();
-});
-
-// Click on list item -> open modal
-document.getElementById("listContainer").addEventListener("click", (e) => {
-  if (!(e.target instanceof HTMLElement)) return;
-  const card = e.target.closest(".item-card");
-  if (!card) return;
-  const key = card.dataset.id;
-  const page = card.dataset.page;
-  const config = pagesConfig[page];
-  if (!config) return;
-  const data = config.data();
-  const item = data.find((x) => x.name === key);
-  openModal(item, page);
-});
-
-// Modal close
-modalClose.addEventListener("click", closeModal);
-modalBackdrop.addEventListener("click", (e) => {
-  if (e.target === modalBackdrop) closeModal();
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
-});
-
-// Initial render
-renderChips();
-renderList();
+/* ===================================================
+   7) (Optional) Hook your existing SW registration stays in index.html
+=================================================== */
