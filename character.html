@@ -92,11 +92,70 @@
         <button class="armor-close" id="armorCloseBtnStatic">✕</button>
       </div>
       <div class="armor-body">
-        <div class="armor-canvas">
-          <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
-        </div>
-        <div class="armor-sections">
-          <!-- Duplicate of in-app sections will be wired by script.js -->
+        <div class="armor-stage">
+          <div class="armor-section" data-slot="head" data-grid="head">
+            <div class="armor-slot-title">Head</div>
+            <input class="armor-select" data-slot="head" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="head" /></div>
+            </div>
+          </div>
+          <div class="armor-section" data-slot="torso" data-grid="torso">
+            <div class="armor-slot-title">Torso</div>
+            <input class="armor-select" data-slot="torso" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="torso" /></div>
+            </div>
+          </div>
+          <div class="armor-avatar-wrap">
+            <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
+          </div>
+          <div class="armor-section" data-slot="r_arm" data-grid="r_arm">
+            <div class="armor-slot-title">R. Arm</div>
+            <input class="armor-select" data-slot="r_arm" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_arm" /></div>
+            </div>
+          </div>
+          <div class="armor-section" data-slot="l_arm" data-grid="l_arm">
+            <div class="armor-slot-title">L. Arm</div>
+            <input class="armor-select" data-slot="l_arm" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_arm" /></div>
+            </div>
+          </div>
+          <div class="armor-section" data-slot="r_leg" data-grid="r_leg">
+            <div class="armor-slot-title">R. Leg</div>
+            <input class="armor-select" data-slot="r_leg" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_leg" /></div>
+            </div>
+          </div>
+          <div class="armor-section" data-slot="l_leg" data-grid="l_leg">
+            <div class="armor-slot-title">L. Leg</div>
+            <input class="armor-select" data-slot="l_leg" placeholder="Armor piece" />
+            <div class="armor-stats">
+              <div>Armor Value: <span class="stat av">-</span></div>
+              <div>Reduction: <span class="stat red">-</span></div>
+              <div>Durability: <span class="stat dur">-</span></div>
+              <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_leg" /></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

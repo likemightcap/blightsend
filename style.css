@@ -697,10 +697,20 @@ main {
 .armor-title { font-size:1.25rem; font-weight:900; text-transform:uppercase; }
 .armor-close { background:transparent; border:none; color:var(--text-main); font-size:1.2rem; cursor:pointer; }
 .armor-body { display:flex; gap:0.8rem; padding:0.6rem; }
-.armor-canvas { flex: 0 0 260px; display:flex; align-items:center; justify-content:center; }
+.armor-body { padding:0.6rem; }
+.armor-stage { display: grid; grid-template-columns: 1fr 260px 1fr; grid-template-rows: auto 1fr auto; gap: 0.4rem; align-items: center; }
+.armor-avatar-wrap { grid-column: 2 / 3; grid-row: 1 / 4; display:flex; align-items:center; justify-content:center; }
 .armor-avatar { max-width:220px; width:100%; height:auto; }
-.armor-sections { flex:1; display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; max-height:60vh; overflow:auto; }
-.armor-section { background: rgba(255,255,255,0.03); border-radius:8px; padding:0.45rem; border:1px solid var(--border-soft); }
+.armor-section { background: transparent; border-radius:0; padding:0.25rem; border:0; color:var(--text-main); }
+.armor-section[data-grid="head"] { grid-column: 1 / 2; grid-row: 1 / 2; justify-self: start; }
+.armor-section[data-grid="torso"] { grid-column: 3 / 4; grid-row: 1 / 2; justify-self: end; }
+.armor-section[data-grid="r_arm"] { grid-column: 1 / 2; grid-row: 2 / 3; justify-self: start; }
+.armor-section[data-grid="l_arm"] { grid-column: 3 / 4; grid-row: 2 / 3; justify-self: end; }
+.armor-section[data-grid="r_leg"] { grid-column: 1 / 2; grid-row: 3 / 4; justify-self: start; }
+.armor-section[data-grid="l_leg"] { grid-column: 3 / 4; grid-row: 3 / 4; justify-self: end; }
+.armor-slot-title { font-weight:800; margin-bottom:0.25rem; }
+.armor-select { width: 160px; padding:0.35rem; border-radius:6px; border:1px solid var(--border-soft); background:rgba(255,255,255,0.02); color:var(--text-main); }
+.armor-stats { margin-top:0.25rem; font-size:0.9rem; color:var(--text-muted); }
 .armor-slot-title { font-weight:800; margin-bottom:0.35rem; }
 .armor-select { width:100%; padding:0.45rem; border-radius:6px; border:1px solid var(--border-soft); background:rgba(255,255,255,0.02); color:var(--text-main); }
 .armor-stats { margin-top:0.45rem; font-size:0.9rem; color:var(--text-muted); }
@@ -718,6 +728,11 @@ main {
   .sheet-coin-icon { width: 24px; height: 24px; }
   .sheet-coin-label { display: none; }
   .hp-pair .be-num { width: 60px; }
+  /* Armor stage becomes single-column stack on narrow screens to avoid horizontal scrolling */
+  .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; }
+  .armor-section { justify-self: stretch; }
+  .armor-select { width: 100%; }
 }
 
 /* Compendium back button in header */
