@@ -728,13 +728,13 @@ main {
   .sheet-coin-icon { width: 24px; height: 24px; }
   .sheet-coin-label { display: none; }
   .hp-pair .be-num { width: 60px; }
-  /* Armor stage becomes single-column stack on narrow screens to avoid horizontal scrolling */
-  .armor-stage { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .armor-avatar-wrap { grid-column: 1 / 2; grid-row: 2 / 3; }
-  .armor-section { justify-self: stretch; }
+  /* Armor stage becomes a vertical stack on narrow screens to avoid horizontal scrolling */
+  .armor-stage { display: flex; flex-direction: column; gap: 0.6rem; align-items: stretch; }
+  .armor-section { justify-self: stretch; width: 100%; }
   .armor-select { width: 100%; }
-  /* Move avatar to the end of the sections on mobile */
-  .armor-avatar-wrap { order: 9999; }
+  /* Move avatar to the end of the sections on mobile and center it */
+  .armor-avatar-wrap { order: 9999; display:flex; justify-content:center; margin-top:0.6rem; }
+  .armor-avatar { max-width: 66%; width: auto; height: auto; display:block; }
 }
 
 /* Compendium back button in header */
