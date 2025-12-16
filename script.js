@@ -1346,7 +1346,7 @@ function ensureScreens() {
             </div>
 
             <div class="armor-avatar-wrap">
-              <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
+              <img src="/blightsend/assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
             </div>
 
             <div class="armor-section" data-slot="r_arm" data-grid="r_arm">
