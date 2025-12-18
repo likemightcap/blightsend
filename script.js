@@ -914,8 +914,8 @@ function injectSheetStylesOnce() {
       display:flex;
       flex-direction:column;
       border-left: 1px solid rgba(255,255,255,0.10);
-      width: 44px;
-      flex: 0 0 44px;
+      width: 28px;
+      flex: 0 0 28px;
     }
     .stepper button{
       flex: 1;
@@ -923,7 +923,7 @@ function injectSheetStylesOnce() {
       background: rgba(255,255,255,0.06);
       color: var(--text-main);
       cursor:pointer;
-      font-size: 0.95rem;
+      font-size: 0.72rem;
       line-height: 1;
     }
     .stepper button:active{ background: rgba(192,255,122,0.14); }
@@ -2159,14 +2159,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const sheetRow = sheetCard.querySelector('.sheet-row');
       if (!sheetGridTop || !sheetRow) return;
 
-      // elements to move: stamina and ephem (their container divs)
-      const staminaInput = document.getElementById('cs_stamina');
-      const ephemInput = document.getElementById('cs_ephem');
-      if (!staminaInput || !ephemInput) return;
+      // helper to find the outer field container by label text (returns the parent div that contains the .field-label)
+      const findContainerByLabel = (root, label) => {
+        const labels = root.querySelectorAll('.field-label');
+        for (let l of labels) {
+          if ((l.textContent || '').trim().toLowerCase() === label.toLowerCase()) return l.parentElement;
+        }
+        return null;
+      };
 
-      const staminaDiv = staminaInput.closest('div');
-      const ephemDiv = ephemInput.closest('div');
-      const hpDiv = sheetGridTop.children[1]; // HP right column
+      const staminaDiv = findContainerByLabel(sheetCard, 'Stamina');
+      const ephemDiv = findContainerByLabel(sheetCard, 'Ephem');
+      const hpDiv = findContainerByLabel(sheetCard, 'HP') || sheetGridTop.children[1];
+      const walkDiv = findContainerByLabel(sheetCard, 'Walk');
+      const runDiv = findContainerByLabel(sheetCard, 'Run');
+      if (!staminaDiv || !ephemDiv || !hpDiv) return;
 
       if (mq.matches) {
         // mobile: insert a mobile-hp-row after sheetGridTop and move hp/stamina/ephem into it
@@ -2186,14 +2193,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mobileRow) {
           // move hpDiv back as second child of sheetGridTop
           sheetGridTop.appendChild(hpDiv);
-          // move staminaDiv and ephemDiv back into sheetRow as first and second children
-          // ensure sheetRow has the correct structure: (stamina, ephem, walk, run)
-          const walkDiv = sheetRow.children[2];
-          const runDiv = sheetRow.children[3];
-          // clear sheetRow
+          // clear sheetRow and restore: stamina, ephem, walk, run
           while (sheetRow.firstChild) sheetRow.removeChild(sheetRow.firstChild);
-          sheetRow.appendChild(staminaDiv);
-          sheetRow.appendChild(ephemDiv);
+          if (staminaDiv) sheetRow.appendChild(staminaDiv);
+          if (ephemDiv) sheetRow.appendChild(ephemDiv);
           if (walkDiv) sheetRow.appendChild(walkDiv);
           if (runDiv) sheetRow.appendChild(runDiv);
           mobileRow.remove();
