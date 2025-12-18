@@ -641,174 +641,71 @@ const advancedSkillsData = [
   }
 ];
 
+// Armor data imported from CSV attachment (ARMOR - Armor.csv)
 const armorData = [
-  {
-    name: "Padded",
-    armorValue: 6,
-    reduction: 2,
-    durability: 5,
-    resistance: "None",
-    armorClass: "Light",
-    location: "Torso, Arms, Legs (generic set)",
-    cost: null,
-    weight: null
-  },
-  {
-    name: "Leather",
-    armorValue: 7,
-    reduction: 3,
-    durability: 6,
-    resistance: "Slashing",
-    armorClass: "Light",
-    location: "Torso, Arms, Legs",
-    cost: null,
-    weight: null
-  },
-  {
-    name: "Brigandine",
-    armorValue: 8,
-    reduction: 3,
-    durability: 6,
-    resistance: "Slashing, Blunt",
-    armorClass: "Medium",
-    location: "Torso, Arms, Legs",
-    cost: null,
-    weight: null
-  },
-  {
-    name: "Chain Mail",
-    armorValue: 9,
-    reduction: 4,
-    durability: 7,
-    resistance: "Slashing, Blunt",
-    armorClass: "Medium",
-    location: "Torso, Arms, Legs",
-    cost: null,
-    weight: null
-  },
-  {
-    name: "Scale",
-    armorValue: 10,
-    reduction: 5,
-    durability: 8,
-    resistance: "Slashing, Piercing",
-    armorClass: "Heavy",
-    location: "Torso, Arms, Legs",
-    cost: null,
-    weight: null
-  },
-  {
-    name: "Plate",
-    armorValue: 11,
-    reduction: 5,
-    durability: 8,
-    resistance: "Slashing, Piercing",
-    armorClass: "Heavy",
-    location: "Torso, Arms, Legs",
-    cost: null,
-    weight: null
-  },
+  { name: "Padded Coif", armorValue: 2, reduction: 1, durability: 2, resistance: "None", location: "Head", layer: "Base", weight: 1, cost: null },
+  { name: "Gambeson Hood", armorValue: 3, reduction: 1, durability: 2, resistance: "Blunt, Slashing", location: "Head", layer: "Base", weight: 2, cost: null },
+  { name: "Arming Cap", armorValue: 3, reduction: 1, durability: 3, resistance: "Blunt", location: "Head", layer: "Base", weight: 2, cost: null },
+  { name: "Leather Skull Cap", armorValue: 3, reduction: 1, durability: 3, resistance: "Slashing", location: "Head", layer: "Base", weight: 3, cost: null },
 
-  // Modular soft layers
-  {
-    name: "Padded Jacket",
-    armorValue: 3,
-    reduction: 1,
-    durability: 3,
-    resistance: "—",
-    armorClass: "Soft layer",
-    location: "Torso, Arms",
-    layer: "Base",
-    cost: 3,
-    weight: null
-  },
-  {
-    name: "Gambeson",
-    armorValue: 4,
-    reduction: 2,
-    durability: 4,
-    resistance: "Blunt",
-    armorClass: "Soft layer",
-    location: "Torso, Arms",
-    layer: "Base",
-    cost: 4,
-    weight: null
-  },
-  {
-    name: "Arming Coat",
-    armorValue: 5,
-    reduction: 2,
-    durability: 4,
-    resistance: "Blunt",
-    armorClass: "Soft layer",
-    location: "Torso, Arms",
-    layer: "Base",
-    cost: 5,
-    weight: null
-  },
-  {
-    name: "Padded Coif",
-    armorValue: null,
-    reduction: null,
-    durability: null,
-    resistance: null,
-    armorClass: "Soft layer",
-    location: "Head",
-    layer: "Base",
-    cost: null,
-    weight: null,
-    notes: "Stats TBD in design doc."
-  },
-  {
-    name: "Gambeson Hood",
-    armorValue: null,
-    reduction: null,
-    durability: null,
-    resistance: null,
-    armorClass: "Soft layer",
-    location: "Head",
-    layer: "Base",
-    cost: null,
-    weight: null,
-    notes: "Stats TBD."
-  },
-  {
-    name: "Arming Cap",
-    armorValue: null,
-    reduction: null,
-    durability: null,
-    resistance: null,
-    armorClass: "Soft layer",
-    location: "Head",
-    layer: "Base",
-    cost: null,
-    weight: null,
-    notes: "Stats TBD."
-  },
-  {
-    name: "Chainmail Vest",
-    armorValue: null,
-    reduction: null,
-    durability: null,
-    resistance: "—",
-    armorClass: "Flexible mid layer",
-    location: "Torso",
-    layer: "Mid",
-    cost: 10,
-    weight: null
-  },
-  {
-    name: "Chainmail Shirt",
-    armorValue: null,
-    reduction: null,
-    durability: null,
-    resistance: "—",
-    armorClass: "Flexible mid layer",
-    location: "Torso, Arms",
-    layer: "Mid",
-    cost: 15,
-    weight: null
-  }
+  { name: "Padded Waistcoat", armorValue: 2, reduction: 1, durability: 2, resistance: "None", location: "Torso", layer: "Base", weight: 2, cost: null },
+  { name: "Gambeson Vest", armorValue: 3, reduction: 1, durability: 2, resistance: "Blunt, Slashing", location: "Torso", layer: "Base", weight: 4, cost: null },
+  { name: "Arming Gilet", armorValue: 3, reduction: 1, durability: 3, resistance: "Blunt", location: "Torso", layer: "Base", weight: 3, cost: null },
+  { name: "Leather Jerkin", armorValue: 3, reduction: 1, durability: 3, resistance: "Slashing", location: "Torso", layer: "Base", weight: 5, cost: null },
+
+  { name: "Padded Jacket", armorValue: 2, reduction: 1, durability: 2, resistance: "None", location: "Torso, Arms", layer: "Base", weight: 3, cost: null },
+  { name: "Gambeson", armorValue: 3, reduction: 1, durability: 2, resistance: "Blunt, Slashing", location: "Torso, Arms", layer: "Base", weight: 5, cost: null },
+  { name: "Arming Coat", armorValue: 3, reduction: 1, durability: 3, resistance: "Blunt", location: "Torso, Arms", layer: "Base", weight: 4, cost: null },
+  { name: "Leather Doublet", armorValue: 3, reduction: 1, durability: 3, resistance: "Slashing", location: "Torso, Arms", layer: "Base", weight: 6, cost: null },
+
+  { name: "Padded Sleeves", armorValue: 2, reduction: 1, durability: 2, resistance: "None", location: "Arms", layer: "Base", weight: 1, cost: null },
+  { name: "Gambeson Sleeves", armorValue: 3, reduction: 1, durability: 2, resistance: "Blunt, Slashing", location: "Arms", layer: "Base", weight: 2, cost: null },
+  { name: "Arming Sleeves", armorValue: 3, reduction: 1, durability: 3, resistance: "Blunt", location: "Arms", layer: "Base", weight: 2, cost: null },
+
+  { name: "Padded Chausses", armorValue: 2, reduction: 1, durability: 2, resistance: "None", location: "Legs", layer: "Base", weight: 2, cost: null },
+  { name: "Gambeson Trousers", armorValue: 3, reduction: 1, durability: 2, resistance: "Blunt, Slashing", location: "Legs", layer: "Base", weight: 4, cost: null },
+  { name: "Arming Pants", armorValue: 3, reduction: 1, durability: 3, resistance: "Blunt", location: "Legs", layer: "Base", weight: 3, cost: null },
+
+  { name: "Chainmail Coif", armorValue: 4, reduction: 2, durability: 4, resistance: "Slashing", location: "Head", layer: "Mid", weight: 5, cost: null },
+  { name: "Chainmail Vest", armorValue: 4, reduction: 2, durability: 4, resistance: "Slashing", location: "Torso", layer: "Mid", weight: 8, cost: null },
+  { name: "Chainmail Hauberk", armorValue: 4, reduction: 2, durability: 4, resistance: "Slashing", location: "Torso, Arms", layer: "Mid", weight: 12, cost: null },
+  { name: "Chainmail Voiders", armorValue: 4, reduction: 2, durability: 4, resistance: "Slashing", location: "Arms", layer: "Mid", weight: 5, cost: null },
+  { name: "Chainmail Chausses", armorValue: 4, reduction: 2, durability: 4, resistance: "Slashing", location: "Legs", layer: "Mid", weight: 6, cost: null },
+
+  { name: "Leather Helm", armorValue: 4, reduction: 2, durability: 3, resistance: "Slashing", location: "Head", layer: "Flexible Outer", weight: 4, cost: null },
+  { name: "Segmented Helmet", armorValue: 5, reduction: 3, durability: 4, resistance: "Blunt, Slashing", location: "Head", layer: "Flexible Outer", weight: 4, cost: null },
+  { name: "Lamellar Helm", armorValue: 5, reduction: 3, durability: 4, resistance: "Blunt, Slashing", location: "Head", layer: "Flexible Outer", weight: 4, cost: null },
+
+  { name: "Leather Cuirass", armorValue: 4, reduction: 2, durability: 3, resistance: "Slashing", location: "Torso", layer: "Flexible Outer", weight: 6, cost: null },
+  { name: "Scale Hauberk", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing", location: "Torso", layer: "Flexible Outer", weight: 7, cost: null },
+  { name: "Lamellar Harness", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing, Piercing", location: "Torso", layer: "Flexible Outer", weight: 8, cost: null },
+  { name: "Brigandine Coat", armorValue: 5, reduction: 3, durability: 4, resistance: "Blunt, Slashing", location: "Torso", layer: "Flexible Outer", weight: 7, cost: null },
+
+  { name: "Leather Vambraces", armorValue: 4, reduction: 2, durability: 3, resistance: "Slashing", location: "Arms", layer: "Flexible Outer", weight: 3, cost: null },
+  { name: "Scale Sleeves", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing", location: "Arms", layer: "Flexible Outer", weight: 4, cost: null },
+  { name: "Segmented Arm Guards", armorValue: 5, reduction: 3, durability: 4, resistance: "Blunt, Slashing", location: "Arms", layer: "Flexible Outer", weight: 4, cost: null },
+  { name: "Lamellar Rerebraces", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing, Piercing", location: "Arms", layer: "Flexible Outer", weight: 5, cost: null },
+
+  { name: "Leather Leg Guards", armorValue: 4, reduction: 2, durability: 3, resistance: "Slashing", location: "Legs", layer: "Flexible Outer", weight: 4, cost: null },
+  { name: "Scale Greaves", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing", location: "Legs", layer: "Flexible Outer", weight: 5, cost: null },
+  { name: "Brigandine Tassets", armorValue: 5, reduction: 3, durability: 4, resistance: "Blunt, Slashing", location: "Legs", layer: "Flexible Outer", weight: 5, cost: null },
+  { name: "Lamellar Cuisses", armorValue: 5, reduction: 3, durability: 4, resistance: "Slashing, Piercing", location: "Legs", layer: "Flexible Outer", weight: 6, cost: null },
+
+  { name: "Nasal Helm", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Head", layer: "Rigid Outer", weight: 4, cost: null },
+  { name: "Plate Helm", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Head", layer: "Rigid Outer", weight: 5, cost: null },
+  { name: "Great Helm", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Head", layer: "Rigid Outer", weight: 6, cost: null },
+
+  { name: "Breatplate", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 10, cost: null },
+  { name: "Field Plate", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 12, cost: null },
+  { name: "Full Plate Harness", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 14, cost: null },
+
+  { name: "Plate Vambraces", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Arms", layer: "Rigid Outer", weight: 6, cost: null },
+  { name: "Full Plate Arms", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Arms", layer: "Rigid Outer", weight: 8, cost: null },
+  { name: "Reinforced Plate", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Arms", layer: "Rigid Outer", weight: 9, cost: null },
+
+  { name: "Plate Greaves", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Legs", layer: "Rigid Outer", weight: 7, cost: null },
+  { name: "Full Plate Legs", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Legs", layer: "Rigid Outer", weight: 9, cost: null },
+  { name: "Reinforced", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Legs", layer: "Rigid Outer", weight: 10, cost: null }
 ];
 
 const conditionsData = [
@@ -1116,6 +1013,18 @@ function injectSheetStylesOnce() {
       text-align:center;
     }
     #beToast.show{ display:block; }
+    /* Compendium quick-list meta for armor */
+    .item-meta .meta-top{ font-weight:600; margin-bottom:4px; }
+    .item-meta .meta-bottom{ font-size:0.92rem; opacity:0.92; }
+
+    /* Armor modal detail grid */
+    .armor-detail-grid{ display:flex; gap:1rem; align-items:flex-start; margin-top:0.5rem; }
+    .armor-detail-left, .armor-detail-right{ flex:1; }
+    .armor-stat-row{ display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+    .armor-stat-row .stat-label{ opacity:0.88; }
+    .armor-stat-row .stat-value{ font-weight:700; }
+    .armor-meta-row{ padding:0.35rem 0; }
+    .modal-section-title{ margin-top:0.75rem; font-weight:700; }
   `;
   document.head.appendChild(style);
 }
@@ -1791,7 +1700,7 @@ const pagesConfig = {
     label: "Armor",
     data: () => armorData,
     filterLabel: "Class",
-    chipOptions: ["All", "Light", "Medium", "Heavy", "Soft layer", "Flexible mid layer"]
+    chipOptions: ["All", "Base", "Mid", "Flexible Outer", "Rigid Outer"]
   },
   conditions: {
     label: "Conditions",
@@ -1808,7 +1717,9 @@ function passesFilter(item) {
     case "weapons":
       return normalize(item.category) === normalize(currentFilter);
     case "armor":
-      return normalize(item.armorClass) === normalize(currentFilter);
+      // Prefer explicit `layer` field; fall back to `armorClass` for legacy entries.
+      const layerVal = item.layer || item.armorClass || "";
+      return normalize(layerVal) === normalize(currentFilter);
     default:
       return true;
   }
@@ -1885,9 +1796,13 @@ function renderList() {
     const title = document.createElement("div");
     title.className = "item-title";
 
+    // For armor we want the location shown next to the title (e.g. "Padded Coif - Head")
     let displayName = item.name || "";
     if (currentPage === "weapons" && item.type) {
       displayName = `${item.name} - ${item.type}`;
+    }
+    if (currentPage === "armor") {
+      displayName = item.name + (item.location ? ` - ${item.location}` : "");
     }
     title.textContent = displayName;
 
@@ -1914,13 +1829,16 @@ function renderList() {
     } else if (currentPage === "skills") {
       meta.textContent = "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
     } else if (currentPage === "armor") {
-      const parts = [];
-      if (item.location) parts.push(item.location);
-      if (item.armorValue != null) parts.push(`AV ${item.armorValue}`);
-      if (item.reduction != null) parts.push(`Red ${item.reduction}`);
-      if (item.durability != null) parts.push(`Dur ${item.durability}`);
-      if (item.resistance) parts.push(`Res ${item.resistance}`);
-      meta.textContent = parts.join(" · ");
+      // Quick-list layout per request:
+      // Title: "Name - Location"
+      // Under title (meta): first line shows AV · AR · DUR
+      // second line shows RES and Weight
+      const av = item.armorValue != null ? `AV ${item.armorValue}` : "AV -";
+      const ar = item.reduction != null ? `AR ${item.reduction}` : "AR -";
+      const dur = item.durability != null ? `Dur ${item.durability}` : "Dur -";
+      const res = item.resistance ? `Res ${item.resistance}` : "Res -";
+      const wt = item.weight != null ? `Wt ${item.weight}` : "Wt -";
+      meta.innerHTML = `<div class="meta-top">${av} · ${ar} · ${dur}</div><div class="meta-bottom">${res} · ${wt}</div>`;
     } else if (currentPage === "conditions") {
       meta.textContent = "Condition";
     }
@@ -1939,7 +1857,7 @@ function renderList() {
     if (currentPage === "echoes") pill.textContent = "Echo";
     else if (currentPage === "weapons") pill.textContent = item.category || "Weapon";
     else if (currentPage === "skills") pill.textContent = "Skill";
-    else if (currentPage === "armor") pill.textContent = item.armorClass || "Armor";
+    else if (currentPage === "armor") pill.textContent = item.layer || item.armorClass || "Armor";
     else pill.textContent = "Condition";
 
     card.appendChild(main);
@@ -2003,11 +1921,12 @@ function openModal(item, page) {
     if (item.cost) modalPills.appendChild(makePill("Cost: " + item.cost));
     if (item.requirement) modalPills.appendChild(makePill("Req: " + item.requirement));
   } else if (page === "armor") {
-    if (item.armorValue != null) modalPills.appendChild(makePill("Armor Value: " + item.armorValue));
-    if (item.reduction != null) modalPills.appendChild(makePill("Reduction: " + item.reduction));
-    if (item.resistance) modalPills.appendChild(makePill("Resist: " + item.resistance));
-    if (item.location) modalPills.appendChild(makePill("Location: " + item.location));
-    if (item.layer) modalPills.appendChild(makePill("Layer: " + item.layer));
+    // Show compact pills for key stats
+    if (item.armorValue != null) modalPills.appendChild(makePill("AV: " + item.armorValue));
+    if (item.reduction != null) modalPills.appendChild(makePill("AR: " + item.reduction));
+    if (item.durability != null) modalPills.appendChild(makePill("Dur: " + item.durability));
+    if (item.layer) modalPills.appendChild(makePill(item.layer));
+    if (item.weight != null) modalPills.appendChild(makePill("Wt: " + item.weight));
   }
 
   const bodyParts = [];
@@ -2039,16 +1958,35 @@ function openModal(item, page) {
   }
 
   if (page === "armor") {
-    const lines = [];
-    if (item.durability != null) lines.push(`Durability: ${item.durability}`);
-    if (item.cost != null) lines.push(`Cost: ${item.cost}`);
-    if (item.weight != null) lines.push(`Weight: ${item.weight}`);
-    if (item.notes) lines.push(item.notes);
-    if (lines.length) {
-      bodyParts.push(`<div class="modal-section-title">Details</div><ul>`);
-      lines.forEach((l) => bodyParts.push(`<li>${l}</li>`));
-      bodyParts.push(`</ul>`);
-    }
+    // Build a more stylized detail view for armor
+    const av = item.armorValue != null ? item.armorValue : "-";
+    const ar = item.reduction != null ? item.reduction : "-";
+    const dur = item.durability != null ? item.durability : "-";
+    const res = item.resistance || "-";
+    const loc = item.location || "-";
+    const layer = item.layer || item.armorClass || "-";
+    const wt = item.weight != null ? item.weight : "-";
+    const cost = item.cost != null ? item.cost : "-";
+
+    const detailsHTML = `
+      <div class="armor-detail-grid">
+        <div class="armor-detail-left">
+          <div class="armor-stat-row"><span class="stat-label">Armor Value</span><span class="stat-value">${av}</span></div>
+          <div class="armor-stat-row"><span class="stat-label">Reduction</span><span class="stat-value">${ar}</span></div>
+          <div class="armor-stat-row"><span class="stat-label">Durability</span><span class="stat-value">${dur}</span></div>
+          <div class="armor-stat-row"><span class="stat-label">Layer</span><span class="stat-value">${layer}</span></div>
+        </div>
+        <div class="armor-detail-right">
+          <div class="armor-meta-row"><strong>Location</strong><div>${loc}</div></div>
+          <div class="armor-meta-row"><strong>Resistance</strong><div>${res}</div></div>
+          <div class="armor-meta-row"><strong>Weight</strong><div>${wt}</div></div>
+          <div class="armor-meta-row"><strong>Cost</strong><div>${cost}</div></div>
+        </div>
+      </div>
+    `;
+
+    bodyParts.push(detailsHTML);
+    if (item.notes) bodyParts.push(`<div class="modal-section-title">Notes</div><p>${item.notes}</p>`);
   }
 
   modalBody.innerHTML = bodyParts.join("");
