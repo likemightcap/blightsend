@@ -1,10 +1,17 @@
+
 export async function loadAllData() {
+  function getSiteRoot() {
+    const path = window.location.pathname;
+    const match = path.match(/^\/(.+?)\//);
+    return match ? `/${match[1]}/` : '/';
+  }
+  const siteRoot = getSiteRoot();
   const fetches = await Promise.all([
-    fetch('./data/echoes.json'),
-    fetch('./data/weapons.json'),
-    fetch('./data/skills.json'),
-    fetch('./data/armor.json'),
-    fetch('./data/conditions.json')
+    fetch(siteRoot + 'data/echoes.json'),
+    fetch(siteRoot + 'data/weapons.json'),
+    fetch(siteRoot + 'data/skills.json'),
+    fetch(siteRoot + 'data/armor.json'),
+    fetch(siteRoot + 'data/conditions.json')
   ]);
 
   const safeJson = async (res) => {

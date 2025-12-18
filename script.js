@@ -35,13 +35,19 @@ function ensureDataLoaded() {
         _dataLoaded = true;
         return;
       }
-      // Always use relative fetches for GH Pages compatibility
+      // Dynamically compute the site root for GH Pages compatibility
+      function getSiteRoot() {
+        const path = window.location.pathname;
+        const match = path.match(/^\/(.+?)\//);
+        return match ? `/${match[1]}/` : '/';
+      }
+      const siteRoot = getSiteRoot();
       const [echoesR, weaponsR, skillsR, armorR, conditionsR] = await Promise.all([
-        fetch('./data/echoes.json'),
-        fetch('./data/weapons.json'),
-        fetch('./data/skills.json'),
-        fetch('./data/armor.json'),
-        fetch('./data/conditions.json')
+        fetch(siteRoot + 'data/echoes.json'),
+        fetch(siteRoot + 'data/weapons.json'),
+        fetch(siteRoot + 'data/skills.json'),
+        fetch(siteRoot + 'data/armor.json'),
+        fetch(siteRoot + 'data/conditions.json')
       ]);
 
       // parse responses if ok, otherwise default to empty array
