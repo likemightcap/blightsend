@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Stat Upgrade",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Raise any one stat (Fight, Volley, Guts, Grit, or Focus) by +1, up to a maximum of 3."
+  },
+  {
+    "name": "Fleet Step",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Increase Walk and Run speeds (per your latest movement table; originally 4\"→5\" and 6\"→7\" in an older draft)."
+  },
+  {
+    "name": "Iron Reserves",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Raise your Stamina pool by +1."
+  }
+]

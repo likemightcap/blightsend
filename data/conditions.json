@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Bleed",
+    "description": "Ongoing damage from Slashing weapons or certain skills. Typically causes damage during Upkeep until removed; exact damage and duration per effect (e.g., Bleed 1, extra Bleed from Reaving Cut)."
+  },
+  {
+    "name": "Burning",
+    "description": "Applied by Fire Spray and similar effects. Burning models take damage during the next Upkeep (often 1–2 damage depending on Echo tier) then the effect expires unless otherwise stated."
+  },
+  {
+    "name": "Corrosive",
+    "description": "Applied by Acid Bath. While affected, a model’s Armor Class and Damage are permanently reduced (usually by 1 or 2 depending on tier) over 2 rounds."
+  },
+  {
+    "name": "Stunned",
+    "description": "Applied by Arc Bolt and other effects. A Stunned model loses actions for one round or suffers attack/defense penalties (use your current rules text)."
+  },
+  {
+    "name": "Stationary",
+    "description": "From Frost Bite and Chill Lock. Stationary models cannot move during their turn; some effects also halve movement on the following turn."
+  },
+  {
+    "name": "Prone",
+    "description": "From Earthshatter, Shield Bash, Revive, etc. Prone models are on the ground; attacks against them or their movement are usually affected per your core rules."
+  },
+  {
+    "name": "Broken Armor",
+    "description": "When a location’s armor Durability reaches 0, its Armor Value is reduced by 3, Damage Reduction by 2, and it loses all Resistances until repaired."
+  }
+]
