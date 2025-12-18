@@ -1700,7 +1700,8 @@ const pagesConfig = {
     label: "Armor",
     data: () => armorData,
     filterLabel: "Layer",
-    chipOptions: ["All", "Base", "Mid", "Flexible Outer", "Rigid Outer"]
+    // Layer chips plus slot-based chips (Head/Torso/Arms/Legs)
+    chipOptions: ["All", "Base", "Mid", "Flexible Outer", "Rigid Outer", "Head", "Torso", "Arms", "Legs"]
   },
   conditions: {
     label: "Conditions",
@@ -1717,9 +1718,17 @@ function passesFilter(item) {
     case "weapons":
       return normalize(item.category) === normalize(currentFilter);
     case "armor":
-      // Prefer explicit `layer` field; fall back to `armorClass` for legacy entries.
-      const layerVal = item.layer || item.armorClass || "";
-      return normalize(layerVal) === normalize(currentFilter);
+        // Prefer explicit `layer` field; fall back to `armorClass` for legacy entries.
+        const layerVal = item.layer || item.armorClass || "";
+        const filterNorm = normalize(currentFilter);
+        // If the filter is one of the known layer names, compare against layer
+        const knownLayers = ["base", "mid", "flexible outer", "rigid outer"];
+        if (knownLayers.includes(filterNorm)) {
+          return normalize(layerVal) === filterNorm;
+        }
+        // Otherwise treat filter as a slot (Head/Torso/Arms/Legs) and match against location string
+        const loc = (item.location || "").toString().toLowerCase();
+        return loc.includes(filterNorm);
     default:
       return true;
   }
