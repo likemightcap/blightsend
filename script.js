@@ -695,7 +695,7 @@ const armorData = [
   { name: "Plate Helm", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Head", layer: "Rigid Outer", weight: 5, cost: null },
   { name: "Great Helm", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Head", layer: "Rigid Outer", weight: 6, cost: null },
 
-  { name: "Breatplate", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 10, cost: null },
+  { name: "Breastplate", armorValue: 6, reduction: 4, durability: 5, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 10, cost: null },
   { name: "Field Plate", armorValue: 6, reduction: 5, durability: 5, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 12, cost: null },
   { name: "Full Plate Harness", armorValue: 7, reduction: 5, durability: 6, resistance: "Slashing, Piercing", location: "Torso", layer: "Rigid Outer", weight: 14, cost: null },
 
@@ -1699,7 +1699,7 @@ const pagesConfig = {
   armor: {
     label: "Armor",
     data: () => armorData,
-    filterLabel: "Class",
+    filterLabel: "Layer",
     chipOptions: ["All", "Base", "Mid", "Flexible Outer", "Rigid Outer"]
   },
   conditions: {
