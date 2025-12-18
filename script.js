@@ -1013,6 +1013,24 @@ function injectSheetStylesOnce() {
       text-align:center;
     }
     #beToast.show{ display:block; }
+    /* Sheet armor styles */
+    .sheet-armor{ display:flex; gap:0.75rem; margin:0.75rem 0; align-items:flex-start; }
+    .armor-left{ flex:0 0 220px; display:flex; align-items:center; justify-content:center; }
+    .armor-left img{ width:200px; height:auto; border-radius:8px; }
+    .armor-right{ flex:1; }
+    .armor-list{ display:flex; flex-direction:column; gap:0.5rem; }
+    .armor-row{ display:flex; gap:0.75rem; align-items:center; }
+    .armor-slot-btn{ padding:0.5rem 0.75rem; border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:var(--text-main); cursor:pointer; }
+    .armor-mini{ font-size:0.95rem; opacity:0.95; }
+
+    .sheet-armor-overlay{ position:fixed; z-index:1400; background:rgba(10,10,12,0.95); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:8px; overflow:auto; }
+    .sheet-armor-overlay .sheet-armor-overlay-title{ font-weight:700; margin-bottom:0.5rem; }
+    .sheet-armor-layer{ display:flex; flex-direction:column; gap:0.25rem; margin-bottom:0.6rem; }
+    .sheet-armor-layer-label{ font-weight:600; }
+    .sheet-armor-select{ padding:0.45rem; border-radius:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.04); color:var(--text-main); }
+    .sheet-armor-layer-stats{ font-size:0.92rem; opacity:0.95; }
+    .sheet-armor-overlay-actions{ display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem; }
+    .sheet-armor-overlay-actions button{ padding:0.45rem 0.65rem; border-radius:8px; cursor:pointer; }
     /* Compendium quick-list meta for armor */
     .item-meta .meta-top{ font-weight:600; margin-bottom:4px; }
     .item-meta .meta-bottom{ font-size:0.92rem; opacity:0.92; }
@@ -1153,9 +1171,25 @@ function ensureScreens() {
           </div>
         </div>
 
+        <!-- Embedded Armor section (two columns) -->
+        <div class="sheet-armor">
+          <div class="armor-left">
+            <img id="sheetArmorAvatar" src="assets/armor-avatar.png" alt="Armor Avatar" />
+          </div>
+          <div class="armor-right" id="armorRightColumn">
+            <div class="armor-list">
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="head">HEAD</button><div class="armor-mini" data-slot="head">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="torso">TORSO</button><div class="armor-mini" data-slot="torso">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="l_arm">LEFT ARM</button><div class="armor-mini" data-slot="l_arm">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="r_arm">RIGHT ARM</button><div class="armor-mini" data-slot="r_arm">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="l_leg">LEFT LEG</button><div class="armor-mini" data-slot="l_leg">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+              <div class="armor-row"><button class="armor-slot-btn" data-slot="r_leg">RIGHT LEG</button><div class="armor-mini" data-slot="r_leg">AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span></div></div>
+            </div>
+          </div>
+        </div>
+
         <div class="sheet-buttons">
           <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
-          <button class="sheet-action" type="button" id="cs_btn_armor">Armor</button>
           <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
           <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
         </div>
@@ -1218,194 +1252,179 @@ function ensureScreens() {
   bindAllSteppers();
   loadActiveCharacterIfAny();
 
-  // Armor overlay: create/inject markup (if not present)
-  if (!$("#armorOverlay")) {
-    const armorOverlay = document.createElement('div');
-    armorOverlay.id = 'armorOverlay';
-    armorOverlay.className = 'armor-backdrop';
-    armorOverlay.setAttribute('aria-hidden','true');
-    armorOverlay.innerHTML = `
-      <div class="armor-modal">
-        <div class="armor-modal-header">
-          <div class="armor-title">Armor</div>
-          <button class="armor-close" id="armorCloseBtn">✕</button>
-        </div>
-        <div class="armor-body">
-          <div class="armor-stage">
-            <div class="armor-section" data-slot="head" data-grid="head">
-              <div class="armor-slot-title">Head</div>
-              <input class="armor-select" data-slot="head" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="head" /></div>
-              </div>
-            </div>
+  // Sheet armor overlay + editor (single overlay used to edit a slot's layers)
+  if (!$("#sheetArmorOverlay")) {
+    const overlay = document.createElement('div');
+    overlay.id = 'sheetArmorOverlay';
+    overlay.className = 'sheet-armor-overlay';
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+    document.body.appendChild(overlay);
 
-            <div class="armor-section" data-slot="torso" data-grid="torso">
-              <div class="armor-slot-title">Torso</div>
-              <input class="armor-select" data-slot="torso" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="torso" /></div>
-              </div>
-            </div>
+    // In-memory selections: for each slot store base/mid/outer selection names
+    const slots = ['head','torso','l_arm','r_arm','l_leg','r_leg'];
+    const sheetArmorSelections = {};
+    slots.forEach(s => sheetArmorSelections[s] = { base: null, mid: null, outer: null });
 
-            <div class="armor-avatar-wrap">
-              <img src="/blightsend/assets/armor-avatar.png" alt="Avatar" class="armor-avatar">
-            </div>
+    // Helper: map slot id to avatar suffix used in filenames
+    const slotImageMap = {
+      head: 'HEAD',
+      torso: 'TORSO',
+      l_arm: 'LEFT-ARM',
+      r_arm: 'RIGHT-ARM',
+      l_leg: 'LEFT-LEG',
+      r_leg: 'RIGHT-LEG'
+    };
 
-            <div class="armor-section" data-slot="r_arm" data-grid="r_arm">
-              <div class="armor-slot-title">R. Arm</div>
-              <input class="armor-select" data-slot="r_arm" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_arm" /></div>
-              </div>
-            </div>
+    let editingSlot = null;
 
-            <div class="armor-section" data-slot="l_arm" data-grid="l_arm">
-              <div class="armor-slot-title">L. Arm</div>
-              <input class="armor-select" data-slot="l_arm" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_arm" /></div>
-              </div>
-            </div>
-
-            <div class="armor-section" data-slot="r_leg" data-grid="r_leg">
-              <div class="armor-slot-title">R. Leg</div>
-              <input class="armor-select" data-slot="r_leg" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="r_leg" /></div>
-              </div>
-            </div>
-
-            <div class="armor-section" data-slot="l_leg" data-grid="l_leg">
-              <div class="armor-slot-title">L. Leg</div>
-              <input class="armor-select" data-slot="l_leg" placeholder="Armor piece" />
-              <div class="armor-stats">
-                <div>Armor Value: <span class="stat av">-</span></div>
-                <div>Reduction: <span class="stat red">-</span></div>
-                <div>Durability: <span class="stat dur">-</span></div>
-                <div>Injury: <input type="checkbox" class="armor-injury" data-slot="l_leg" /></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(armorOverlay);
-
-    // Bind open/close
-    const armorBtn = $("#cs_btn_armor");
-    const armorClose = $("#armorCloseBtn");
-    if (armorBtn && !armorBtn.dataset.bound) {
-      armorBtn.dataset.bound = '1';
-      armorBtn.disabled = false; // enable the button
-      armorBtn.addEventListener('click', () => {
-        armorOverlay.classList.add('show');
-        armorOverlay.setAttribute('aria-hidden','false');
-      });
-    }
-    if (armorClose) {
-      armorClose.addEventListener('click', () => {
-        armorOverlay.classList.remove('show');
-        armorOverlay.setAttribute('aria-hidden','true');
-      });
-    }
-    // Simple autocomplete/suggestion behavior for armor selects
-    const suggestionBox = document.createElement('div');
-    suggestionBox.className = 'armor-suggestions';
-    suggestionBox.style.position = 'absolute';
-    suggestionBox.style.zIndex = 1300;
-    suggestionBox.style.background = 'rgba(10,10,10,0.98)';
-    suggestionBox.style.border = '1px solid rgba(255,255,255,0.06)';
-    suggestionBox.style.display = 'none';
-    suggestionBox.style.maxHeight = '200px';
-    suggestionBox.style.overflow = 'auto';
-    suggestionBox.style.width = '240px';
-    document.body.appendChild(suggestionBox);
-
-    const slotMap = { head: ['head'], torso: ['torso'], r_arm: ['arms','arm'], l_arm: ['arms','arm'], r_leg: ['legs','leg'], l_leg: ['legs','leg'] };
-
-    function findMatchesForSlot(slot, q) {
-      const keywords = slotMap[slot] || [slot];
-      const term = (q || '').toLowerCase();
-      return armorData.filter(a => {
-        const loc = (a.location || '').toLowerCase();
-        const ok = keywords.some(k => loc.includes(k));
-        if (!ok) return false;
-        if (!term) return true;
-        return a.name.toLowerCase().includes(term);
-      });
+    function getArmorByName(name) {
+      return armorData.find(a => a.name === name) || null;
     }
 
-    function showSuggestions(inputEl, slot) {
-      const rect = inputEl.getBoundingClientRect();
-      suggestionBox.style.left = rect.left + 'px';
-      suggestionBox.style.top = rect.bottom + 'px';
-      suggestionBox.style.width = Math.max(200, rect.width) + 'px';
-      suggestionBox.innerHTML = '';
-      const matches = findMatchesForSlot(slot, inputEl.value).slice(0, 20);
-      if (!matches.length) {
-        suggestionBox.style.display = 'none';
-        return;
-      }
-      matches.forEach(m => {
+    function computeAggregated(slot) {
+      const sel = sheetArmorSelections[slot] || { base: null, mid: null, outer: null };
+      const parts = ['base','mid','outer'].map(layer => getArmorByName(sel[layer])).filter(Boolean);
+      const sum = { armorValue: 0, reduction: 0, durability: 0 };
+      parts.forEach(p => {
+        sum.armorValue += Number(p.armorValue || 0);
+        sum.reduction += Number(p.reduction || 0);
+        sum.durability += Number(p.durability || 0);
+      });
+      return sum;
+    }
+
+    function updateMiniStatsForSlot(slot) {
+      const statWrap = document.querySelector(`.armor-mini[data-slot="${slot}"]`);
+      if (!statWrap) return;
+      const agg = computeAggregated(slot);
+      statWrap.querySelector('.av').textContent = agg.armorValue || '-';
+      statWrap.querySelector('.dr').textContent = agg.reduction || '-';
+      statWrap.querySelector('.dur').textContent = agg.durability || '-';
+    }
+
+    function openArmorEditor(slot, anchorRect) {
+      editingSlot = slot;
+      const rightCol = document.getElementById('armorRightColumn');
+      const avatar = document.getElementById('sheetArmorAvatar');
+      // change avatar image
+      const suf = slotImageMap[slot] || 'HEAD';
+      avatar.dataset.prev = avatar.src;
+      avatar.src = `assets/armor-avatar-${suf}.png`;
+
+      // Build overlay content
+      overlay.innerHTML = '';
+      const title = document.createElement('div');
+      title.className = 'sheet-armor-overlay-title';
+      title.textContent = slot.toUpperCase().replace('_',' ');
+      overlay.appendChild(title);
+
+      const layers = [{key:'base',label:'Base'},{key:'mid',label:'Mid'},{key:'outer',label:'Outer'}];
+      layers.forEach(layer => {
         const row = document.createElement('div');
-        row.className = 'armor-suggestion-row';
-        row.textContent = m.name;
-        row.style.padding = '0.4rem 0.6rem';
-        row.style.cursor = 'pointer';
-        row.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
-        row.addEventListener('click', () => {
-          inputEl.value = m.name;
-          populateArmorStatsForSlot(slot, m);
-          suggestionBox.style.display = 'none';
+        row.className = 'sheet-armor-layer';
+        const lbl = document.createElement('div'); lbl.className='sheet-armor-layer-label'; lbl.textContent = layer.label;
+        const sel = document.createElement('select'); sel.className = 'sheet-armor-select'; sel.dataset.layer = layer.key;
+        // populate options
+        const optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = 'None'; sel.appendChild(optNone);
+        armorData.forEach(a => {
+          // filter by layer
+          const aLayer = (a.layer || '').toLowerCase();
+          const slotName = slot === 'head' ? 'head' : (slot === 'torso' ? 'torso' : (slot.includes('arm') ? 'arms' : 'legs'));
+          const locOk = (a.location || '').toLowerCase().includes(slotName);
+          if (!locOk) return;
+          if (layer.key === 'base' && aLayer === 'base') {
+            const o = document.createElement('option'); o.value = a.name; o.textContent = a.name; sel.appendChild(o);
+          }
+          if (layer.key === 'mid' && aLayer === 'mid') {
+            const o = document.createElement('option'); o.value = a.name; o.textContent = a.name; sel.appendChild(o);
+          }
+          if (layer.key === 'outer' && (aLayer === 'flexible outer' || aLayer === 'rigid outer')) {
+            const o = document.createElement('option'); o.value = a.name; o.textContent = a.name; sel.appendChild(o);
+          }
         });
-        suggestionBox.appendChild(row);
+        // set selected from current selections
+        const cur = sheetArmorSelections[slot] && sheetArmorSelections[slot][layer.key];
+        if (cur) sel.value = cur;
+
+        const stats = document.createElement('div'); stats.className = 'sheet-armor-layer-stats'; stats.innerHTML = 'AV: <span class="av">-</span> · DR: <span class="dr">-</span> · DUR: <span class="dur">-</span> · RES: <span class="res">-</span> · Wt: <span class="wt">-</span>';
+
+        sel.addEventListener('change', (e) => {
+          const chosen = e.target.value;
+          const info = getArmorByName(chosen);
+          if (info) {
+            stats.querySelector('.av').textContent = info.armorValue != null ? info.armorValue : '-';
+            stats.querySelector('.dr').textContent = info.reduction != null ? info.reduction : '-';
+            stats.querySelector('.dur').textContent = info.durability != null ? info.durability : '-';
+            stats.querySelector('.res').textContent = info.resistance || '-';
+            stats.querySelector('.wt').textContent = info.weight != null ? info.weight : '-';
+          } else {
+            stats.querySelector('.av').textContent = '-';
+            stats.querySelector('.dr').textContent = '-';
+            stats.querySelector('.dur').textContent = '-';
+            stats.querySelector('.res').textContent = '-';
+            stats.querySelector('.wt').textContent = '-';
+          }
+        });
+
+        row.appendChild(lbl);
+        row.appendChild(sel);
+        row.appendChild(stats);
+        overlay.appendChild(row);
       });
-      suggestionBox.style.display = 'block';
+
+      const btnRow = document.createElement('div'); btnRow.className = 'sheet-armor-overlay-actions';
+      const ok = document.createElement('button'); ok.className = 'sheet-armor-ok'; ok.textContent = 'Okay';
+      ok.addEventListener('click', () => {
+        // store selections
+        const selects = overlay.querySelectorAll('.sheet-armor-select');
+        selects.forEach(s => {
+          const l = s.dataset.layer;
+          sheetArmorSelections[slot][l] = s.value || null;
+        });
+        // update mini stats
+        updateMiniStatsForSlot(slot);
+        closeArmorEditor();
+      });
+      const cancel = document.createElement('button'); cancel.className = 'sheet-armor-cancel'; cancel.textContent = 'Cancel';
+      cancel.addEventListener('click', () => { closeArmorEditor(true); });
+      btnRow.appendChild(ok); btnRow.appendChild(cancel);
+      overlay.appendChild(btnRow);
+
+      // Position overlay over right column
+      const rc = rightCol.getBoundingClientRect();
+      overlay.style.position = 'fixed';
+      overlay.style.left = rc.left + 'px';
+      overlay.style.top = rc.top + 'px';
+      overlay.style.width = rc.width + 'px';
+      overlay.style.height = rc.height + 'px';
+      overlay.style.display = 'block';
+      overlay.setAttribute('aria-hidden','false');
     }
 
-    function populateArmorStatsForSlot(slot, armor) {
-      const section = document.querySelector(`.armor-section[data-slot="${slot}"]`);
-      if (!section) return;
-      const av = section.querySelector('.stat.av');
-      const red = section.querySelector('.stat.red');
-      const dur = section.querySelector('.stat.dur');
-      av.textContent = armor.armorValue != null ? String(armor.armorValue) : '-';
-      red.textContent = armor.reduction != null ? String(armor.reduction) : '-';
-      dur.textContent = armor.durability != null ? String(armor.durability) : '-';
-      // mark the input's dataset
-      const input = section.querySelector('.armor-select');
-      if (input) input.dataset.selected = armor.name;
+    function closeArmorEditor(cancelled) {
+      const overlayEl = document.getElementById('sheetArmorOverlay');
+      const avatar = document.getElementById('sheetArmorAvatar');
+      if (avatar && avatar.dataset.prev) {
+        avatar.src = avatar.dataset.prev;
+        delete avatar.dataset.prev;
+      }
+      overlayEl.style.display = 'none';
+      overlayEl.setAttribute('aria-hidden','true');
+      editingSlot = null;
     }
 
-    // Attach listeners to inputs
-    $all('.armor-select').forEach((inp) => {
-      const slot = inp.dataset.slot;
-      inp.addEventListener('input', (e) => {
-        showSuggestions(e.target, slot);
-      });
-      inp.addEventListener('focus', (e) => {
-        showSuggestions(e.target, slot);
-      });
-      inp.addEventListener('blur', () => {
-        setTimeout(() => { suggestionBox.style.display = 'none'; }, 150);
-      });
+    // Wire up armor slot buttons
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.armor-slot-btn');
+      if (!btn) return;
+      const slot = btn.dataset.slot;
+      openArmorEditor(slot);
     });
+
+    // Expose selections to outer scope (for state saving/loading)
+    window.__sheetArmorSelections = sheetArmorSelections;
+    window.__updateMiniStatsForSlot = updateMiniStatsForSlot;
   }
 }
 
@@ -1481,20 +1500,14 @@ function getSheetState() {
     grit: getNum("cs_grit"),
     focus: getNum("cs_focus"),
     coins: getNum("cs_coins"),
-    armor: (function() {
-      const slots = ['head','torso','r_arm','l_arm','r_leg','l_leg'];
-      const out = {};
-      slots.forEach(s => {
-        const section = document.querySelector(`.armor-section[data-slot="${s}"]`);
-        if (!section) return;
-        const name = (section.querySelector('.armor-select')||{}).value || '';
-        const av = (section.querySelector('.stat.av')||{}).textContent || '-';
-        const red = (section.querySelector('.stat.red')||{}).textContent || '-';
-        const dur = (section.querySelector('.stat.dur')||{}).textContent || '-';
-        const inj = !!(section.querySelector('.armor-injury') && section.querySelector('.armor-injury').checked);
-        out[s] = { name: name, armorValue: av === '-' ? null : Number(av), reduction: red === '-' ? null : Number(red), durability: dur === '-' ? null : Number(dur), injury: inj };
-      });
-      return out;
+    // Armor layers/selections: read from the sheet in-memory selections if present
+    armorLayers: (function() {
+      try {
+        const sel = window.__sheetArmorSelections || {};
+        return sel;
+      } catch (e) {
+        return {};
+      }
     })(),
     updatedAt: Date.now()
   };
@@ -1526,24 +1539,30 @@ function setSheetState(state) {
 
   // Load armor slots if present
   if (state.armor) {
-    Object.keys(state.armor).forEach((slot) => {
-      const data = state.armor[slot];
-      const section = document.querySelector(`.armor-section[data-slot="${slot}"]`);
-      if (!section) return;
-      const inp = section.querySelector('.armor-select');
-      if (inp && data && data.name) {
-        inp.value = data.name;
-        inp.dataset.selected = data.name;
-      }
-      const av = section.querySelector('.stat.av');
-      const red = section.querySelector('.stat.red');
-      const dur = section.querySelector('.stat.dur');
-      if (av) av.textContent = data && data.armorValue != null ? String(data.armorValue) : '-';
-      if (red) red.textContent = data && data.reduction != null ? String(data.reduction) : '-';
-      if (dur) dur.textContent = data && data.durability != null ? String(data.durability) : '-';
-      const inj = section.querySelector('.armor-injury');
-      if (inj) inj.checked = !!(data && data.injury);
-    });
+    // Backwards compatibility: if older `state.armor` exists, map single selections into armorLayers
+    if (state.armor) {
+      const existing = state.armor;
+      const mapSlots = { head: 'head', torso: 'torso', r_arm: 'r_arm', l_arm: 'l_arm', r_leg: 'r_leg', l_leg: 'l_leg' };
+      Object.keys(mapSlots).forEach((s) => {
+        const d = existing[s];
+        if (!d) return;
+        const sel = (window.__sheetArmorSelections = window.__sheetArmorSelections || {});
+        sel[s] = sel[s] || { base: null, mid: null, outer: null };
+        // place the single-name into base by default
+        sel[s].base = d.name || null;
+        // update mini stats display if present
+        if (window.__updateMiniStatsForSlot) window.__updateMiniStatsForSlot(s);
+      });
+    }
+
+    // Load armorLayers (new structure) if present
+    if (state.armorLayers) {
+      window.__sheetArmorSelections = state.armorLayers;
+      // Update UI mini stats
+      Object.keys(state.armorLayers).forEach(s => {
+        if (window.__updateMiniStatsForSlot) window.__updateMiniStatsForSlot(s);
+      });
+    }
   }
 }
 
