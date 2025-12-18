@@ -25,6 +25,7 @@ function ensureDataLoaded() {
   _dataLoadPromise = (async () => {
     try {
       const base = './data/';
+      console.log('ensureDataLoaded: base=', base, 'window.__be_built=', typeof window !== 'undefined' ? !!window.__be_built : 'no-window');
       // If a built bundle provided data (dist/bundle.js -> window.__be_built), prefer it to avoid duplicate fetches
       if (typeof window !== 'undefined' && window.__be_built) {
         const built = window.__be_built;
@@ -48,15 +49,23 @@ function ensureDataLoaded() {
       // parse responses if ok, otherwise default to empty array
       let _showedDataError = false;
       const safeJson = async (res, name) => {
-        try {
-          if (res && res.ok) return await res.json();
-        } catch (e) { /* ignore parse errors */ }
-        // show a single toast to alert editors/maintainers that some data failed to load
-        if (!_showedDataError) {
-          _showedDataError = true;
-          toast('Warning: some data files failed to load. Check network or server settings.');
+        if (!res) {
+          console.error('Missing response for', name);
+          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: no response`); }
+          return [];
         }
-        return [];
+        if (!res.ok) {
+          console.error(`Failed to load ${name}: ${res.status} ${res.statusText}`);
+          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: ${res.status} ${res.statusText}`); }
+          return [];
+        }
+        try {
+          return await res.json();
+        } catch (e) {
+          console.error('JSON parse error for', name, e);
+          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: invalid JSON`); }
+          return [];
+        }
       };
 
       echoesData = await safeJson(echoesR, 'echoes');
@@ -357,6 +366,18 @@ function toast(msg) {
   el.classList.add("show");
   window.clearTimeout(toast._t);
   toast._t = window.setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+// show a persistent data error banner (useful for editors to see fetch failures)
+function showDataError(detail) {
+  let existing = document.getElementById('_beDataError');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = '_beDataError';
+    existing.style.cssText = 'position:fixed;left:16px;right:16px;top:16px;background:#6b0000;color:#fff;padding:12px;border-radius:8px;z-index:9999;font-size:0.95rem;box-shadow:0 8px 24px rgba(0,0,0,0.6);';
+    document.body.appendChild(existing);
+  }
+  existing.textContent = 'Data load error: ' + detail;
 }
 
 /* ===================================================
