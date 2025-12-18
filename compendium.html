@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="style.css" />
+  <script src="./dist/bundle.js" defer></script>
   <script src="script.js" defer></script>
 
   <link rel="manifest" href="manifest.json">
@@ -19,7 +20,6 @@
 <body data-page="compendium">
   <div id="app">
     <header id="siteHeader">
-      <button class="comp-back-btn" id="compBackBtn" type="button">← Back</button>
       <img id="siteLogo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd Logo">
       <div class="subtitle">Field Reference · Echoes · Weapons · Skills · Armor</div>
     </header>
@@ -67,7 +67,8 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/blightsend/sw.js").catch(console.error);
+        // Relative registration path is more resilient when serving from subfolders or locally
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
       });
     }
   </script>

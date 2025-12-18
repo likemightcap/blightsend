@@ -1,0 +1,2 @@
+(()=>{async function i(o="./data/"){let t=await Promise.all([fetch(o+"echoes.json"),fetch(o+"weapons.json"),fetch(o+"skills.json"),fetch(o+"armor.json"),fetch(o+"conditions.json")]),a=async n=>{try{if(n&&n.ok)return await n.json()}catch{}return[]};return{echoes:await a(t[0]),weapons:await a(t[1]),skills:await a(t[2]),armor:await a(t[3]),conditions:await a(t[4])}}async function c(){let o=await i();return window.__be_built=o,o}typeof window<"u"&&c().catch(o=>console.warn("buildLoad failed",o));})();
+//# sourceMappingURL=bundle.js.map

@@ -1,0 +1,12 @@
+{
+  "name": "blightsend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --minify --sourcemap --outfile=dist/bundle.js",
+    "watch": "esbuild src/index.js --bundle --sourcemap --outfile=dist/bundle.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.17"
+  }
+}

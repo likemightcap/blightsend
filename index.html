@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="style.css" />
+  <script src="./dist/bundle.js" defer></script>
   <script src="script.js" defer></script>
 
   <link rel="manifest" href="manifest.json">
@@ -30,13 +31,11 @@
     </main>
   </div>
 
-  <script>
+    <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        // Use a relative registration so the same code works on localhost, root, or a subpath.
-        navigator.serviceWorker.register("./sw.js")
-          .then(reg => console.log('ServiceWorker registered with scope:', reg.scope))
-          .catch(err => console.error('ServiceWorker registration failed:', err));
+        // Use a relative path so the site works from different base paths / during local testing
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
       });
     }
   </script>
