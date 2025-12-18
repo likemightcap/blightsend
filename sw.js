@@ -1,20 +1,21 @@
 const CACHE_NAME = "blightsend-v3";
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./compendium.html",
-  "./character.html",
-  "./style.css",
-  "./script.js",
-  "./data/echoes.json",
-  "./data/weapons.json",
-  "./data/skills.json",
-  "./data/armor.json",
-  "./data/conditions.json",
-  "./manifest.json",
-  "./Icons/icon-192.png",
-  "./Icons/icon-512.png",
-  "./assets/BlightsEnd-Logo.png"
+  "/blightsend/",
+  "/blightsend/index.html",
+  "/blightsend/compendium.html",
+  "/blightsend/character.html",
+  "/blightsend/style.css",
+  "/blightsend/script.js",
+  "/blightsend/dist/bundle.js",
+  "/blightsend/data/echoes.json",
+  "/blightsend/data/weapons.json",
+  "/blightsend/data/skills.json",
+  "/blightsend/data/armor.json",
+  "/blightsend/data/conditions.json",
+  "/blightsend/manifest.json",
+  "/blightsend/Icons/icon-192.png",
+  "/blightsend/Icons/icon-512.png",
+  "/blightsend/assets/BlightsEnd-Logo.png"
 ];
 
 self.addEventListener("install", (event) => {

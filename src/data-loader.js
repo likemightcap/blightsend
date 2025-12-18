@@ -1,10 +1,10 @@
-export async function loadAllData(base = './data/') {
+export async function loadAllData() {
   const fetches = await Promise.all([
-    fetch(base + 'echoes.json'),
-    fetch(base + 'weapons.json'),
-    fetch(base + 'skills.json'),
-    fetch(base + 'armor.json'),
-    fetch(base + 'conditions.json')
+    fetch('./data/echoes.json'),
+    fetch('./data/weapons.json'),
+    fetch('./data/skills.json'),
+    fetch('./data/armor.json'),
+    fetch('./data/conditions.json')
   ]);
 
   const safeJson = async (res) => {

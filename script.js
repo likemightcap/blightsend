@@ -24,8 +24,6 @@ function ensureDataLoaded() {
 
   _dataLoadPromise = (async () => {
     try {
-      const base = './data/';
-      console.log('ensureDataLoaded: base=', base, 'window.__be_built=', typeof window !== 'undefined' ? !!window.__be_built : 'no-window');
       // If a built bundle provided data (dist/bundle.js -> window.__be_built), prefer it to avoid duplicate fetches
       if (typeof window !== 'undefined' && window.__be_built) {
         const built = window.__be_built;
@@ -37,13 +35,13 @@ function ensureDataLoaded() {
         _dataLoaded = true;
         return;
       }
-      // fetch JSON files in parallel
+      // Always use relative fetches for GH Pages compatibility
       const [echoesR, weaponsR, skillsR, armorR, conditionsR] = await Promise.all([
-        fetch(base + 'echoes.json'),
-        fetch(base + 'weapons.json'),
-        fetch(base + 'skills.json'),
-        fetch(base + 'armor.json'),
-        fetch(base + 'conditions.json')
+        fetch('./data/echoes.json'),
+        fetch('./data/weapons.json'),
+        fetch('./data/skills.json'),
+        fetch('./data/armor.json'),
+        fetch('./data/conditions.json')
       ]);
 
       // parse responses if ok, otherwise default to empty array
