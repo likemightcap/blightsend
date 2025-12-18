@@ -521,11 +521,18 @@ function ensureScreens() {
   const btnGoCompendium = $("#btnGoCompendium");
   if (btnGoSheet && !btnGoSheet.dataset.bound) {
     btnGoSheet.dataset.bound = "1";
-    btnGoSheet.addEventListener("click", () => navigate("sheet"));
+    btnGoSheet.addEventListener("click", () => {
+      // Always switch view immediately, even if hash is already set
+      location.hash = "#sheet";
+      showOnly("sheet");
+    });
   }
   if (btnGoCompendium && !btnGoCompendium.dataset.bound) {
     btnGoCompendium.dataset.bound = "1";
-    btnGoCompendium.addEventListener("click", () => navigate("compendium"));
+    btnGoCompendium.addEventListener("click", () => {
+      location.hash = "#compendium";
+      showOnly("compendium");
+    });
   }
 
   // Wire sheet menu overlay once
