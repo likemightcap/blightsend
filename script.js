@@ -990,8 +990,12 @@ function injectSheetStylesOnce() {
     @media (max-width: 420px){
       .sheet-grid-top{ grid-template-columns: 1fr; }
       .sheet-row{ grid-template-columns: repeat(2, 1fr); }
-      .stat-strip{ grid-template-columns: repeat(2, 1fr); }
+      /* keep all five stats in one row on mobile by keeping 5 columns */
+      .stat-strip{ grid-template-columns: repeat(5, 1fr); font-size:0.9rem; }
       .sheet-buttons{ grid-template-columns: 1fr; }
+      /* mobile hp row (injected via JS) */
+      .mobile-hp-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap:0.5rem; margin-top:0.6rem; }
+      .mobile-hp-row .num-wrap{ height:38px; }
     }
 
     /* Toast */
@@ -2145,6 +2149,61 @@ window.addEventListener("hashchange", () => {
 document.addEventListener("DOMContentLoaded", () => {
   ensureScreens();
   showOnly(viewFromHash());
+  // adjust sheet layout responsively
+  function adjustSheetLayout() {
+    try {
+      const mq = window.matchMedia('(max-width: 420px)');
+      const sheetCard = $('#sheetScreen .sheet-card');
+      if (!sheetCard) return;
+      const sheetGridTop = sheetCard.querySelector('.sheet-grid-top');
+      const sheetRow = sheetCard.querySelector('.sheet-row');
+      if (!sheetGridTop || !sheetRow) return;
+
+      // elements to move: stamina and ephem (their container divs)
+      const staminaInput = document.getElementById('cs_stamina');
+      const ephemInput = document.getElementById('cs_ephem');
+      if (!staminaInput || !ephemInput) return;
+
+      const staminaDiv = staminaInput.closest('div');
+      const ephemDiv = ephemInput.closest('div');
+      const hpDiv = sheetGridTop.children[1]; // HP right column
+
+      if (mq.matches) {
+        // mobile: insert a mobile-hp-row after sheetGridTop and move hp/stamina/ephem into it
+        if (!sheetCard.querySelector('.mobile-hp-row')) {
+          const mobileRow = document.createElement('div');
+          mobileRow.className = 'mobile-hp-row';
+          // place after sheetGridTop
+          sheetGridTop.parentNode.insertBefore(mobileRow, sheetGridTop.nextSibling);
+          // move HP (hpDiv), staminaDiv and ephemDiv
+          mobileRow.appendChild(hpDiv);
+          mobileRow.appendChild(staminaDiv);
+          mobileRow.appendChild(ephemDiv);
+        }
+      } else {
+        // desktop: if mobile row exists, move children back to original places
+        const mobileRow = sheetCard.querySelector('.mobile-hp-row');
+        if (mobileRow) {
+          // move hpDiv back as second child of sheetGridTop
+          sheetGridTop.appendChild(hpDiv);
+          // move staminaDiv and ephemDiv back into sheetRow as first and second children
+          // ensure sheetRow has the correct structure: (stamina, ephem, walk, run)
+          const walkDiv = sheetRow.children[2];
+          const runDiv = sheetRow.children[3];
+          // clear sheetRow
+          while (sheetRow.firstChild) sheetRow.removeChild(sheetRow.firstChild);
+          sheetRow.appendChild(staminaDiv);
+          sheetRow.appendChild(ephemDiv);
+          if (walkDiv) sheetRow.appendChild(walkDiv);
+          if (runDiv) sheetRow.appendChild(runDiv);
+          mobileRow.remove();
+        }
+      }
+    } catch (e) { console.error('adjustSheetLayout', e); }
+  }
+
+  adjustSheetLayout();
+  window.addEventListener('resize', () => adjustSheetLayout());
 });
 
 /* ===================================================
