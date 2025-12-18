@@ -699,13 +699,6 @@ main {
 .armor-close { background:transparent; border:none; color:var(--text-main); font-size:1.2rem; cursor:pointer; }
 .armor-body { display:flex; gap:0.8rem; padding:0.6rem; }
 .armor-body { padding:0.6rem; }
-.armor-panel-title {
-  font-weight:900;
-  text-transform:uppercase;
-  font-size:1.2rem;
-  margin: 0.2rem 0 0.6rem 0;
-  color: #f4f4f4;
-}
 .armor-stage { display: grid; grid-template-columns: 1fr 260px 1fr; grid-template-rows: auto 1fr auto; gap: 0.4rem; align-items: center; }
 .armor-avatar-wrap { grid-column: 2 / 3; grid-row: 1 / 4; display:flex; align-items:center; justify-content:center; }
 .armor-avatar { max-width:200px; width:100%; height:auto; display:block; }
@@ -726,37 +719,6 @@ main {
 
 .armor-suggestions { border-radius:6px; box-shadow: 0 8px 30px rgba(0,0,0,0.7); color:var(--text-main); }
 .armor-suggestion-row:hover { background: rgba(255,255,255,0.02); }
-
-/* New right-column button + inline stat styles */
-.armor-btn {
-  display: block;
-  width: 100%;
-  text-align: center;
-  background: rgba(20,120,140,0.95);
-  color: #ffffff;
-  padding: 0.9rem 1rem;
-  border-radius: 10px;
-  border: none;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-bottom: 0.45rem;
-}
-.armor-inline-stats {
-  display:flex;
-  gap: 0.8rem;
-  align-items:center;
-  justify-content:flex-start;
-  padding-left: 0.2rem;
-  margin-bottom: 0.6rem;
-}
-.stat-label { color: #ffffff; font-weight:700; margin-right:0.15rem; }
-.stat-val { color: #f3b017; font-weight:900; margin-right:0.8rem; }
-
-/* Right column sizing to match reference */
-.armor-stage { display: grid; grid-template-columns: 1fr 320px 1fr; grid-template-rows: auto 1fr auto; }
-.armor-section { max-width: 320px; }
 
 /* Mobile tweaks */
 @media (max-width: 520px) {
