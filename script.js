@@ -1014,16 +1014,17 @@ function injectSheetStylesOnce() {
     }
     #beToast.show{ display:block; }
     /* Sheet armor styles */
-    .sheet-armor{ display:flex; gap:0.75rem; margin:0.75rem 0; align-items:flex-start; }
-    .armor-left{ flex:0 0 220px; display:flex; align-items:center; justify-content:center; }
-    .armor-left img{ width:200px; height:auto; border-radius:8px; }
-    .armor-right{ flex:1; }
+    .sheet-armor{ display:flex; gap:0.75rem; margin:0.75rem 0; align-items:flex-start; background: rgba(60,60,60,0.95); padding:0.65rem; border-radius:10px; border:1px solid var(--border-soft); }
+    .armor-left{ flex:0 0 180px; display:flex; align-items:center; justify-content:center; }
+    .armor-left img{ width:160px; height:auto; border-radius:8px; }
+    .armor-right{ flex:1; font-size:0.94rem; }
     .armor-list{ display:flex; flex-direction:column; gap:0.5rem; }
-    .armor-row{ display:flex; gap:0.75rem; align-items:center; }
-    .armor-slot-btn{ padding:0.5rem 0.75rem; border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:var(--text-main); cursor:pointer; }
-    .armor-mini{ font-size:0.95rem; opacity:0.95; }
+    .armor-row{ display:flex; gap:0.5rem; align-items:center; }
+    .armor-slot-btn{ padding:0.45rem 0.65rem; border-radius:10px; background: rgba(80,140,160,1); border:1px solid rgba(255,255,255,0.06); color: #071216; cursor:pointer; font-weight:700; }
+    .armor-slot-btn:hover{ filter:brightness(0.95); }
+    .armor-mini{ font-size:0.88rem; opacity:0.95; }
 
-    .sheet-armor-overlay{ position:fixed; z-index:1400; background:rgba(10,10,12,0.95); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:8px; overflow:auto; }
+    .sheet-armor-overlay{ position:fixed; z-index:1400; background:rgba(10,10,12,0.95); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:8px; overflow:auto; color:var(--text-main); }
     .sheet-armor-overlay .sheet-armor-overlay-title{ font-weight:700; margin-bottom:0.5rem; }
     .sheet-armor-layer{ display:flex; flex-direction:column; gap:0.25rem; margin-bottom:0.6rem; }
     .sheet-armor-layer-label{ font-weight:600; }
@@ -1391,13 +1392,18 @@ function ensureScreens() {
       btnRow.appendChild(ok); btnRow.appendChild(cancel);
       overlay.appendChild(btnRow);
 
-      // Position overlay over right column
+      // Position overlay over right column and style to match active button (teal)
       const rc = rightCol.getBoundingClientRect();
       overlay.style.position = 'fixed';
       overlay.style.left = rc.left + 'px';
       overlay.style.top = rc.top + 'px';
       overlay.style.width = rc.width + 'px';
       overlay.style.height = rc.height + 'px';
+      // set data-slot for possible CSS hooks
+      overlay.dataset.slot = slot;
+      // set overlay background to match button (teal)
+      overlay.style.background = 'rgba(80,140,160,0.98)';
+      overlay.style.color = '#071216';
       overlay.style.display = 'block';
       overlay.setAttribute('aria-hidden','false');
     }
@@ -1409,8 +1415,11 @@ function ensureScreens() {
         avatar.src = avatar.dataset.prev;
         delete avatar.dataset.prev;
       }
+      // reset overlay styles
       overlayEl.style.display = 'none';
       overlayEl.setAttribute('aria-hidden','true');
+      overlayEl.style.background = 'rgba(10,10,12,0.95)';
+      overlayEl.style.color = '';
       editingSlot = null;
     }
 
