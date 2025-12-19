@@ -377,9 +377,9 @@ function injectArmorStylesOnce(){
     .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem; background: #4f5754; border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
-  /* balanced avatar / list proportions; list has a sensible min-width to avoid clipping */
-  .armor-avatar-col{ flex: 0 0 60%; display:flex; align-items:center; justify-content:center; }
-  .armor-list-col{ flex:1 1 40%; max-width: 40%; min-width: 220px; display:flex; flex-direction:column; gap:0.45rem; }
+  /* make the avatar column larger and shrink the right column to fit inside the panel */
+  .armor-avatar-col{ flex: 0 0 62%; display:flex; align-items:center; justify-content:center; }
+  .armor-list-col{ flex:1 1 38%; max-width: 38%; display:flex; flex-direction:column; gap:0.45rem; }
     .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
     /* Pill should span almost full column; stats are shown below and never wrap */
@@ -409,8 +409,6 @@ function injectArmorStylesOnce(){
   .overlay-select-wrap{ position:relative; }
   .overlay-input{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#111; font-size:0.88rem; }
   .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:9999; }
-  /* ensure overlay sections have room inside the right column */
-  .overlay-section{ min-width: 200px; }
   .overlay-item{ padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.06); }
   .overlay-item:hover, .overlay-item.hover{ background:rgba(0,0,0,0.06); }
   .overlay-stats-row{ display:flex; gap:8px; justify-content:space-between; font-weight:800; font-size:0.86rem; }
