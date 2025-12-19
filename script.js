@@ -165,6 +165,15 @@ function injectSheetStylesOnce() {
       user-select:none; pointer-events:none;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.65));
     }
+    .sheet-title-btn{
+      background: transparent;
+      border: 0;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .sheet-title-btn img{ pointer-events: none; }
 
     .sheet-card{
       margin-top: 0.5rem;
@@ -429,7 +438,9 @@ function ensureScreens() {
         <button class="sheet-menu-btn" id="openSheetMenu" type="button">
           <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
         </button>
-        <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
+        <button class="sheet-title-btn" id="sheetLogoBtn" type="button" aria-label="Home">
+          <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
+        </button>
         <div style="width:64px;"></div>
       </div>
 
@@ -540,6 +551,14 @@ function ensureScreens() {
   if (openSheetMenu && !openSheetMenu.dataset.bound) {
     openSheetMenu.dataset.bound = "1";
     openSheetMenu.addEventListener("click", () => toggleSheetMenu(true));
+  }
+  // Wire sheet logo button to navigate home
+  const sheetLogoBtn = $("#sheetLogoBtn");
+  if (sheetLogoBtn && !sheetLogoBtn.dataset.bound) {
+    sheetLogoBtn.dataset.bound = "1";
+    sheetLogoBtn.addEventListener("click", () => {
+      navigate("home");
+    });
   }
   const overlay = $("#sheetMenuOverlay");
   if (overlay && !overlay.dataset.bound) {
@@ -1094,6 +1113,13 @@ async function initCompendiumOnce() {
   if (!topNav || !chipRow || !searchInput || !listContainer) {
     console.warn("Compendium UI elements not found. If you changed index.html structure, tell me.");
     return;
+  }
+
+  // Wire compendium header logo to navigate home
+  const compendiumLogo = $("#compendiumLogo");
+  if (compendiumLogo && !compendiumLogo.dataset.bound) {
+    compendiumLogo.dataset.bound = "1";
+    compendiumLogo.addEventListener("click", () => navigate("home"));
   }
 
   // Top nav
