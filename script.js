@@ -1063,16 +1063,50 @@ function closeArmorOverlay(){
 }
 
 function getArmorOptionsForLayer(slotKey, layerName){
-  // Return armorData items that match the slot by location/layer hints.
-  const slotLabel = slotLabelForKey(slotKey);
+  // Return armorData items that specifically match the requested slot location and layer.
+  // layerName comes from our UI ("base","mid","outer"). Match against item.layer.
   if (!Array.isArray(armorData)) return [];
-  return armorData.filter(it => {
-    const hay = [it.location, it.layer, ...(it.layers||[])]
-      .filter(Boolean).map(s => normalize(s));
-    const matchesSlot = hay.some(h => h.includes(normalize(slotLabel)));
-    const matchesLayer = hay.some(h => h.includes(normalize(layerName)));
-    return matchesSlot || matchesLayer;
-  });
+
+  const wantedLayer = (layerName || '').toString().toLowerCase();
+
+  // map UI layer keys to expected substrings in data.layer
+  function layerMatches(itemLayer) {
+    if (!itemLayer) return false;
+    const l = normalize(itemLayer);
+    if (wantedLayer === 'base') return l.includes('base');
+    if (wantedLayer === 'mid') return l.includes('mid');
+    if (wantedLayer === 'outer') return l.includes('outer') || l.includes('flexible') || l.includes('layer');
+    return l.includes(wantedLayer);
+  }
+
+  // normalize location tokens (split comma-separated values)
+  function locationMatches(itemLocation) {
+    if (!itemLocation) return false;
+    const parts = itemLocation.split(',').map(p => normalize(p.trim()));
+    // desired slot tokens
+    const slot = slotKey || '';
+    const target = slot.toLowerCase();
+    // map slot keys to location token substrings
+    const slotToToken = {
+      head: ['head'],
+      torso: ['torso', 'chest', 'body'],
+      leftarm: ['arms', 'arm'],
+      rightarm: ['arms', 'arm'],
+      leftleg: ['legs', 'leg'],
+      rightleg: ['legs', 'leg'],
+      leftArm: ['arms', 'arm'],
+      rightArm: ['arms', 'arm']
+    };
+    const wantedTokens = slotToToken[slot] || [slot.replace(/[^a-z]/g,'')];
+    return parts.some(p => wantedTokens.some(tok => p.includes(tok)));
+  }
+
+  // filter items where BOTH layer matches and location matches
+  return armorData.filter(item => {
+    const layerOk = layerMatches(item.layer);
+    const locOk = locationMatches(item.location);
+    return layerOk && locOk;
+  }).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
 }
 
 function populateOverlayStatsForLayer(overlay, layerName){
