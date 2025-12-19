@@ -394,20 +394,20 @@ function injectArmorStylesOnce(){
       .armor-stats{ font-size:0.82rem; gap:8px; }
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
-    /* Armor overlay (fills right column area) */
-    .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
-    .armor-overlay.be-hidden{ display:none; }
-    .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:12px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:10px; }
-    .overlay-title{ font-weight:900; font-size:1.15rem; text-align:center; margin-bottom:6px; }
-    .overlay-section{ background: rgba(255,255,255,0.04); padding:8px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
-    .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.85rem; }
-    .overlay-select{ width:100%; padding:8px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; }
-    .overlay-stats-row{ display:flex; gap:12px; justify-content:space-between; font-weight:800; }
-    .overlay-stat{ color:#fff; }
-    .overlay-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:auto; }
-    .overlay-ok, .overlay-cancel{ padding:8px 12px; border-radius:8px; border:0; cursor:pointer; font-weight:800; }
-    .overlay-ok{ background:#111; color:#fff; }
-    .overlay-cancel{ background:#222; color:#fff; }
+  /* Armor overlay (fills right column area) */
+  .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
+  .armor-overlay.be-hidden{ display:none; }
+  .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:8px; box-sizing:border-box; color:#fff; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:0.92rem; }
+  .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
+  .overlay-section{ background: rgba(255,255,255,0.035); padding:6px; border-radius:6px; display:flex; flex-direction:column; gap:6px; }
+  .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.78rem; }
+  .overlay-select{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; font-size:0.88rem; }
+  .overlay-stats-row{ display:flex; gap:8px; justify-content:space-between; font-weight:800; font-size:0.86rem; }
+  .overlay-stat{ color:#fff; }
+  .overlay-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:auto; }
+  .overlay-ok, .overlay-cancel{ padding:6px 10px; border-radius:6px; border:0; cursor:pointer; font-weight:800; font-size:0.88rem; }
+  .overlay-ok{ background:#111; color:#fff; }
+  .overlay-cancel{ background:#222; color:#fff; }
   `;
   document.head.appendChild(s);
 }
