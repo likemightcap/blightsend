@@ -513,6 +513,8 @@ let sheetScreen = null;
 
 function ensureScreens() {
   injectSheetStylesOnce();
+  // install app-like behaviors (block image context menu / drag)
+  try { installAppLikeBehaviors(); } catch(e) { /* ignore */ }
 
   // The existing compendium is already inside #app (your current site).
   compendiumRoot = $("#app");
