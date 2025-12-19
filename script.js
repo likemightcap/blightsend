@@ -414,11 +414,15 @@ function injectArmorStylesOnce(){
     /* Force overlay to be compact on small/mobile viewports */
     @media (max-width:480px) {
   /* Ensure overlay inner uses a fixed compact width (180px) when opened */
-  .armor-overlay-inner{ width:180px !important; padding:6px !important; border-radius:6px !important; }
+  /* prevent the inner from being stretched by its parent; use flex-basis for predictability */
+  .armor-overlay{ overflow: visible !important; }
+  .armor-overlay-inner{ flex: 0 0 180px !important; width: auto !important; padding:6px !important; border-radius:6px !important; box-sizing: border-box !important; }
       .overlay-title{ font-size:0.86rem !important; }
       .overlay-label{ font-size:0.68rem !important; letter-spacing:0.04em !important; }
       .overlay-input{ font-size:0.78rem !important; padding:6px 8px !important; }
       .overlay-list{ top:32px; max-height:120px; }
+  /* ensure dropdowns match the inner width instead of stretching to the parent */
+  .overlay-list{ left:0; right:auto; width:100%; box-sizing:border-box; }
       .overlay-stats-row{ font-size:0.72rem !important; gap:6px !important; }
       .overlay-stat .ov-av, .overlay-stat .ov-dr, .overlay-stat .ov-dur, .overlay-stat .ov-wt, .overlay-stat .ov-res { font-size:0.72rem !important; }
       .overlay-ok, .overlay-cancel{ font-size:0.72rem !important; padding:4px 6px !important; }
