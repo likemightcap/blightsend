@@ -777,9 +777,13 @@ function getSheetState() {
     guts: getNum("cs_guts"),
     grit: getNum("cs_grit"),
     focus: getNum("cs_focus"),
+    // include armor state so it persists with the character
+    armor: JSON.parse(JSON.stringify(armorState || {})),
     updatedAt: Date.now()
   };
 }
+
+// Persistable state includes armor layers and computed sums so we can reload UI exactly
 
 function setSheetState(state) {
   if (!state) return;
@@ -802,6 +806,31 @@ function setSheetState(state) {
   setNum("cs_guts", state.guts);
   setNum("cs_grit", state.grit);
   setNum("cs_focus", state.focus);
+  // restore armor if present
+  if (state.armor) {
+    try {
+      // deep copy to avoid shared references
+      Object.keys(armorState).forEach(k => delete armorState[k]);
+      Object.assign(armorState, JSON.parse(JSON.stringify(state.armor || {})));
+      renderArmorPanel();
+    } catch (e) { console.error('Failed to restore armor state', e); }
+  }
+}
+
+// When armor changes, persist it into the currently active saved character (if any)
+function persistActiveCharacterState(){
+  try {
+    const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+    if (!active) return;
+    const saved = readSavedCharacters();
+    const cur = saved[active] || {};
+    cur.armor = JSON.parse(JSON.stringify(armorState || {}));
+    cur.updatedAt = Date.now();
+    saved[active] = cur;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+  } catch (e) {
+    console.error('Failed to persist active character armor state', e);
+  }
 }
 
 function saveCharacter() {
@@ -1279,6 +1308,8 @@ function commitArmorOverlay(){
   armorState[slotKey].resistance = Array.from(resSet).join(', ') || '--';
 
   renderArmorPanel();
+  // persist armor changes into the active saved character (if any)
+  persistActiveCharacterState();
   closeArmorOverlay();
 }
 
