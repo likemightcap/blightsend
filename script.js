@@ -413,8 +413,8 @@ function injectArmorStylesOnce(){
     }
     /* Force overlay to be compact on small/mobile viewports */
     @media (max-width:480px) {
-  /* Ensure overlay inner uses a fixed compact width (160px) when opened */
-  .armor-overlay-inner{ width:160px !important; padding:6px !important; border-radius:6px !important; }
+      /* Ensure overlay inner uses a fixed compact width (140px) when opened */
+      .armor-overlay-inner{ width:140px !important; padding:6px !important; border-radius:6px !important; }
       .overlay-title{ font-size:0.86rem !important; }
       .overlay-label{ font-size:0.68rem !important; letter-spacing:0.04em !important; }
       .overlay-input{ font-size:0.78rem !important; padding:6px 8px !important; }
