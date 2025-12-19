@@ -7,3 +7,7 @@ node_modules/
 
 # Logs
 npm-debug.log*
+
+# macOS metadata
+._*
+.DS_Store
