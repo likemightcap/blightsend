@@ -569,23 +569,7 @@ function ensureScreens() {
         </div>
       </section>
 
-      <!-- Armor panel mockup -->
-      <section class="sheet-card sheet-armor-panel">
-        <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">ARMOR</h2>
-        <div class="armor-grid">
-          <div class="armor-avatar-col">
-            <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar-img" />
-          </div>
-          <div class="armor-list-col">
-            <div class="armor-row"><button class="armor-slot" data-slot="head">HEAD</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-            <div class="armor-row"><button class="armor-slot" data-slot="torso">TORSO</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-            <div class="armor-row"><button class="armor-slot" data-slot="leftArm">LEFT ARM</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-            <div class="armor-row"><button class="armor-slot" data-slot="rightArm">RIGHT ARM</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-            <div class="armor-row"><button class="armor-slot" data-slot="leftLeg">LEFT LEG</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-            <div class="armor-row"><button class="armor-slot" data-slot="rightLeg">RIGHT LEG</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
-          </div>
-        </div>
-      </section>
+      
 
       <div id="sheetMenuOverlay" aria-hidden="true">
         <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
