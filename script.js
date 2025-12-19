@@ -377,8 +377,9 @@ function injectArmorStylesOnce(){
     .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem; background: #4f5754; border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
-    .armor-avatar-col{ flex: 0 0 48%; display:flex; align-items:center; justify-content:center; }
-    .armor-list-col{ flex:1 1 52%; display:flex; flex-direction:column; gap:0.5rem; }
+  /* keep the avatar prominent but avoid forcing the right column to expand */
+  .armor-avatar-col{ flex: 0 0 46%; display:flex; align-items:center; justify-content:center; }
+  .armor-list-col{ flex:1 1 54%; max-width: 54%; display:flex; flex-direction:column; gap:0.5rem; }
     .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
     /* Pill should span almost full column; stats are shown below and never wrap */
@@ -386,8 +387,9 @@ function injectArmorStylesOnce(){
     .armor-slot.full{ width:100%; }
     .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:12px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; }
   .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:8px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; align-items:baseline; }
-  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; min-width:32px; text-align:left; }
-  .armor-stats .stat-val{ display:inline-block; min-width:26px; text-align:left; }
+  /* smaller minimums so long numbers don't force the column wider */
+  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; min-width:20px; text-align:left; }
+  .armor-stats .stat-val{ display:inline-block; min-width:16px; text-align:left; }
     /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
     @media (max-width:520px){
       .armor-grid{ flex-direction:row; }
