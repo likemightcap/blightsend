@@ -368,6 +368,32 @@ function injectSheetStylesOnce() {
   document.head.appendChild(style);
 }
 
+// Additional armor panel styles appended to the same injected style block
+function injectArmorStylesOnce(){
+  if ($('#_beArmorStyles')) return;
+  const s = document.createElement('style');
+  s.id = '_beArmorStyles';
+  s.textContent = `
+    .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.75rem; }
+    .armor-grid{ display:flex; gap: 0.75rem; align-items:flex-start; }
+    .armor-avatar-col{ flex: 0 0 42%; display:flex; align-items:center; justify-content:center; }
+    .armor-list-col{ flex:1 1 58%; display:flex; flex-direction:column; gap:0.5rem; }
+    .armor-avatar-img{ max-width: 92%; height:auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.6)); }
+    .armor-row{ display:flex; align-items:center; justify-content:space-between; gap: 0.5rem; }
+    .armor-slot{ background:#3b8b9a; color:#fff; border:0; padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:0.06em; cursor:pointer; }
+    .armor-stats{ font-size:0.85rem; color:#dcdcdc; text-align:right; min-width:140px; }
+    .armor-stats .stat-label{ color:#f6c44d; font-weight:700; margin-right:4px; }
+    @media (max-width:520px){
+      .armor-grid{ flex-direction:row; }
+      .armor-avatar-col{ flex:0 0 44%; }
+      .armor-list-col{ flex:1 1 56%; }
+      .armor-stats{ min-width:110px; font-size:0.82rem; }
+      .sheet-buttons{ grid-template-columns: 1fr; }
+    }
+  `;
+  document.head.appendChild(s);
+}
+
 function toast(msg) {
   let el = $("#beToast");
   if (!el) {
@@ -506,6 +532,24 @@ function ensureScreens() {
         </div>
       </section>
 
+      <!-- Armor panel mockup -->
+      <section class="sheet-card sheet-armor-panel">
+        <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">ARMOR</h2>
+        <div class="armor-grid">
+          <div class="armor-avatar-col">
+            <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar-img" />
+          </div>
+          <div class="armor-list-col">
+            <div class="armor-row"><button class="armor-slot" data-slot="head">HEAD</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+            <div class="armor-row"><button class="armor-slot" data-slot="torso">TORSO</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+            <div class="armor-row"><button class="armor-slot" data-slot="leftArm">LEFT ARM</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+            <div class="armor-row"><button class="armor-slot" data-slot="rightArm">RIGHT ARM</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+            <div class="armor-row"><button class="armor-slot" data-slot="leftLeg">LEFT LEG</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+            <div class="armor-row"><button class="armor-slot" data-slot="rightLeg">RIGHT LEG</button><div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> &nbsp; <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> &nbsp; <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div></div>
+          </div>
+        </div>
+      </section>
+
       <div id="sheetMenuOverlay" aria-hidden="true">
         <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
           <div class="sheet-menu-title">Menu</div>
@@ -577,6 +621,9 @@ function ensureScreens() {
   // Bind steppers + local persistence
   bindAllSteppers();
   loadActiveCharacterIfAny();
+
+  // Render armor UI placeholders
+  renderArmorPanel();
 }
 
 function numField(id) {
@@ -795,6 +842,35 @@ function bindAllSteppers() {
 
     if (up) up.addEventListener("click", () => step("up"));
     if (down) down.addEventListener("click", () => step("down"));
+  });
+}
+
+// Basic armor state for sheet (placeholder values). Real values should be wired to saved characters.
+const armorState = {
+  head: { armorValue: '--', reduction: '--', durability: '--' },
+  torso: { armorValue: '--', reduction: '--', durability: '--' },
+  leftArm: { armorValue: '--', reduction: '--', durability: '--' },
+  rightArm: { armorValue: '--', reduction: '--', durability: '--' },
+  leftLeg: { armorValue: '--', reduction: '--', durability: '--' },
+  rightLeg: { armorValue: '--', reduction: '--', durability: '--' }
+};
+
+function renderArmorPanel(){
+  injectArmorStylesOnce();
+  // populate armor stat placeholders
+  Object.keys(armorState).forEach((slotKey) => {
+    const slot = document.querySelector(`.armor-slot[data-slot="${slotKey}"]`);
+    if (!slot) return;
+    const row = slot.closest('.armor-row');
+    if (!row) return;
+    const av = row.querySelector('.stat-val.av');
+    const ar = row.querySelector('.stat-val.ar');
+    const dur = row.querySelector('.stat-val.dur');
+    if (av) av.textContent = armorState[slotKey].armorValue;
+    if (ar) ar.textContent = armorState[slotKey].reduction;
+    if (dur) dur.textContent = armorState[slotKey].durability;
+    // set accessible label
+    slot.setAttribute('aria-label', `${slot.textContent}: AV ${armorState[slotKey].armorValue}, AR ${armorState[slotKey].reduction}, DUR ${armorState[slotKey].durability}`);
   });
 }
 
