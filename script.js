@@ -402,6 +402,11 @@ function injectArmorStylesOnce(){
   .overlay-section{ background: rgba(255,255,255,0.035); padding:6px; border-radius:6px; display:flex; flex-direction:column; gap:6px; }
   .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.78rem; }
   .overlay-select{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; font-size:0.88rem; }
+  .overlay-select-wrap{ position:relative; }
+  .overlay-input{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#111; font-size:0.88rem; }
+  .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:45; }
+  .overlay-item{ padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.06); }
+  .overlay-item:hover, .overlay-item.hover{ background:rgba(0,0,0,0.06); }
   .overlay-stats-row{ display:flex; gap:8px; justify-content:space-between; font-weight:800; font-size:0.86rem; }
   .overlay-stat{ color:#fff; }
   .overlay-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:auto; }
@@ -926,21 +931,30 @@ function renderArmorPanel(){
 
         <div class="overlay-section" data-layer="base">
           <label class="overlay-label">BASE LAYER</label>
-          <select class="overlay-select" data-layer="base"><option value="">-- none --</option></select>
+          <div class="overlay-select-wrap">
+            <input class="overlay-input" data-layer="base" placeholder="Choose base..." autocomplete="off" />
+            <div class="overlay-list be-hidden" data-layer="base"></div>
+          </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
           <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
         </div>
 
         <div class="overlay-section" data-layer="mid">
           <label class="overlay-label">MID LAYER</label>
-          <select class="overlay-select" data-layer="mid"><option value="">-- none --</option></select>
+          <div class="overlay-select-wrap">
+            <input class="overlay-input" data-layer="mid" placeholder="Choose mid..." autocomplete="off" />
+            <div class="overlay-list be-hidden" data-layer="mid"></div>
+          </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
           <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
         </div>
 
         <div class="overlay-section" data-layer="outer">
           <label class="overlay-label">OUTER LAYER</label>
-          <select class="overlay-select" data-layer="outer"><option value="">-- none --</option></select>
+          <div class="overlay-select-wrap">
+            <input class="overlay-input" data-layer="outer" placeholder="Choose outer..." autocomplete="off" />
+            <div class="overlay-list be-hidden" data-layer="outer"></div>
+          </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
           <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
         </div>
@@ -951,11 +965,45 @@ function renderArmorPanel(){
 
     listCol.appendChild(overlay);
 
-    // wire select change events
-    overlay.querySelectorAll('.overlay-select').forEach(sel => {
-      sel.addEventListener('change', (e) => {
-        const layer = sel.dataset.layer;
-        populateOverlayStatsForLayer(overlay, layer);
+    // wire custom input dropdowns: populate and filter
+    overlay.querySelectorAll('.overlay-input').forEach(inp => {
+      const layer = inp.dataset.layer;
+      const list = overlay.querySelector(`.overlay-list[data-layer="${layer}"]`);
+      // populate initial list
+      inp.addEventListener('focus', (e) => {
+        populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
+        list.classList.remove('be-hidden');
+      });
+      inp.addEventListener('input', (e) => {
+        const q = (e.target.value || '').toLowerCase();
+        // filter visible items
+        list.querySelectorAll('.overlay-item').forEach(it => {
+          const ok = it.textContent.toLowerCase().includes(q);
+          it.style.display = ok ? '' : 'none';
+        });
+      });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { list.classList.add('be-hidden'); inp.blur(); }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+          const visible = Array.from(list.querySelectorAll('.overlay-item')).filter(i => i.style.display !== 'none');
+          if (!visible.length) return;
+          let idx = visible.findIndex(i => i.classList.contains('hover'));
+          if (e.key === 'ArrowDown') { idx = Math.min(visible.length - 1, (idx < 0 ? 0 : idx + 1)); }
+          else if (e.key === 'ArrowUp') { idx = Math.max(0, (idx < 0 ? visible.length - 1 : idx - 1)); }
+          else if (e.key === 'Enter') { visible[Math.max(0, idx)].click(); e.preventDefault(); return; }
+          visible.forEach(i => i.classList.remove('hover'));
+          visible[idx].classList.add('hover');
+          visible[idx].scrollIntoView({block:'nearest'});
+          e.preventDefault();
+        }
+      });
+      // close list on outside click
+      document.addEventListener('click', (ev) => {
+        if (!overlay.contains(ev.target)) return; // only consider clicks inside overlay
+        const inWrap = ev.target.closest('.overlay-select-wrap');
+        if (!inWrap) {
+          overlay.querySelectorAll('.overlay-list').forEach(l => l.classList.add('be-hidden'));
+        }
       });
     });
 
@@ -1048,6 +1096,26 @@ function populateOverlayStatsForLayer(overlay, layerName){
   } else {
     av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
   }
+}
+
+// Populate custom dropdown list for a layer in the overlay
+function populateOverlayOptions(slotKey, layerName, overlay){
+  const list = overlay.querySelector(`.overlay-list[data-layer="${layerName}"]`);
+  if (!list) return;
+  list.innerHTML = '';
+  const options = getArmorOptionsForLayer(slotKey, layerName);
+  options.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'overlay-item';
+    div.textContent = item.name;
+    div.addEventListener('click', () => {
+      const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
+      inp.value = item.name;
+      list.classList.add('be-hidden');
+      populateOverlayStatsForLayer(overlay, layerName);
+    });
+    list.appendChild(div);
+  });
 }
 
 function commitArmorOverlay(){
