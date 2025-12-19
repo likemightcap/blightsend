@@ -2,8 +2,6 @@ const CACHE_NAME = "blightsend-v3";
 const ASSETS = [
   "/blightsend/",
   "/blightsend/index.html",
-  "/blightsend/compendium.html",
-  "/blightsend/character.html",
   "/blightsend/style.css",
   "/blightsend/script.js",
   "/blightsend/dist/bundle.js",

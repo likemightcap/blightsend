@@ -2,7 +2,7 @@
 
 This repository contains a small static site (compendium + character sheet) implemented as:
 
-- `index.html`, `compendium.html`, `character.html` — page shells
+- `index.html` — single page shell (compendium and character views are handled by the SPA)
 - `style.css` — single stylesheet
 - `script.js` — large single-file application logic (data + UI + routing)
 - `sw.js` — simple service worker for offline caching
