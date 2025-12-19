@@ -582,18 +582,19 @@ function numField(id) {
 }
 
 function showOnly(view) {
-  if (!homeScreen || !sheetScreen || !compendiumRoot) return;
+  if (!homeScreen || !sheetScreen) return;
+
+  const compendiumScreen = document.getElementById("compendiumScreen");
 
   homeScreen.classList.toggle("be-hidden", view !== "home");
   sheetScreen.classList.toggle("be-hidden", view !== "sheet");
-  compendiumRoot.classList.toggle("be-hidden", view !== "compendium");
+  if (compendiumScreen) compendiumScreen.classList.toggle("be-hidden", view !== "compendium");
 
   // close modal overlays when switching
   toggleSheetMenu(false);
 
-  // Optional: when we enter compendium, make sure it has rendered once.
+  // When entering compendium, ensure it's initialized and rendered once
   if (view === "compendium") {
-    // fire-and-forget: compendium init will await data loading internally
     initCompendiumOnce().catch(console.error);
   }
 }
