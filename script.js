@@ -377,13 +377,13 @@ function injectArmorStylesOnce(){
     .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem; background: #4f5754; border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
-  /* make the avatar column larger and shrink the right column to fit inside the panel */
-  .armor-avatar-col{ flex: 0 0 62%; display:flex; align-items:center; justify-content:center; }
-  .armor-list-col{ flex:1 1 38%; max-width: 38%; display:flex; flex-direction:column; gap:0.45rem; }
+  /* keep the avatar prominent but avoid forcing the right column to expand */
+  .armor-avatar-col{ flex: 0 0 46%; display:flex; align-items:center; justify-content:center; }
+  .armor-list-col{ flex:1 1 54%; max-width: 54%; display:flex; flex-direction:column; gap:0.5rem; }
     .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
     /* Pill should span almost full column; stats are shown below and never wrap */
-  .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:8px 8px; border-radius:10px; font-weight:800; letter-spacing:0.06em; cursor:pointer; width:100%; text-align:center; font-size:0.94rem; }
+    .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 12px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:1rem; }
     .armor-slot.full{ width:100%; }
     .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:12px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; }
   .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:8px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; align-items:baseline; }
