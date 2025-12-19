@@ -1123,27 +1123,25 @@ function getArmorOptionsForLayer(slotKey, layerName){
     return l.includes(wantedLayer);
   }
 
-  // normalize location tokens (split comma-separated values)
-  function locationMatches(itemLocation) {
-    if (!itemLocation) return false;
-    const parts = itemLocation.split(',').map(p => normalize(p.trim()));
-    // desired slot tokens
-    const slot = slotKey || '';
-    const target = slot.toLowerCase();
-    // map slot keys to location token substrings
-    const slotToToken = {
-      head: ['head'],
-      torso: ['torso', 'chest', 'body'],
-      leftarm: ['arms', 'arm'],
-      rightarm: ['arms', 'arm'],
-      leftleg: ['legs', 'leg'],
-      rightleg: ['legs', 'leg'],
-      leftArm: ['arms', 'arm'],
-      rightArm: ['arms', 'arm']
-    };
-    const wantedTokens = slotToToken[slot] || [slot.replace(/[^a-z]/g,'')];
-    return parts.some(p => wantedTokens.some(tok => p.includes(tok)));
-  }
+    // normalize location tokens (split comma-separated values)
+    function locationMatches(itemLocation) {
+      if (!itemLocation) return false;
+      const parts = itemLocation.split(',').map(p => normalize(p.trim()));
+      // desired slot tokens (normalize incoming slotKey to lower-case)
+      const rawSlot = slotKey || '';
+      const slotNorm = normalize(rawSlot);
+      // map slot keys (lowercase) to location token substrings
+      const slotToToken = {
+        head: ['head'],
+        torso: ['torso', 'chest', 'body'],
+        leftarm: ['arms', 'arm'],
+        rightarm: ['arms', 'arm'],
+        leftleg: ['legs', 'leg'],
+        rightleg: ['legs', 'leg']
+      };
+      const wantedTokens = slotToToken[slotNorm] || [slotNorm.replace(/[^a-z]/g,'')];
+      return parts.some(p => wantedTokens.some(tok => p.includes(tok)));
+    }
 
   // filter items where BOTH layer matches and location matches
   return armorData.filter(item => {
