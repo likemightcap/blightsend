@@ -394,6 +394,20 @@ function injectArmorStylesOnce(){
       .armor-stats{ font-size:0.82rem; gap:8px; }
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
+    /* Armor overlay (fills right column area) */
+    .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
+    .armor-overlay.be-hidden{ display:none; }
+    .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:12px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:10px; }
+    .overlay-title{ font-weight:900; font-size:1.15rem; text-align:center; margin-bottom:6px; }
+    .overlay-section{ background: rgba(255,255,255,0.04); padding:8px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+    .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.85rem; }
+    .overlay-select{ width:100%; padding:8px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; }
+    .overlay-stats-row{ display:flex; gap:12px; justify-content:space-between; font-weight:800; }
+    .overlay-stat{ color:#fff; }
+    .overlay-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:auto; }
+    .overlay-ok, .overlay-cancel{ padding:8px 12px; border-radius:8px; border:0; cursor:pointer; font-weight:800; }
+    .overlay-ok{ background:#111; color:#fff; }
+    .overlay-cancel{ background:#222; color:#fff; }
   `;
   document.head.appendChild(s);
 }
@@ -896,6 +910,185 @@ function renderArmorPanel(){
     // set accessible label
     slot.setAttribute('aria-label', `${slot.textContent}: AV ${armorState[slotKey].armorValue}, AR ${armorState[slotKey].reduction}, DUR ${armorState[slotKey].durability}`);
   });
+
+  // create overlay inside the armor-list-col if missing
+  const listCol = document.querySelector('.armor-list-col');
+  if (listCol && !document.getElementById('armorOverlay')) {
+    // ensure relative positioning for absolute overlay
+    listCol.style.position = listCol.style.position || 'relative';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'armorOverlay';
+    overlay.className = 'armor-overlay be-hidden';
+    overlay.innerHTML = `
+      <div class="armor-overlay-inner">
+        <div class="overlay-title" id="overlayTitle">SLOT</div>
+
+        <div class="overlay-section" data-layer="base">
+          <label class="overlay-label">BASE LAYER</label>
+          <select class="overlay-select" data-layer="base"><option value="">-- none --</option></select>
+          <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
+          <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
+        </div>
+
+        <div class="overlay-section" data-layer="mid">
+          <label class="overlay-label">MID LAYER</label>
+          <select class="overlay-select" data-layer="mid"><option value="">-- none --</option></select>
+          <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
+          <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
+        </div>
+
+        <div class="overlay-section" data-layer="outer">
+          <label class="overlay-label">OUTER LAYER</label>
+          <select class="overlay-select" data-layer="outer"><option value="">-- none --</option></select>
+          <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
+          <div class="overlay-stats-row"><div class="overlay-stat">RES: <span class="ov-res">--</span></div><div class="overlay-stat">WT: <span class="ov-wt">--</span></div></div>
+        </div>
+
+        <div class="overlay-actions"><button class="overlay-ok" id="overlayOk">OKAY</button><button class="overlay-cancel" id="overlayCancel">CANCEL</button></div>
+      </div>
+    `;
+
+    listCol.appendChild(overlay);
+
+    // wire select change events
+    overlay.querySelectorAll('.overlay-select').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const layer = sel.dataset.layer;
+        populateOverlayStatsForLayer(overlay, layer);
+      });
+    });
+
+    // wire actions
+    overlay.querySelector('#overlayCancel').addEventListener('click', () => closeArmorOverlay());
+    overlay.querySelector('#overlayOk').addEventListener('click', () => commitArmorOverlay());
+  }
+
+  // wire click to open overlay per slot
+  document.querySelectorAll('.armor-slot').forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => openArmorOverlay(btn.dataset.slot, btn.textContent.trim()));
+  });
+}
+
+// Helper: get normalized slot label
+function slotLabelForKey(key){
+  const map = { head: 'head', torso: 'torso', leftArm: 'left arm', rightArm: 'right arm', leftLeg: 'left leg', rightLeg: 'right leg' };
+  return map[key] || key;
+}
+
+function openArmorOverlay(slotKey, titleText){
+  const overlay = document.getElementById('armorOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('be-hidden');
+  overlay.style.background = getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
+  document.getElementById('overlayTitle').textContent = titleText || slotKey;
+  overlay.dataset.slot = slotKey;
+
+  // populate selects for each layer
+  ['base','mid','outer'].forEach(layerName => {
+    const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
+    if (!sel) return;
+    // clear existing options except first
+    sel.innerHTML = '<option value="">-- none --</option>';
+    const options = getArmorOptionsForLayer(slotKey, layerName);
+    options.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.name;
+      opt.textContent = item.name;
+      sel.appendChild(opt);
+    });
+    // pre-select current if present
+    const cur = (armorState[slotKey] && armorState[slotKey].layers && armorState[slotKey].layers[layerName]) || '';
+    if (cur) sel.value = cur;
+    // populate stats for this select
+    populateOverlayStatsForLayer(overlay, layerName);
+  });
+}
+
+function closeArmorOverlay(){
+  const overlay = document.getElementById('armorOverlay');
+  if (!overlay) return;
+  overlay.classList.add('be-hidden');
+  overlay.dataset.slot = '';
+}
+
+function getArmorOptionsForLayer(slotKey, layerName){
+  // Return armorData items that match the slot by location/layer hints.
+  const slotLabel = slotLabelForKey(slotKey);
+  if (!Array.isArray(armorData)) return [];
+  return armorData.filter(it => {
+    const hay = [it.location, it.layer, ...(it.layers||[])]
+      .filter(Boolean).map(s => normalize(s));
+    const matchesSlot = hay.some(h => h.includes(normalize(slotLabel)));
+    const matchesLayer = hay.some(h => h.includes(normalize(layerName)));
+    return matchesSlot || matchesLayer;
+  });
+}
+
+function populateOverlayStatsForLayer(overlay, layerName){
+  const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
+  if (!sel) return;
+  const selected = sel.value;
+  const item = armorData.find(a => a.name === selected);
+  const section = overlay.querySelector(`.overlay-section[data-layer="${layerName}"]`);
+  if (!section) return;
+  const av = section.querySelector('.ov-av');
+  const dr = section.querySelector('.ov-dr');
+  const dur = section.querySelector('.ov-dur');
+  const res = section.querySelector('.ov-res');
+  const wt = section.querySelector('.ov-wt');
+  if (item) {
+    av.textContent = item.armorValue != null ? String(item.armorValue) : '--';
+    dr.textContent = item.reduction != null ? String(item.reduction) : '--';
+    dur.textContent = item.durability != null ? String(item.durability) : '--';
+    res.textContent = item.resistance || '--';
+    wt.textContent = item.weight != null ? String(item.weight) : '--';
+  } else {
+    av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
+  }
+}
+
+function commitArmorOverlay(){
+  const overlay = document.getElementById('armorOverlay');
+  if (!overlay) return;
+  const slotKey = overlay.dataset.slot;
+  if (!slotKey) return closeArmorOverlay();
+
+  const layers = {};
+  ['base','mid','outer'].forEach(layerName => {
+    const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
+    const val = sel ? sel.value : '';
+    layers[layerName] = val || null;
+  });
+
+  // compute sums
+  let avSum = 0, drSum = 0, durSum = 0, wtSum = 0; let resSet = new Set();
+  ['base','mid','outer'].forEach(layerName => {
+    const name = layers[layerName];
+    if (!name) return;
+    const item = armorData.find(a => a.name === name);
+    if (!item) return;
+    avSum += Number(item.armorValue) || 0;
+    drSum += Number(item.reduction) || 0;
+    durSum += Number(item.durability) || 0;
+    wtSum += Number(item.weight) || 0;
+    if (item.resistance) {
+      (Array.isArray(item.resistance) ? item.resistance : String(item.resistance).split(/[,;]s*/)).forEach(r => resSet.add(r.trim()));
+    }
+  });
+
+  armorState[slotKey] = armorState[slotKey] || {};
+  armorState[slotKey].layers = layers;
+  armorState[slotKey].armorValue = avSum || '--';
+  armorState[slotKey].reduction = drSum || '--';
+  armorState[slotKey].durability = durSum || '--';
+  armorState[slotKey].weight = wtSum || '--';
+  armorState[slotKey].resistance = Array.from(resSet).join(', ') || '--';
+
+  renderArmorPanel();
+  closeArmorOverlay();
 }
 
 /* ===================================================
