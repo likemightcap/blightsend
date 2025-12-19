@@ -375,14 +375,15 @@ function injectArmorStylesOnce(){
   s.id = '_beArmorStyles';
   s.textContent = `
     .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.75rem; }
-    .armor-grid{ display:flex; gap: 0.75rem; align-items:flex-start; }
-    .armor-avatar-col{ flex: 0 0 42%; display:flex; align-items:center; justify-content:center; }
-    .armor-list-col{ flex:1 1 58%; display:flex; flex-direction:column; gap:0.5rem; }
-    .armor-avatar-img{ max-width: 92%; height:auto; display:block; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.6)); }
-    .armor-row{ display:flex; align-items:center; justify-content:space-between; gap: 0.5rem; }
-    .armor-slot{ background:#3b8b9a; color:#fff; border:0; padding:10px 16px; border-radius:12px; font-weight:700; letter-spacing:0.06em; cursor:pointer; }
-    .armor-stats{ font-size:0.85rem; color:#dcdcdc; text-align:right; min-width:140px; }
-    .armor-stats .stat-label{ color:#f6c44d; font-weight:700; margin-right:4px; }
+  .armor-grid{ display:flex; gap: 0.75rem; align-items:flex-start; }
+  .armor-avatar-col{ flex: 0 0 42%; display:flex; align-items:center; justify-content:center; }
+  .armor-list-col{ flex:1 1 58%; display:flex; flex-direction:column; gap:0.5rem; }
+  .armor-avatar-img{ max-width: 92%; height:auto; display:block; filter: drop-shadow(0 12px 22px rgba(0,0,0,0.7)); }
+  .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
+  .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 14px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:0.95rem; }
+  .armor-slot.full{ width:100%; }
+  .armor-stats{ font-size:0.92rem; color:#dcdcdc; text-align:left; display:flex; gap:10px; justify-content:flex-start; padding-left:6px; }
+  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; }
     @media (max-width:520px){
       .armor-grid{ flex-direction:row; }
       .armor-avatar-col{ flex:0 0 44%; }
@@ -470,7 +471,7 @@ function ensureScreens() {
         <div style="width:64px;"></div>
       </div>
 
-      <section class="sheet-card">
+  <section class="sheet-card">
         <div class="sheet-grid-top">
           <div>
             <div class="field-label">Name</div>
@@ -482,7 +483,7 @@ function ensureScreens() {
           </div>
         </div>
 
-        <div class="sheet-row">
+  <div class="sheet-row">
           <div>
             <div class="field-label">Stamina</div>
             ${numField("cs_stamina")}
@@ -523,6 +524,42 @@ function ensureScreens() {
             ${numField("cs_focus")}
           </div>
         </div>
+
+        <!-- Armor panel mockup (moved inside sheet-card, above the section buttons) -->
+        <section class="sheet-armor-panel">
+          <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">ARMOR</h2>
+          <div class="armor-grid">
+            <div class="armor-avatar-col">
+              <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar-img" />
+            </div>
+            <div class="armor-list-col">
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="head">HEAD</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="torso">TORSO</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="leftArm">LEFT ARM</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="rightArm">RIGHT ARM</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="leftLeg">LEFT LEG</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+              <div class="armor-row">
+                <button class="armor-slot full" data-slot="rightLeg">RIGHT LEG</button>
+                <div class="armor-stats"><span class="stat-label">AV:</span> <span class="stat-val av">--</span> <span class="stat-label">AR:</span> <span class="stat-val ar">--</span> <span class="stat-label">DUR:</span> <span class="stat-val dur">--</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <div class="sheet-buttons">
           <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
