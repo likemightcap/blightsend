@@ -1066,6 +1066,19 @@ async function openArmorOverlay(slotKey, titleText){
 
   const overlay = document.getElementById('armorOverlay');
   if (!overlay) return;
+  // change avatar image on the left to match the selected slot
+  try {
+    const avatar = document.querySelector('.armor-avatar-img');
+    if (avatar) {
+      // save original if not already saved
+      if (!overlay.dataset.origAvatar) overlay.dataset.origAvatar = avatar.src || '';
+      // compute filename token, convert camelCase / camel to UPPER-KEBAB
+      const token = (slotKey || '').replace(/([a-z])([A-Z])/g, '$1-$2').replace(/_/g,'-').toUpperCase();
+      const imgName = `assets/armor-avatar-${token}.png`;
+      avatar.src = imgName;
+    }
+  } catch (e) { /* ignore avatar swap errors */ }
+
   overlay.classList.remove('be-hidden');
   overlay.style.background = getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
   document.getElementById('overlayTitle').textContent = titleText || slotKey;
@@ -1104,6 +1117,14 @@ function closeArmorOverlay(){
   if (!overlay) return;
   overlay.classList.add('be-hidden');
   overlay.dataset.slot = '';
+  // restore original avatar src if we changed it
+  try {
+    const avatar = document.querySelector('.armor-avatar-img');
+    if (avatar && overlay.dataset.origAvatar) {
+      avatar.src = overlay.dataset.origAvatar;
+      delete overlay.dataset.origAvatar;
+    }
+  } catch (e) {}
 }
 
 function getArmorOptionsForLayer(slotKey, layerName){
