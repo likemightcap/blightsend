@@ -848,7 +848,8 @@ function passesFilter(item) {
     case "weapons":
       return normalize(item.category) === normalize(currentFilter);
     case "armor":
-      return normalize(item.armorClass) === normalize(currentFilter);
+      // filter armor by its "layer" property (e.g. Head, Body, etc.)
+      return normalize(item.layer || item.location || item.armorClass) === normalize(currentFilter);
     default:
       return true;
   }
@@ -885,7 +886,19 @@ function renderChips() {
   const config = pagesConfig[currentPage];
   if (!config || !config.chipOptions) return;
 
-  config.chipOptions.forEach((label) => {
+  // If we're on the armor page, derive chip options from available 'layer' values
+  let chipOptions = config.chipOptions;
+  if (currentPage === "armor") {
+    const data = (config.data && config.data()) || [];
+    const layers = new Set();
+    data.forEach((it) => {
+      if (it.layer) layers.add(it.layer);
+      else if (it.layers && Array.isArray(it.layers)) it.layers.forEach((l) => layers.add(l));
+    });
+    chipOptions = ["All", ...Array.from(layers).sort()];
+  }
+
+  chipOptions.forEach((label) => {
     const btn = document.createElement("button");
     btn.className = "chip" + (label === "All" && !currentFilter ? " active" : "");
     btn.textContent = label;
@@ -925,9 +938,14 @@ function renderList() {
     const title = document.createElement("div");
     title.className = "item-title";
 
+    // For armor, include location in the title (e.g. "Padded Coif - Head")
     let displayName = item.name || "";
     if (currentPage === "weapons" && item.type) {
       displayName = `${item.name} - ${item.type}`;
+    }
+    if (currentPage === "armor") {
+      const loc = item.location || item.layer || item.armorClass || null;
+      if (loc) displayName = `${displayName} - ${loc}`;
     }
     title.textContent = displayName;
 
@@ -954,12 +972,11 @@ function renderList() {
     } else if (currentPage === "skills") {
       meta.textContent = "Advanced Skill" + (item.cost ? " · Cost " + item.cost : "");
     } else if (currentPage === "armor") {
+      // Abbreviated stat line: AV, AR, DUR
       const parts = [];
-      if (item.location) parts.push(item.location);
-      if (item.armorValue != null) parts.push(`AV ${item.armorValue}`);
-      if (item.reduction != null) parts.push(`Red ${item.reduction}`);
-      if (item.durability != null) parts.push(`Dur ${item.durability}`);
-      if (item.resistance) parts.push(`Res ${item.resistance}`);
+      if (item.armorValue != null) parts.push(`AV: ${item.armorValue}`);
+      if (item.reduction != null) parts.push(`AR: ${item.reduction}`);
+      if (item.durability != null) parts.push(`DUR: ${item.durability}`);
       meta.textContent = parts.join(" · ");
     } else if (currentPage === "conditions") {
       meta.textContent = "Condition";
@@ -967,7 +984,14 @@ function renderList() {
 
     const tagline = document.createElement("div");
     tagline.className = "item-tagline";
-    tagline.textContent = item.summary || item.description || item.effect || "";
+    if (currentPage === "armor") {
+      const extras = [];
+      if (item.resistance) extras.push(`RES: ${item.resistance}`);
+      if (item.weight != null) extras.push(`WT: ${item.weight}`);
+      tagline.textContent = extras.join(" · ");
+    } else {
+      tagline.textContent = item.summary || item.description || item.effect || "";
+    }
 
     main.appendChild(title);
     main.appendChild(meta);
@@ -979,7 +1003,7 @@ function renderList() {
     if (currentPage === "echoes") pill.textContent = "Echo";
     else if (currentPage === "weapons") pill.textContent = item.category || "Weapon";
     else if (currentPage === "skills") pill.textContent = "Skill";
-    else if (currentPage === "armor") pill.textContent = item.armorClass || "Armor";
+  else if (currentPage === "armor") pill.textContent = item.layer || item.armorClass || "Armor";
     else pill.textContent = "Condition";
 
     card.appendChild(main);
@@ -1080,9 +1104,12 @@ function openModal(item, page) {
 
   if (page === "armor") {
     const lines = [];
+    if (item.armorValue != null) lines.push(`Armor Value: ${item.armorValue}`);
+    if (item.reduction != null) lines.push(`Reduction: ${item.reduction}`);
     if (item.durability != null) lines.push(`Durability: ${item.durability}`);
-    if (item.cost != null) lines.push(`Cost: ${item.cost}`);
+    if (item.resistance) lines.push(`Resistance: ${item.resistance}`);
     if (item.weight != null) lines.push(`Weight: ${item.weight}`);
+    if (item.cost != null) lines.push(`Cost: ${item.cost}`);
     if (item.notes) lines.push(item.notes);
     if (lines.length) {
       bodyParts.push(`<div class="modal-section-title">Details</div><ul>`);
