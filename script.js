@@ -969,42 +969,31 @@ function renderArmorPanel(){
     overlay.querySelectorAll('.overlay-input').forEach(inp => {
       const layer = inp.dataset.layer;
       const list = overlay.querySelector(`.overlay-list[data-layer="${layer}"]`);
-      // populate initial list
-      inp.addEventListener('focus', (e) => {
+      // Make the input act like a dropdown trigger (readonly)
+      inp.readOnly = true;
+      inp.addEventListener('click', (e) => {
+        // populate and show list
         populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
         list.classList.remove('be-hidden');
       });
-      inp.addEventListener('input', (e) => {
-        const q = (e.target.value || '').toLowerCase();
-        // filter visible items
-        list.querySelectorAll('.overlay-item').forEach(it => {
-          const ok = it.textContent.toLowerCase().includes(q);
-          it.style.display = ok ? '' : 'none';
-        });
-      });
+      // allow keyboard to open list
       inp.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { list.classList.add('be-hidden'); inp.blur(); }
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
-          const visible = Array.from(list.querySelectorAll('.overlay-item')).filter(i => i.style.display !== 'none');
-          if (!visible.length) return;
-          let idx = visible.findIndex(i => i.classList.contains('hover'));
-          if (e.key === 'ArrowDown') { idx = Math.min(visible.length - 1, (idx < 0 ? 0 : idx + 1)); }
-          else if (e.key === 'ArrowUp') { idx = Math.max(0, (idx < 0 ? visible.length - 1 : idx - 1)); }
-          else if (e.key === 'Enter') { visible[Math.max(0, idx)].click(); e.preventDefault(); return; }
-          visible.forEach(i => i.classList.remove('hover'));
-          visible[idx].classList.add('hover');
-          visible[idx].scrollIntoView({block:'nearest'});
+        if (e.key === 'ArrowDown' || e.key === 'Enter') {
+          populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
+          list.classList.remove('be-hidden');
           e.preventDefault();
         }
+        if (e.key === 'Escape') {
+          list.classList.add('be-hidden');
+          inp.blur();
+        }
       });
-      // close list on outside click (only once)
+      // close list on outside click
       const closeHandler = (ev) => {
-        // if click is outside overlay entirely, hide all lists
         if (!overlay.contains(ev.target)) {
           overlay.querySelectorAll('.overlay-list').forEach(l => l.classList.add('be-hidden'));
           return;
         }
-        // if click inside overlay but outside a select-wrap, hide lists
         const inWrap = ev.target.closest('.overlay-select-wrap');
         if (!inWrap) overlay.querySelectorAll('.overlay-list').forEach(l => l.classList.add('be-hidden'));
       };
@@ -1154,11 +1143,15 @@ function populateOverlayOptions(slotKey, layerName, overlay){
     const div = document.createElement('div');
     div.className = 'overlay-item';
     div.textContent = item.name;
+    div.tabIndex = 0;
     div.addEventListener('click', () => {
       const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
       inp.value = item.name;
       list.classList.add('be-hidden');
       populateOverlayStatsForLayer(overlay, layerName);
+    });
+    div.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') div.click();
     });
     list.appendChild(div);
   });
