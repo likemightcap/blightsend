@@ -972,8 +972,11 @@ function renderArmorPanel(){
       // Make the input act like a dropdown trigger (readonly)
       inp.readOnly = true;
       inp.addEventListener('click', (e) => {
+        console.log('[DEBUG] overlay-input click', { layer, slot: overlay.dataset.slot });
         // populate and show list
         populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
+        // log list children after populate (may be empty)
+        console.log('[DEBUG] overlay-list children after populate:', list ? list.children.length : 0);
         list.classList.remove('be-hidden');
         inp.focus();
       });
@@ -1139,8 +1142,10 @@ function populateOverlayStatsForLayer(overlay, layerName){
 function populateOverlayOptions(slotKey, layerName, overlay){
   const list = overlay.querySelector(`.overlay-list[data-layer="${layerName}"]`);
   if (!list) return;
+  console.log('[DEBUG] populateOverlayOptions', { slotKey, layerName });
   list.innerHTML = '';
   const options = getArmorOptionsForLayer(slotKey, layerName);
+  console.log('[DEBUG] options length for', layerName, 'slot', slotKey, options.length, options.slice(0,6).map(o=>o.name));
   options.forEach(item => {
     const div = document.createElement('div');
     div.className = 'overlay-item';
