@@ -385,7 +385,9 @@ function injectArmorStylesOnce(){
     .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 12px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:1rem; }
     .armor-slot.full{ width:100%; }
     .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:12px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; }
-    .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; }
+  .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:8px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; align-items:baseline; }
+  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; min-width:32px; text-align:left; }
+  .armor-stats .stat-val{ display:inline-block; min-width:26px; text-align:left; }
     /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
     @media (max-width:520px){
       .armor-grid{ flex-direction:row; }
@@ -1134,11 +1136,29 @@ function populateOverlayStatsForLayer(overlay, layerName){
     av.textContent = item.armorValue != null ? String(item.armorValue) : '--';
     dr.textContent = item.reduction != null ? String(item.reduction) : '--';
     dur.textContent = item.durability != null ? String(item.durability) : '--';
-    res.textContent = item.resistance || '--';
+    res.textContent = abbreviateResistance(item.resistance) || '--';
     wt.textContent = item.weight != null ? String(item.weight) : '--';
   } else {
     av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
   }
+}
+
+// Abbreviate common resistance names so they fit better in the overlay
+function abbreviateResistance(raw){
+  if (!raw) return '';
+  if (Array.isArray(raw)) raw = raw.join(', ');
+  const map = {
+    'slashing': 'Slsh',
+    'blunt': 'Blt',
+    'piercing': 'Prc',
+    'fire': 'Fir',
+    'cold': 'Cld',
+    'none': 'None'
+  };
+  return raw.split(/[,;]\s*/).map(token => {
+    const k = token.trim().toLowerCase();
+    return map[k] || token.trim().slice(0,6);
+  }).join(', ');
 }
 
 // Populate custom dropdown list for a layer in the overlay
