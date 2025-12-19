@@ -975,12 +975,14 @@ function renderArmorPanel(){
         // populate and show list
         populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
         list.classList.remove('be-hidden');
+        inp.focus();
       });
       // allow keyboard to open list
       inp.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowDown' || e.key === 'Enter') {
           populateOverlayOptions(overlay.dataset.slot || '', layer, overlay);
           list.classList.remove('be-hidden');
+          inp.focus();
           e.preventDefault();
         }
         if (e.key === 'Escape') {
@@ -1029,13 +1031,12 @@ function openArmorOverlay(slotKey, titleText){
 
   // populate selects for each layer
   ['base','mid','outer'].forEach(layerName => {
-    const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
-    if (!sel) return;
-    // clear existing options except first
-    // For custom dropdowns: populate list and set input value
-    const list = overlay.querySelector(`.overlay-list[data-layer="${layerName}"]`);
+    // For custom dropdowns we use the overlay-input element (not a <select>)
     const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
-    if (!list || !inp) return;
+    if (!inp) return;
+    // clear existing options
+    const list = overlay.querySelector(`.overlay-list[data-layer="${layerName}"]`);
+    if (!list) return;
     list.innerHTML = '';
     const options = getArmorOptionsForLayer(slotKey, layerName);
     options.forEach(item => {
@@ -1111,9 +1112,10 @@ function getArmorOptionsForLayer(slotKey, layerName){
 }
 
 function populateOverlayStatsForLayer(overlay, layerName){
-  const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
-  if (!sel) return;
-  const selected = sel.value;
+  // our custom dropdown stores the chosen value in the overlay-input
+  const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
+  if (!inp) return;
+  const selected = inp.value;
   const item = armorData.find(a => a.name === selected);
   const section = overlay.querySelector(`.overlay-section[data-layer="${layerName}"]`);
   if (!section) return;
@@ -1165,8 +1167,8 @@ function commitArmorOverlay(){
 
   const layers = {};
   ['base','mid','outer'].forEach(layerName => {
-    const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
-    const val = sel ? sel.value : '';
+    const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
+    const val = inp ? inp.value : '';
     layers[layerName] = val || null;
   });
 
