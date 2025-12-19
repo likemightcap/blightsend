@@ -414,23 +414,25 @@ function injectArmorStylesOnce(){
   /* Armor overlay (fills right column area) */
   .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
-  .armor-overlay-inner{ width:100%; height:100%; background: #2f7f8f; padding:14px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:10px; font-size:0.94rem; overflow: visible; }
+  .armor-overlay-inner{ width:100%; height:100%; background: #2f7f8f; padding:10px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:8px; font-size:0.86rem; line-height:1.05; overflow: visible; }
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
   .overlay-section{ background: transparent; padding:0; border-radius:6px; display:flex; flex-direction:column; gap:8px; }
   .overlay-label{ font-weight:900; color:#e6e6e6; font-size:0.78rem; letter-spacing:0.08em; }
-  .overlay-select{ width:100%; padding:6px; border-radius:4px; border:0; background:#fff; color:#1a1a1a; font-size:0.95rem; }
+  .overlay-select{ width:100%; padding:6px; border-radius:4px; border:0; background:#fff; color:#1a1a1a; font-size:0.92rem; }
   .overlay-select-wrap{ position:relative; }
-  .overlay-input{ width:100%; padding:10px 12px; border-radius:4px; border:0; background:#fff; color:#111; font-size:0.95rem; font-weight:700; }
-  .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:9999; }
+  .overlay-input{ width:100%; padding:6px 8px; border-radius:3px; border:0; background:#fff; color:#111; font-size:0.86rem; font-weight:700; }
+  .overlay-list{ position:absolute; left:0; right:0; top:36px; max-height:140px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 6px 16px rgba(0,0,0,0.5); z-index:9999; }
   .overlay-item{ padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.06); }
   .overlay-item:hover, .overlay-item.hover{ background:rgba(0,0,0,0.06); }
-  .overlay-stats-row{ display:flex; gap:12px; justify-content:flex-start; align-items:center; font-weight:700; font-size:0.92rem; }
-  .overlay-stat{ color:#e6e6e6; }
-  .overlay-stat .ov-av, .overlay-stat .ov-dr, .overlay-stat .ov-dur, .overlay-stat .ov-res, .overlay-stat .ov-wt{ color:#f6c44d; font-weight:900; }
+  .overlay-stats-row{ display:flex; gap:10px; justify-content:flex-start; align-items:center; font-weight:700; font-size:0.82rem; }
+  .overlay-stat{ color:#e6e6e6; font-weight:700; }
+  .overlay-stat .ov-av, .overlay-stat .ov-dr, .overlay-stat .ov-dur, .overlay-stat .ov-wt{ color:#f6c44d; font-weight:900; }
+  /* make RES values even smaller and abbreviated */
+  .overlay-stat .ov-res{ font-size:0.78rem; color:#f6c44d; font-weight:900; opacity:0.95; }
   .overlay-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:auto; }
-  .overlay-ok, .overlay-cancel{ padding:6px 10px; border-radius:6px; border:0; cursor:pointer; font-weight:800; font-size:0.88rem; }
-  .overlay-ok{ background:#111; color:#fff; border-radius:8px; padding:8px 12px; }
-  .overlay-cancel{ background:#222; color:#fff; border-radius:8px; padding:8px 12px; }
+  .overlay-ok, .overlay-cancel{ padding:6px 8px; border-radius:6px; border:0; cursor:pointer; font-weight:800; font-size:0.82rem; }
+  .overlay-ok{ background:#111; color:#fff; border-radius:6px; padding:6px 10px; }
+  .overlay-cancel{ background:#222; color:#fff; border-radius:6px; padding:6px 10px; }
   `;
   document.head.appendChild(s);
 }
@@ -1152,8 +1154,8 @@ function populateOverlayStatsForLayer(overlay, layerName){
     av.textContent = item.armorValue != null ? String(item.armorValue) : '--';
     dr.textContent = item.reduction != null ? String(item.reduction) : '--';
     dur.textContent = item.durability != null ? String(item.durability) : '--';
-    // show full resistance names, but keep them compact via CSS/abbrev map if needed
-    res.textContent = item.resistance || '--';
+  // show abbreviated resistance names to save space
+  res.textContent = abbreviateResistance(item.resistance) || '--';
     wt.textContent = item.weight != null ? String(item.weight) : '--';
   } else {
     av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
