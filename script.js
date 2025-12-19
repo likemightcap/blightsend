@@ -997,14 +997,18 @@ function renderArmorPanel(){
           e.preventDefault();
         }
       });
-      // close list on outside click
-      document.addEventListener('click', (ev) => {
-        if (!overlay.contains(ev.target)) return; // only consider clicks inside overlay
-        const inWrap = ev.target.closest('.overlay-select-wrap');
-        if (!inWrap) {
+      // close list on outside click (only once)
+      const closeHandler = (ev) => {
+        // if click is outside overlay entirely, hide all lists
+        if (!overlay.contains(ev.target)) {
           overlay.querySelectorAll('.overlay-list').forEach(l => l.classList.add('be-hidden'));
+          return;
         }
-      });
+        // if click inside overlay but outside a select-wrap, hide lists
+        const inWrap = ev.target.closest('.overlay-select-wrap');
+        if (!inWrap) overlay.querySelectorAll('.overlay-list').forEach(l => l.classList.add('be-hidden'));
+      };
+      document.addEventListener('click', closeHandler);
     });
 
     // wire actions
@@ -1039,18 +1043,26 @@ function openArmorOverlay(slotKey, titleText){
     const sel = overlay.querySelector(`.overlay-select[data-layer="${layerName}"]`);
     if (!sel) return;
     // clear existing options except first
-    sel.innerHTML = '<option value="">-- none --</option>';
+    // For custom dropdowns: populate list and set input value
+    const list = overlay.querySelector(`.overlay-list[data-layer="${layerName}"]`);
+    const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
+    if (!list || !inp) return;
+    list.innerHTML = '';
     const options = getArmorOptionsForLayer(slotKey, layerName);
     options.forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.name;
-      opt.textContent = item.name;
-      sel.appendChild(opt);
+      const div = document.createElement('div');
+      div.className = 'overlay-item';
+      div.textContent = item.name;
+      div.addEventListener('click', () => {
+        inp.value = item.name;
+        list.classList.add('be-hidden');
+        populateOverlayStatsForLayer(overlay, layerName);
+      });
+      list.appendChild(div);
     });
-    // pre-select current if present
+    // prefill input if we have a saved choice
     const cur = (armorState[slotKey] && armorState[slotKey].layers && armorState[slotKey].layers[layerName]) || '';
-    if (cur) sel.value = cur;
-    // populate stats for this select
+    inp.value = cur || '';
     populateOverlayStatsForLayer(overlay, layerName);
   });
 }
