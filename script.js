@@ -374,21 +374,24 @@ function injectArmorStylesOnce(){
   const s = document.createElement('style');
   s.id = '_beArmorStyles';
   s.textContent = `
-    .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.75rem; }
-  .armor-grid{ display:flex; gap: 0.75rem; align-items:flex-start; }
-  .armor-avatar-col{ flex: 0 0 42%; display:flex; align-items:center; justify-content:center; }
-  .armor-list-col{ flex:1 1 58%; display:flex; flex-direction:column; gap:0.5rem; }
-  .armor-avatar-img{ max-width: 92%; height:auto; display:block; filter: drop-shadow(0 12px 22px rgba(0,0,0,0.7)); }
-  .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
-  .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 14px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:0.95rem; }
-  .armor-slot.full{ width:100%; }
-  .armor-stats{ font-size:0.92rem; color:#dcdcdc; text-align:left; display:flex; gap:10px; justify-content:flex-start; padding-left:6px; }
-  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; }
+    .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem; background: #4f5754; border-radius: 12px; }
+    /* Make the avatar column larger so the avatar is more prominent */
+    .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
+    .armor-avatar-col{ flex: 0 0 48%; display:flex; align-items:center; justify-content:center; }
+    .armor-list-col{ flex:1 1 52%; display:flex; flex-direction:column; gap:0.5rem; }
+    .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
+    .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
+    /* Pill should span almost full column; stats are shown below and never wrap */
+    .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 12px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:1rem; }
+    .armor-slot.full{ width:100%; }
+    .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:12px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; }
+    .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; }
+    /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
     @media (max-width:520px){
       .armor-grid{ flex-direction:row; }
-      .armor-avatar-col{ flex:0 0 44%; }
-      .armor-list-col{ flex:1 1 56%; }
-      .armor-stats{ min-width:110px; font-size:0.82rem; }
+      .armor-avatar-col{ flex:0 0 50%; }
+      .armor-list-col{ flex:1 1 50%; }
+      .armor-stats{ font-size:0.82rem; gap:8px; }
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
   `;
