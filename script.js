@@ -411,8 +411,8 @@ function injectArmorStylesOnce(){
       .overlay-stats-row{ font-size:0.86rem; gap:8px; }
       .overlay-section{ gap:6px; }
     }
-  /* Armor overlay (fills right column area) */
-  .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
+  /* Armor overlay (positioned explicitly to match right column area) */
+  .armor-overlay{ position:absolute; /* left/top/width/height are set at runtime */ display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
   .armor-overlay-inner{ width:100%; height:100%; background: #2f7f8f; padding:10px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:8px; font-size:0.86rem; line-height:1.05; overflow: visible; }
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
@@ -936,15 +936,18 @@ function renderArmorPanel(){
     slot.setAttribute('aria-label', `${slot.textContent}: AV ${armorState[slotKey].armorValue}, AR ${armorState[slotKey].reduction}, DUR ${armorState[slotKey].durability}`);
   });
 
-  // create overlay inside the armor-list-col if missing
+  // create overlay (we'll attach it to the armor panel and position it to cover the right column)
   const listCol = document.querySelector('.armor-list-col');
-  if (listCol && !document.getElementById('armorOverlay')) {
-    // ensure relative positioning for absolute overlay
-    listCol.style.position = listCol.style.position || 'relative';
+  const armorPanel = document.querySelector('.sheet-armor-panel');
+  if (armorPanel && listCol && !document.getElementById('armorOverlay')) {
+    // ensure the armor panel is the positioned ancestor we can attach overlays to
+    armorPanel.style.position = armorPanel.style.position || 'relative';
 
     const overlay = document.createElement('div');
     overlay.id = 'armorOverlay';
     overlay.className = 'armor-overlay be-hidden';
+    // mark where the overlay should align to (selector target)
+    overlay.dataset.alignTo = '.armor-list-col';
     overlay.innerHTML = `
       <div class="armor-overlay-inner">
         <div class="overlay-title" id="overlayTitle">SLOT</div>
@@ -983,7 +986,8 @@ function renderArmorPanel(){
       </div>
     `;
 
-    listCol.appendChild(overlay);
+  // append to the armor panel; we'll compute exact coordinates when opening
+  armorPanel.appendChild(overlay);
 
     // wire custom input dropdowns: populate and filter
     overlay.querySelectorAll('.overlay-input').forEach(inp => {
@@ -1050,6 +1054,22 @@ async function openArmorOverlay(slotKey, titleText){
 
   const overlay = document.getElementById('armorOverlay');
   if (!overlay) return;
+  // Position the overlay to exactly cover the right column area
+  const armorPanel = document.querySelector('.sheet-armor-panel');
+  const listCol = document.querySelector('.armor-list-col');
+  if (armorPanel && listCol) {
+    // compute coordinates relative to armorPanel (which is positioned)
+    const panelRect = armorPanel.getBoundingClientRect();
+    const listRect = listCol.getBoundingClientRect();
+    const left = listRect.left - panelRect.left;
+    const top = listRect.top - panelRect.top;
+    const width = Math.max(0, listRect.width);
+    const height = Math.max(0, listRect.height);
+    overlay.style.left = `${left}px`;
+    overlay.style.top = `${top}px`;
+    overlay.style.width = `${width}px`;
+    overlay.style.height = `${height}px`;
+  }
   overlay.classList.remove('be-hidden');
   overlay.style.background = getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
   document.getElementById('overlayTitle').textContent = titleText || slotKey;
@@ -1088,6 +1108,11 @@ function closeArmorOverlay(){
   if (!overlay) return;
   overlay.classList.add('be-hidden');
   overlay.dataset.slot = '';
+  // clear positioning so it will be recalculated on next open
+  overlay.style.left = '';
+  overlay.style.top = '';
+  overlay.style.width = '';
+  overlay.style.height = '';
 }
 
 function getArmorOptionsForLayer(slotKey, layerName){
