@@ -111,6 +111,12 @@ function injectSheetStylesOnce() {
     #homeScreen, #sheetScreen { width: 100%; max-width: 900px; margin: 0 auto; }
     .be-hidden { display: none !important; }
 
+    /* Make the app feel native: prevent text selection and image dragging globally,
+       but allow inputs and textareas to remain editable/selectable */
+    html, body, #app { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+    img { -webkit-user-drag: none; user-drag: none; -webkit-user-select: none; user-select: none; }
+    input, textarea, select { -webkit-user-select: text; user-select: text; }
+
     .home-wrap{
       min-height: calc(100vh - 2rem);
       display:flex; flex-direction:column; gap:1.25rem;
@@ -366,6 +372,25 @@ function injectSheetStylesOnce() {
     #beToast.show{ display:block; }
   `;
   document.head.appendChild(style);
+}
+
+// Prevent image context menu and dragging to make the app feel more like a native app
+function installAppLikeBehaviors(){
+  // block right-click context menu on images
+  document.addEventListener('contextmenu', (e) => {
+    try {
+      if (e.target && e.target.closest && e.target.closest('img')) {
+        e.preventDefault();
+      }
+    } catch (err) { /* ignore */ }
+  }, { capture: true });
+
+  // block dragstart on images
+  document.addEventListener('dragstart', (e) => {
+    try {
+      if (e.target && e.target.tagName === 'IMG') e.preventDefault();
+    } catch (err) {}
+  }, { capture: true });
 }
 
 // Additional armor panel styles appended to the same injected style block
