@@ -35,7 +35,8 @@ function ensureDataLoaded() {
         _dataLoaded = true;
         return;
       }
-      // Dynamically compute the site root for GH Pages compatibility
+          hp: getNum("cs_hp"),
+          hp2: getNum("cs_hp2"),
       function getSiteRoot() {
         const path = window.location.pathname;
         const match = path.match(/^\/(.+?)\//);
@@ -351,6 +352,27 @@ function injectSheetStylesOnce() {
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
 
+    /* Mobile reflow to match reference: name + HP side-by-side and compact steppers */
+    @media (max-width: 480px) {
+      .sheet-grid-top{ display:flex; gap:0.5rem; align-items:center; }
+      .sheet-grid-top > div:first-child{ flex:1 1 auto; }
+      .sheet-grid-top > div:nth-child(2){ flex:0 0 200px; display:flex; align-items:center; gap:0.4rem; }
+      .sheet-grid-top .num-wrap{ flex:1 1 0; min-width:0; }
+      /* ensure the two HP fields sit side-by-side inside the HP column */
+      .sheet-grid-top .num-wrap + .num-wrap{ margin-left:0.3rem; }
+
+      /* make the sheet-row fields arranged as two columns with label above input */
+      .sheet-row{ grid-template-columns: repeat(2, 1fr); }
+
+      /* stat-strip should stay in a single row (side-by-side) on mobile */
+      .stat-strip{ grid-template-columns: repeat(5, 1fr); overflow-x:auto; gap:0.5rem; }
+
+      /* shrink stepper size to save space */
+      .stepper{ width:34px; flex:0 0 34px; }
+      .stepper button{ font-size:0.8rem; padding:4px 0; }
+      input.be-num{ padding:0.5rem 0.5rem; }
+    }
+
     /* Toast */
     #beToast{
       position: fixed;
@@ -564,7 +586,10 @@ function ensureScreens() {
           </div>
           <div>
             <div class="field-label">HP</div>
-            ${numField("cs_hp")}
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              ${numField("cs_hp")}
+              ${numField("cs_hp2")}
+            </div>
           </div>
         </div>
 
@@ -824,6 +849,7 @@ function setSheetState(state) {
   };
 
   setNum("cs_hp", state.hp);
+  setNum("cs_hp2", state.hp2);
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
