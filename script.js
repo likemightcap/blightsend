@@ -401,10 +401,12 @@ function injectArmorStylesOnce(){
     @media (max-width:480px) {
       .sheet-armor-panel { padding: 0.6rem; }
       .armor-grid{ gap:0.5rem; }
-      .armor-avatar-col{ flex: 0 0 56%; }
-      .armor-list-col{ flex: 0 0 40%; max-width:40%; min-width:160px; gap:0.6rem; }
-      .armor-slot{ padding:6px 8px; font-size:0.85rem; border-radius:10px; }
-      .armor-stats{ font-size:0.78rem; gap:8px; margin-top:4px; }
+      /* make avatar a bit smaller, give more room to right column */
+      .armor-avatar-col{ flex: 0 0 50%; }
+      .armor-avatar-img{ max-width: 80%; }
+      .armor-list-col{ flex: 0 0 44%; max-width:44%; min-width:140px; gap:0.5rem; }
+      .armor-slot{ padding:5px 6px; font-size:0.82rem; border-radius:8px; }
+      .armor-stats{ font-size:0.75rem; gap:6px; margin-top:3px; }
       .overlay-input{ font-size:0.92rem; padding:8px 10px; }
       .overlay-stats-row{ font-size:0.86rem; gap:8px; }
       .overlay-section{ gap:6px; }
