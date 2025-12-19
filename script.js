@@ -397,14 +397,14 @@ function injectArmorStylesOnce(){
   /* Armor overlay (fills right column area) */
   .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
-  .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:8px; box-sizing:border-box; color:#fff; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:0.92rem; }
+  .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:8px; box-sizing:border-box; color:#fff; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:0.92rem; overflow: visible; }
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
   .overlay-section{ background: rgba(255,255,255,0.035); padding:6px; border-radius:6px; display:flex; flex-direction:column; gap:6px; }
   .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.78rem; }
   .overlay-select{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; font-size:0.88rem; }
   .overlay-select-wrap{ position:relative; }
   .overlay-input{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#111; font-size:0.88rem; }
-  .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:45; }
+  .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:9999; }
   .overlay-item{ padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.06); }
   .overlay-item:hover, .overlay-item.hover{ background:rgba(0,0,0,0.06); }
   .overlay-stats-row{ display:flex; gap:8px; justify-content:space-between; font-weight:800; font-size:0.86rem; }
