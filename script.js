@@ -1024,7 +1024,10 @@ function slotLabelForKey(key){
   return map[key] || key;
 }
 
-function openArmorOverlay(slotKey, titleText){
+async function openArmorOverlay(slotKey, titleText){
+  // Ensure we have armor data before attempting to populate options
+  await ensureDataLoaded();
+
   const overlay = document.getElementById('armorOverlay');
   if (!overlay) return;
   overlay.classList.remove('be-hidden');
