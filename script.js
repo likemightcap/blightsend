@@ -374,22 +374,21 @@ function injectArmorStylesOnce(){
   const s = document.createElement('style');
   s.id = '_beArmorStyles';
   s.textContent = `
-    .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem; background: #4f5754; border-radius: 12px; }
+  .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 1rem 1.25rem; background: #4f5754; border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
-  /* keep the avatar prominent but avoid forcing the right column to expand */
-  .armor-avatar-col{ flex: 0 0 46%; display:flex; align-items:center; justify-content:center; }
-  .armor-list-col{ flex:1 1 54%; max-width: 54%; display:flex; flex-direction:column; gap:0.5rem; }
+  /* left: large avatar area; right: stacked pills column */
+  .armor-avatar-col{ flex: 0 0 58%; display:flex; align-items:center; justify-content:center; }
+  .armor-list-col{ flex: 0 0 38%; max-width: 38%; min-width:220px; display:flex; flex-direction:column; gap:0.9rem; }
     .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
-    /* Pill should span almost full column; stats are shown below and never wrap */
-    .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:12px 12px; border-radius:12px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:1rem; }
+    /* Pill should span almost full column; stats are shown below */
+    .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:10px 14px; border-radius:14px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:0.98rem; text-transform:uppercase; }
     .armor-slot.full{ width:100%; }
-    .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:12px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; }
-  .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:8px; justify-content:flex-start; padding-left:6px; white-space:nowrap; overflow:hidden; align-items:baseline; }
-  /* smaller minimums so long numbers don't force the column wider */
-  .armor-stats .stat-label{ color:#f6c44d; font-weight:800; margin-right:4px; min-width:20px; text-align:left; }
-  .armor-stats .stat-val{ display:inline-block; min-width:16px; text-align:left; }
+    .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:18px; justify-content:center; padding-left:6px; white-space:nowrap; overflow:visible; align-items:center; margin-top:6px; }
+    /* label is muted, value is highlighted yellow and sits close to label */
+    .armor-stats .stat-label{ color:#e6e6e6; font-weight:700; margin-right:6px; }
+    .armor-stats .stat-val{ color:#f6c44d; font-weight:900; min-width:20px; display:inline-block; text-align:left; }
     /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
     @media (max-width:520px){
       .armor-grid{ flex-direction:row; }
@@ -401,22 +400,23 @@ function injectArmorStylesOnce(){
   /* Armor overlay (fills right column area) */
   .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
-  .armor-overlay-inner{ width:100%; height:100%; background: rgba(47,127,143,0.98); padding:8px; box-sizing:border-box; color:#fff; border-radius:6px; display:flex; flex-direction:column; gap:6px; font-size:0.92rem; overflow: visible; }
+  .armor-overlay-inner{ width:100%; height:100%; background: #2f7f8f; padding:14px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:10px; font-size:0.94rem; overflow: visible; }
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
-  .overlay-section{ background: rgba(255,255,255,0.035); padding:6px; border-radius:6px; display:flex; flex-direction:column; gap:6px; }
-  .overlay-label{ font-weight:800; color:#e6e6e6; font-size:0.78rem; }
-  .overlay-select{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#1a1a1a; font-size:0.88rem; }
+  .overlay-section{ background: transparent; padding:0; border-radius:6px; display:flex; flex-direction:column; gap:8px; }
+  .overlay-label{ font-weight:900; color:#e6e6e6; font-size:0.78rem; letter-spacing:0.08em; }
+  .overlay-select{ width:100%; padding:6px; border-radius:4px; border:0; background:#fff; color:#1a1a1a; font-size:0.95rem; }
   .overlay-select-wrap{ position:relative; }
-  .overlay-input{ width:100%; padding:6px; border-radius:6px; border:0; background:#fff; color:#111; font-size:0.88rem; }
+  .overlay-input{ width:100%; padding:10px 12px; border-radius:4px; border:0; background:#fff; color:#111; font-size:0.95rem; font-weight:700; }
   .overlay-list{ position:absolute; left:0; right:0; top:40px; max-height:160px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 8px 20px rgba(0,0,0,0.6); z-index:9999; }
   .overlay-item{ padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,0.06); }
   .overlay-item:hover, .overlay-item.hover{ background:rgba(0,0,0,0.06); }
-  .overlay-stats-row{ display:flex; gap:8px; justify-content:space-between; font-weight:800; font-size:0.86rem; }
-  .overlay-stat{ color:#fff; }
+  .overlay-stats-row{ display:flex; gap:12px; justify-content:flex-start; align-items:center; font-weight:700; font-size:0.92rem; }
+  .overlay-stat{ color:#e6e6e6; }
+  .overlay-stat .ov-av, .overlay-stat .ov-dr, .overlay-stat .ov-dur, .overlay-stat .ov-res, .overlay-stat .ov-wt{ color:#f6c44d; font-weight:900; }
   .overlay-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:auto; }
   .overlay-ok, .overlay-cancel{ padding:6px 10px; border-radius:6px; border:0; cursor:pointer; font-weight:800; font-size:0.88rem; }
-  .overlay-ok{ background:#111; color:#fff; }
-  .overlay-cancel{ background:#222; color:#fff; }
+  .overlay-ok{ background:#111; color:#fff; border-radius:8px; padding:8px 12px; }
+  .overlay-cancel{ background:#222; color:#fff; border-radius:8px; padding:8px 12px; }
   `;
   document.head.appendChild(s);
 }
@@ -1138,7 +1138,8 @@ function populateOverlayStatsForLayer(overlay, layerName){
     av.textContent = item.armorValue != null ? String(item.armorValue) : '--';
     dr.textContent = item.reduction != null ? String(item.reduction) : '--';
     dur.textContent = item.durability != null ? String(item.durability) : '--';
-    res.textContent = abbreviateResistance(item.resistance) || '--';
+    // show full resistance names, but keep them compact via CSS/abbrev map if needed
+    res.textContent = item.resistance || '--';
     wt.textContent = item.weight != null ? String(item.weight) : '--';
   } else {
     av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
