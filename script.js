@@ -397,6 +397,18 @@ function injectArmorStylesOnce(){
       .armor-stats{ font-size:0.82rem; gap:8px; }
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
+    /* Tighter mobile rules to ensure right column fits within the panel */
+    @media (max-width:480px) {
+      .sheet-armor-panel { padding: 0.6rem; }
+      .armor-grid{ gap:0.5rem; }
+      .armor-avatar-col{ flex: 0 0 56%; }
+      .armor-list-col{ flex: 0 0 40%; max-width:40%; min-width:160px; gap:0.6rem; }
+      .armor-slot{ padding:6px 8px; font-size:0.85rem; border-radius:10px; }
+      .armor-stats{ font-size:0.78rem; gap:8px; margin-top:4px; }
+      .overlay-input{ font-size:0.92rem; padding:8px 10px; }
+      .overlay-stats-row{ font-size:0.86rem; gap:8px; }
+      .overlay-section{ gap:6px; }
+    }
   /* Armor overlay (fills right column area) */
   .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
