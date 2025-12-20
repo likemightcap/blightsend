@@ -997,7 +997,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Melee Weapon">Select Melee Weapon</button>
+                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1022,7 +1022,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Melee Weapon">Select Melee Weapon</button>
+                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1047,7 +1047,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Ranged Weapon">Select Ranged Weapon</button>
+                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
                 <div class="weapon-type two-line"><div class="type-top">--</div><div class="type-bottom">--</div></div>
                 <div class="weapon-stats ranged-stats">
                   <div class="small-stats">
