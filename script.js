@@ -722,6 +722,20 @@ function renderWeaponsPanel(){
       list.setAttribute('aria-hidden', list.classList.contains('be-hidden') ? 'true' : 'false');
     });
 
+    // Open the dropdown when clicking anywhere in the row (but not when clicking inside the list itself)
+    row.addEventListener('click', async (e) => {
+      // if click happened inside the list, ignore (list handles its own clicks)
+      if (e.target.closest('.weapon-list')) return;
+      // if the click target is the list toggle itself, the selector handler will run; avoid double-handling
+      if (e.target.closest('.weapon-selector')) return;
+      e.stopPropagation();
+      await ensureDataLoaded();
+      populateWeaponListForRow(row);
+      // show the list
+      list.classList.remove('be-hidden');
+      list.setAttribute('aria-hidden', 'false');
+    });
+
     // close list when clicking outside
     document.addEventListener('click', (ev) => {
       if (!row.contains(ev.target)) {
