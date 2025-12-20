@@ -516,6 +516,30 @@ function installAppLikeBehaviors(){
       if (e.target && e.target.tagName === 'IMG') e.preventDefault();
     } catch (err) {}
   }, { capture: true });
+
+  // Haptic feedback for button presses (where supported)
+  // Use navigator.vibrate when available. We listen for pointerdown on interactive
+  // elements so vibration feels immediate (like native tap). We guard to avoid
+  // calling vibrate too often by ignoring non-button targets.
+  const supportsVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+  if (supportsVibrate) {
+    let lastV = 0;
+    document.addEventListener('pointerdown', (ev) => {
+      try {
+        const t = ev.target;
+        // consider a target interactive if it's a <button>, has role=button,
+        // is an input[type=button], or is an element with [data-action] attribute
+        const interactive = t.closest && t.closest('button, [role="button"], input[type="button"], [data-action], .sheet-action, .sheet-menu-item, .sheet-menu-btn, .sheet-title-btn, .armor-slot, .be-num-hud-btn');
+        if (!interactive) return;
+        const now = Date.now();
+        // throttle to ~60ms to avoid multi-vibrate on the same press
+        if (now - lastV < 60) return;
+        lastV = now;
+        // short, subtle vibration (10ms)
+        navigator.vibrate(10);
+      } catch (err) { /* ignore vibration errors */ }
+    }, { capture: true });
+  }
 }
 
 // Additional armor panel styles appended to the same injected style block
