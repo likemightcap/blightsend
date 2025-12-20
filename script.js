@@ -629,6 +629,150 @@ function injectArmorStylesOnce(){
   document.head.appendChild(s);
 }
 
+// Weapons panel styles
+function injectWeaponStylesOnce(){
+  if ($('#_beWeaponStyles')) return;
+  const s = document.createElement('style');
+  s.id = '_beWeaponStyles';
+  s.textContent = `
+  .sheet-weapons-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem 1rem; background: #2a2f30; border-radius: 12px; }
+  .weapons-grid{ display:flex; flex-direction:column; gap:0.6rem; }
+  .weapon-row{ display:flex; gap:0.6rem; align-items:center; padding:8px; background: linear-gradient(180deg,#171818,#111213); border-radius:10px; border:1px solid rgba(255,255,255,0.04); position:relative; }
+  .weapon-left{ display:flex; flex-direction:column; align-items:center; gap:8px; width:110px; flex:0 0 110px; }
+  .weapon-label{ font-weight:900; text-transform:uppercase; letter-spacing:0.12em; font-size:0.85rem; }
+  .weapon-image-box{ width:72px; height:72px; background:#0d0d0f; border-radius:8px; border:1px solid rgba(255,255,255,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); background-size:cover; background-position:center center; }
+  .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
+  .weapon-selector{ text-align:left; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.35); color:var(--text-main); font-weight:800; cursor:pointer; }
+  .weapon-selector:active{ transform:scale(0.997); }
+  .weapon-type{ font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
+  .weapon-type.two-line{ display:flex; flex-direction:column; }
+  .weapon-stats{ display:flex; gap:12px; align-items:center; margin-top:4px; }
+  .weapon-stats .stat{ display:flex; flex-direction:column; align-items:flex-start; min-width:48px; }
+  .stat-label{ font-size:0.72rem; color:var(--text-muted); font-weight:800; }
+  .stat-val{ font-size:1rem; font-weight:900; color:var(--accent-soft); }
+  .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:160px; flex:0 0 160px; }
+  .dice-label{ font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; }
+  .dice-val{ font-weight:900; color:var(--accent); }
+  .weapon-list{ position:absolute; left:120px; right:8px; top:100%; background: #0b0b0b; color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:220px; overflow:auto; z-index:80; padding:6px; }
+  .weapon-list .weapon-item{ padding:8px; border-radius:6px; cursor:pointer; }
+  .weapon-list .weapon-item:hover{ background:rgba(255,255,255,0.03); }
+  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:8px; border-radius:8px; color:#fff; display:flex; gap:8px; align-items:flex-start; }
+  .rb-title{ font-weight:900; font-size:0.78rem; margin-bottom:6px; }
+  .rb-row{ display:flex; gap:6px; align-items:center; }
+  .rb-label{ font-weight:900; color:#fff; background:#ff8a3c; padding:2px 6px; border-radius:6px; font-size:0.68rem; }
+  .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.82rem; }
+  @media (max-width:520px){ .weapon-row{ flex-direction:column; align-items:stretch; } .weapon-left{ flex-direction:row; width:100%; gap:12px; } .weapon-dice{ width:100%; align-items:flex-start; } .weapon-list{ left:8px; right:8px; top:calc(100% + 6px); } }
+  `;
+  document.head.appendChild(s);
+}
+
+// Render weapons panel placeholders and wire handlers
+function renderWeaponsPanel(){
+  injectWeaponStylesOnce();
+  // Wire each weapon-row selector to open a list
+  $all('.weapon-row').forEach(row => {
+    if (row.dataset.bound) return;
+    row.dataset.bound = '1';
+    const selector = row.querySelector('.weapon-selector');
+    const list = row.querySelector('.weapon-list');
+    selector.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      // ensure data loaded
+      await ensureDataLoaded();
+      populateWeaponListForRow(row);
+      list.classList.toggle('be-hidden');
+      list.setAttribute('aria-hidden', list.classList.contains('be-hidden') ? 'true' : 'false');
+    });
+
+    // close list when clicking outside
+    document.addEventListener('click', (ev) => {
+      if (!row.contains(ev.target)) {
+        list.classList.add('be-hidden');
+        list.setAttribute('aria-hidden', 'true');
+      }
+    });
+  });
+}
+
+function populateWeaponListForRow(row){
+  const cat = (row.dataset.category || '').toLowerCase();
+  const list = row.querySelector('.weapon-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const options = (weaponsData || []).filter(w => normalize(w.category) === cat);
+  options.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+  options.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'weapon-item';
+    div.textContent = item.name + (item.type ? (' — ' + item.type) : '');
+    div.addEventListener('click', (e) => {
+      e.stopPropagation();
+      applyWeaponToRow(row, item);
+      list.classList.add('be-hidden');
+      list.setAttribute('aria-hidden', 'true');
+    });
+    list.appendChild(div);
+  });
+}
+
+function applyWeaponToRow(row, item){
+  if (!row || !item) return;
+  const imgBox = row.querySelector('.weapon-image-box');
+  const selector = row.querySelector('.weapon-selector');
+  const typeEl = row.querySelector('.weapon-type');
+  const dicePool = row.querySelector('.dice-pool');
+  const diceSize = row.querySelector('.dice-size');
+
+  // set image if item.image exists, otherwise keep placeholder
+  if (imgBox) {
+    if (item.image) imgBox.style.backgroundImage = `url(${item.image})`;
+    else if (item.icon) imgBox.style.backgroundImage = `url(${item.icon})`;
+    else imgBox.style.backgroundImage = '';
+  }
+  if (selector) selector.textContent = item.name || selector.dataset.placeholder || selector.textContent;
+
+  // type / descriptor
+  if (typeEl) {
+    if (row.dataset.category && row.dataset.category.toLowerCase() === 'melee') {
+      typeEl.textContent = (item.type || '--').toUpperCase();
+    } else {
+      // ranged: show type and description stacked
+      const top = typeEl.querySelector('.type-top');
+      const bot = typeEl.querySelector('.type-bottom');
+      if (top) top.textContent = (item.type || '--').toUpperCase();
+      if (bot) bot.textContent = (item.description || '--');
+    }
+  }
+
+  // dice
+  if (dicePool) dicePool.textContent = item.diePool != null ? String(item.diePool) : '--';
+  if (diceSize) diceSize.textContent = item.dieSize != null ? String(item.dieSize).toUpperCase() : '--';
+
+  // stats
+  const dam = row.querySelector('.stat-val.dam');
+  const pen = row.querySelector('.stat-val.pen');
+  const dur = row.querySelector('.stat-val.dur');
+  const hands = row.querySelector('.stat-val.hands');
+  const wt = row.querySelector('.stat-val.wt');
+  const range = row.querySelector('.stat-val.range');
+  if (dam) dam.textContent = item.damage != null ? String(item.damage) : '--';
+  if (pen) pen.textContent = item.penetration != null ? String(item.penetration) : '--';
+  if (dur) dur.textContent = item.durability != null ? String(item.durability) : '--';
+  if (hands) hands.textContent = item.hands != null ? String(item.hands) : '--';
+  if (wt) wt.textContent = item.weight != null ? String(item.weight) : (item.wt != null ? String(item.wt) : '--');
+  if (range) range.textContent = item.range != null ? String(item.range) : (item.rangeBands ? '--' : '--');
+
+  // ranged range bands
+  const rbClse = row.querySelector('.rb-clse');
+  const rbEff = row.querySelector('.rb-eff');
+  const rbFar = row.querySelector('.rb-far');
+  const rbMax = row.querySelector('.rb-max');
+  if (rbClse) rbClse.textContent = (item.rangeBands && (item.rangeBands.close || item.rangeBands.clse)) || '--';
+  if (rbEff) rbEff.textContent = (item.rangeBands && (item.rangeBands.effective || item.rangeBands.eff)) || '--';
+  if (rbFar) rbFar.textContent = (item.rangeBands && (item.rangeBands.far)) || '--';
+  if (rbMax) rbMax.textContent = (item.rangeBands && (item.rangeBands.max)) || '--';
+}
+
 function toast(msg) {
   let el = $("#beToast");
   if (!el) {
@@ -805,8 +949,94 @@ function ensureScreens() {
             </div>
           </div>
         </section>
-
         
+        <!-- Weapons panel -->
+        <section class="sheet-weapons-panel">
+          <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">WEAPONS</h2>
+          <div class="weapons-grid">
+            <!-- MELEE Slot #1 -->
+            <div class="weapon-row" data-slot="melee1" data-category="Melee">
+              <div class="weapon-left">
+                <div class="weapon-label">MELEE</div>
+                <div class="weapon-image-box" aria-hidden="true"></div>
+              </div>
+              <div class="weapon-main">
+                <button class="weapon-selector" data-placeholder="Select Melee Weapon">Select Melee Weapon</button>
+                <div class="weapon-type">--</div>
+                <div class="weapon-stats melee-stats">
+                  <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
+                  <div class="stat"><div class="stat-label">PEN</div><div class="stat-val pen">--</div></div>
+                  <div class="stat"><div class="stat-label">DUR</div><div class="stat-val dur">--</div></div>
+                  <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
+                  <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
+                  <div class="stat"><div class="stat-label">RANGE</div><div class="stat-val range">--</div></div>
+                </div>
+              </div>
+              <div class="weapon-dice">
+                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
+              </div>
+              <div class="weapon-list be-hidden" aria-hidden="true"></div>
+            </div>
+
+            <!-- MELEE Slot #2 -->
+            <div class="weapon-row" data-slot="melee2" data-category="Melee">
+              <div class="weapon-left">
+                <div class="weapon-label">MELEE</div>
+                <div class="weapon-image-box" aria-hidden="true"></div>
+              </div>
+              <div class="weapon-main">
+                <button class="weapon-selector" data-placeholder="Select Melee Weapon">Select Melee Weapon</button>
+                <div class="weapon-type">--</div>
+                <div class="weapon-stats melee-stats">
+                  <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
+                  <div class="stat"><div class="stat-label">PEN</div><div class="stat-val pen">--</div></div>
+                  <div class="stat"><div class="stat-label">DUR</div><div class="stat-val dur">--</div></div>
+                  <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
+                  <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
+                  <div class="stat"><div class="stat-label">RANGE</div><div class="stat-val range">--</div></div>
+                </div>
+              </div>
+              <div class="weapon-dice">
+                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
+              </div>
+              <div class="weapon-list be-hidden" aria-hidden="true"></div>
+            </div>
+
+            <!-- RANGED Slot #1 -->
+            <div class="weapon-row" data-slot="ranged1" data-category="Ranged">
+              <div class="weapon-left">
+                <div class="weapon-label">RANGED</div>
+                <div class="weapon-image-box" aria-hidden="true"></div>
+              </div>
+              <div class="weapon-main">
+                <button class="weapon-selector" data-placeholder="Select Ranged Weapon">Select Ranged Weapon</button>
+                <div class="weapon-type two-line"><div class="type-top">--</div><div class="type-bottom">--</div></div>
+                <div class="weapon-stats ranged-stats">
+                  <div class="small-stats">
+                    <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
+                    <div class="stat"><div class="stat-label">PEN</div><div class="stat-val pen">--</div></div>
+                    <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
+                    <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
+                  </div>
+                  <div class="range-band-block">
+                    <div class="rb-title">RANGE BANDS</div>
+                    <div class="rb-row"><div class="rb-label">CLSE</div><div class="rb-val rb-clse">--</div></div>
+                    <div class="rb-row"><div class="rb-label">EFF</div><div class="rb-val rb-eff">--</div></div>
+                    <div class="rb-row"><div class="rb-label">FAR</div><div class="rb-val rb-far">--</div></div>
+                    <div class="rb-row"><div class="rb-label">MAX</div><div class="rb-val rb-max">--</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="weapon-dice">
+                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
+              </div>
+              <div class="weapon-list be-hidden" aria-hidden="true"></div>
+            </div>
+          </div>
+        </section>
       </section>
 
       
@@ -885,6 +1115,8 @@ function ensureScreens() {
 
   // Render armor UI placeholders
   renderArmorPanel();
+  // Render weapons UI placeholders
+  renderWeaponsPanel();
 }
 
 function numField(id) {
