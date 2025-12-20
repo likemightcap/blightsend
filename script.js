@@ -637,31 +637,51 @@ function injectWeaponStylesOnce(){
   s.textContent = `
   .sheet-weapons-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem 1rem; background: #2a2f30; border-radius: 12px; }
   .weapons-grid{ display:flex; flex-direction:column; gap:0.6rem; }
-  .weapon-row{ display:flex; gap:0.6rem; align-items:center; padding:8px; background: linear-gradient(180deg,#171818,#111213); border-radius:10px; border:1px solid rgba(255,255,255,0.04); position:relative; }
-  .weapon-left{ display:flex; flex-direction:column; align-items:center; gap:8px; width:110px; flex:0 0 110px; }
+  .weapon-row{ display:flex; gap:0.6rem; align-items:flex-start; padding:6px 8px; background: linear-gradient(180deg,#171818,#111213); border-radius:8px; border:1px solid rgba(255,255,255,0.04); position:relative; }
+  .weapon-left{ display:flex; flex-direction:column; align-items:center; gap:8px; width:86px; flex:0 0 86px; }
   .weapon-label{ font-weight:900; text-transform:uppercase; letter-spacing:0.12em; font-size:0.85rem; }
-  .weapon-image-box{ width:72px; height:72px; background:#0d0d0f; border-radius:8px; border:1px solid rgba(255,255,255,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); background-size:cover; background-position:center center; }
+  .weapon-image-box{ width:64px; height:64px; background:#0d0d0f; border-radius:6px; border:1px solid rgba(255,255,255,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); background-size:cover; background-position:center center; }
   .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
-  .weapon-selector{ text-align:left; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.35); color:var(--text-main); font-weight:800; cursor:pointer; }
+  /* compact selector + type grouping */
+  .weapon-selector{ text-align:left; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.28); color:var(--text-main); font-weight:800; cursor:pointer; min-width:140px; }
   .weapon-selector:active{ transform:scale(0.997); }
   .weapon-type{ font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
   .weapon-type.two-line{ display:flex; flex-direction:column; }
-  .weapon-stats{ display:flex; gap:12px; align-items:center; margin-top:4px; }
-  .weapon-stats .stat{ display:flex; flex-direction:column; align-items:flex-start; min-width:48px; }
-  .stat-label{ font-size:0.72rem; color:var(--text-muted); font-weight:800; }
-  .stat-val{ font-size:1rem; font-weight:900; color:var(--accent-soft); }
-  .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:160px; flex:0 0 160px; }
+  /* Stats: keep compact and allow wrapping into two rows */
+  .weapon-stats{ display:flex; gap:10px; align-items:flex-start; margin-top:4px; flex-wrap:wrap; }
+  .weapon-stats .stat{ display:flex; flex-direction:column; align-items:center; min-width:62px; max-width:120px; }
+  .stat-label{ font-size:0.68rem; color:var(--text-muted); font-weight:800; }
+  .stat-val{ font-size:1rem; font-weight:900; color:var(--accent-soft); line-height:1; }
+  /* Dice stays right-aligned on wide view, but is repositioned on narrow screens */
+  .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:132px; flex:0 0 132px; }
   .dice-label{ font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; }
   .dice-val{ font-weight:900; color:var(--accent); }
   .weapon-list{ position:absolute; left:120px; right:8px; top:100%; background: #0b0b0b; color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:220px; overflow:auto; z-index:80; padding:6px; }
   .weapon-list .weapon-item{ padding:8px; border-radius:6px; cursor:pointer; }
   .weapon-list .weapon-item:hover{ background:rgba(255,255,255,0.03); }
-  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:8px; border-radius:8px; color:#fff; display:flex; gap:8px; align-items:flex-start; }
-  .rb-title{ font-weight:900; font-size:0.78rem; margin-bottom:6px; }
-  .rb-row{ display:flex; gap:6px; align-items:center; }
-  .rb-label{ font-weight:900; color:#fff; background:#ff8a3c; padding:2px 6px; border-radius:6px; font-size:0.68rem; }
-  .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.82rem; }
-  @media (max-width:520px){ .weapon-row{ flex-direction:column; align-items:stretch; } .weapon-left{ flex-direction:row; width:100%; gap:12px; } .weapon-dice{ width:100%; align-items:flex-start; } .weapon-list{ left:8px; right:8px; top:calc(100% + 6px); } }
+  /* Compact range band block: inline labels to save vertical space */
+  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:center; }
+  .rb-title{ font-weight:900; font-size:0.72rem; margin-right:6px; }
+  .rb-row{ display:flex; gap:6px; align-items:center; flex-direction:column; }
+  .rb-label{ font-weight:900; color:#fff; background:#ff8a3c; padding:2px 6px; border-radius:6px; font-size:0.64rem; }
+  .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.76rem; }
+
+  /* Mobile / narrow screens: keep rows compact, move dice up, align header elements */
+  @media (max-width:520px){
+    .weapon-row{ flex-direction:row; align-items:flex-start; padding:6px; }
+    .weapon-left{ flex:0 0 70px; width:70px; }
+    .weapon-main{ flex:1 1 auto; margin-right:8px; }
+    /* Move dice to top-right of the card to be closer to name/type */
+    .weapon-dice{ position:absolute; right:8px; top:8px; width:auto; align-items:flex-end; }
+    .weapon-list{ left:8px; right:8px; top:calc(100% + 6px); }
+    /* Stats should flow into two tight rows */
+    .weapon-stats{ gap:8px; }
+    .weapon-stats .stat{ min-width:56px; }
+    .range-band-block{ padding:6px 8px; gap:8px; }
+    .rb-row{ flex-direction:row; align-items:center; }
+    /* Make placeholders compact and same footprint as values */
+    .stat-val{ min-height:20px; display:inline-flex; align-items:center; justify-content:center; }
+  }
   `;
   document.head.appendChild(s);
 }
