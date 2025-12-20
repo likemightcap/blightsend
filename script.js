@@ -1212,10 +1212,39 @@ function exportActiveCharacter() {
   const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
   const saved = readSavedCharacters();
   const data = (active && saved[active]) ? saved[active] : getSheetState();
+  // build enriched export: include full armor items and weapon objects where possible
+  const enriched = JSON.parse(JSON.stringify(data));
+  // expand armor layers to full items
+  if (enriched.armor && Array.isArray(Object.keys(enriched.armor))) {
+    Object.keys(enriched.armor).forEach(slotKey => {
+      const slot = enriched.armor[slotKey] || {};
+      const layers = slot.layers || {};
+      const expandedLayers = {};
+      ['base','mid','outer'].forEach(layerName => {
+        const sel = layers[layerName];
+        if (!sel) return expandedLayers[layerName] = null;
+        const item = armorData.find(a => a.name === sel) || null;
+        expandedLayers[layerName] = item || { name: sel };
+      });
+      // attach expanded layer objects under _items for clarity
+      enriched.armor[slotKey].layerItems = expandedLayers;
+    });
+  }
+
+  // expand weapons to full objects
+  if (enriched.weapons && typeof enriched.weapons === 'object') {
+    Object.keys(enriched.weapons).forEach(slotKey => {
+      const w = enriched.weapons[slotKey];
+      if (!w) return;
+      const found = weaponsData.find(item => item.name === w.name) || null;
+      enriched.weapons[slotKey].item = found || w;
+    });
+  }
+
   const out = {
     __format: 'be-character-v1',
     exportedAt: new Date().toISOString(),
-    character: data
+    character: enriched
   };
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
