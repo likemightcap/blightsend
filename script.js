@@ -323,7 +323,7 @@ function injectSheetStylesOnce() {
 
     .sheet-buttons{
       display:grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.75rem;
     }
 
@@ -762,7 +762,13 @@ function ensureScreens() {
           </div>
         </div>
 
-        <!-- Armor panel mockup (moved inside sheet-card, above the section buttons) -->
+        <div class="sheet-buttons">
+          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
+          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
+          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
+        </div>
+
+        <!-- Armor panel mockup -->
         <section class="sheet-armor-panel">
           <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">ARMOR</h2>
           <div class="armor-grid">
@@ -798,12 +804,7 @@ function ensureScreens() {
           </div>
         </section>
 
-        <div class="sheet-buttons">
-          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
-          <button class="sheet-action" type="button" id="cs_btn_armor">Armor</button>
-          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
-          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
-        </div>
+        
       </section>
 
       
