@@ -1048,13 +1048,13 @@ function ensureScreens() {
                     <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
                     <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
                   </div>
-                  <div class="range-band-block">
-                    <div class="rb-title">RANGE BANDS</div>
-                    <div class="rb-row"><div class="rb-label">CLSE</div><div class="rb-val rb-clse">--</div></div>
-                    <div class="rb-row"><div class="rb-label">EFF</div><div class="rb-val rb-eff">--</div></div>
-                    <div class="rb-row"><div class="rb-label">FAR</div><div class="rb-val rb-far">--</div></div>
-                    <div class="rb-row"><div class="rb-label">MAX</div><div class="rb-val rb-max">--</div></div>
-                  </div>
+                </div>
+                <div class="range-band-block">
+                  <div class="rb-title">RANGE BANDS</div>
+                  <div class="rb-row"><div class="rb-label">CLSE</div><div class="rb-val rb-clse">--</div></div>
+                  <div class="rb-row"><div class="rb-label">EFF</div><div class="rb-val rb-eff">--</div></div>
+                  <div class="rb-row"><div class="rb-label">FAR</div><div class="rb-val rb-far">--</div></div>
+                  <div class="rb-row"><div class="rb-label">MAX</div><div class="rb-val rb-max">--</div></div>
                 </div>
               </div>
               <div class="weapon-dice">
