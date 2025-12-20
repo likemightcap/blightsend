@@ -88,6 +88,112 @@ function ensureDataLoaded() {
   return _dataLoadPromise;
 }
 
+// --- Floating numeric HUD (single instance) ---
+function createNumHudOnce(){
+  if (document.getElementById('_beNumHud')) return;
+  const hud = document.createElement('div');
+  hud.id = '_beNumHud';
+  hud.className = 'be-hidden';
+  hud.innerHTML = `<div class="be-num-hud-inner"><button class="be-num-hud-btn" data-action="minus">−</button><button class="be-num-hud-btn" data-action="plus">+</button></div>`;
+  // position absolute at body level
+  hud.style.position = 'absolute';
+  hud.style.display = 'none';
+  document.body.appendChild(hud);
+
+  // wire hud buttons
+  hud.addEventListener('click', (e) => {
+    const btn = e.target.closest('.be-num-hud-btn');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const targetId = hud.dataset.targetId;
+    const input = targetId ? document.getElementById(targetId) : null;
+    if (!input) return;
+    e.preventDefault();
+    const cur = Number(input.value || '0');
+    if (action === 'plus') input.value = String(cur + 1);
+    if (action === 'minus') input.value = String(Math.max(0, cur - 1));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    // refresh hide timer
+    scheduleHudHide();
+  });
+
+  // hide HUD when clicking outside
+  document.addEventListener('click', (ev) => {
+    const hudEl = document.getElementById('_beNumHud');
+    if (!hudEl) return;
+    if (hudEl.contains(ev.target)) return;
+    // allow clicks on number inputs to be handled separately
+    if (ev.target && ev.target.classList && ev.target.classList.contains('be-num')) return;
+    hideNumHud();
+  }, { capture: true });
+}
+
+let _beNumHudTimer = null;
+function scheduleHudHide(delay = 1400){
+  if (_beNumHudTimer) clearTimeout(_beNumHudTimer);
+  _beNumHudTimer = setTimeout(() => hideNumHud(), delay);
+}
+
+function showNumHudForInput(input){
+  createNumHudOnce();
+  const hud = document.getElementById('_beNumHud');
+  if (!hud || !input) return;
+  // attach target id so HUD actions know which input to modify
+  if (!input.id) input.id = 'be_num_' + Math.random().toString(36).slice(2,9);
+  hud.dataset.targetId = input.id;
+  // position HUD near the input (above if space)
+  const rect = input.getBoundingClientRect();
+  const hudW = 120; const hudH = 56;
+  let top = window.scrollY + rect.top - hudH - 8;
+  let left = window.scrollX + rect.left + (rect.width/2) - (hudW/2);
+  // keep within viewport
+  left = Math.max(8, Math.min(left, window.scrollX + document.documentElement.clientWidth - hudW - 8));
+  if (top < window.scrollY + 8) top = window.scrollY + rect.bottom + 8; // put below if not enough space above
+  hud.style.left = left + 'px';
+  hud.style.top = top + 'px';
+  hud.style.width = hudW + 'px';
+  hud.style.height = hudH + 'px';
+  hud.style.display = 'block';
+  hud.classList.remove('be-hidden');
+  scheduleHudHide();
+}
+
+function hideNumHud(){
+  const hud = document.getElementById('_beNumHud');
+  if (!hud) return;
+  hud.style.display = 'none';
+  hud.classList.add('be-hidden');
+  if (_beNumHudTimer) { clearTimeout(_beNumHudTimer); _beNumHudTimer = null; }
+  delete hud.dataset.targetId;
+}
+
+// Attach tap/focus handlers to numeric inputs to show floating HUD
+function bindFloatingNumHud(){
+  createNumHudOnce();
+  $all('input.be-num').forEach(inp => {
+    if (inp.dataset.hudBound) return;
+    inp.dataset.hudBound = '1';
+    // show on touchstart / click / focus
+    inp.addEventListener('touchstart', (e)=> { e.stopPropagation(); showNumHudForInput(inp); });
+    inp.addEventListener('click', (e)=> { e.stopPropagation(); showNumHudForInput(inp); });
+    inp.addEventListener('focus', ()=> { showNumHudForInput(inp); });
+    // when the input value changes via other means, keep HUD visible briefly
+    inp.addEventListener('input', () => scheduleHudHide());
+  });
+}
+
+// Ensure HUDs are bound when steppers are bound / after sheet is rendered
+// call this at the end of bindAllSteppers or whenever inputs are created
+;(() => {
+  // small hook: run after current tick so initial elements exist
+  setTimeout(() => bindFloatingNumHud(), 60);
+  // also re-bind on any future DOM additions that use .num-wrap via a MutationObserver
+  const mo = new MutationObserver((mut) => {
+    bindFloatingNumHud();
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
+
 /* ===================================================
    2) SMALL UTILITIES
 =================================================== */
@@ -274,6 +380,8 @@ function injectSheetStylesOnce() {
       width: 44px;
       flex: 0 0 44px;
     }
+    /* Hide permanent steppers — replaced with a floating HUD */
+    .stepper{ display: none !important; }
     .stepper button{
       flex: 1;
       border: 0;
@@ -282,6 +390,14 @@ function injectSheetStylesOnce() {
       cursor:pointer;
       font-size: 0.95rem;
       line-height: 1;
+    }
+
+    /* Floating numeric HUD (appears on tap/focus) */
+    #_beNumHud{ position: absolute; display: none; z-index: 1200; pointer-events: auto; }
+    #_beNumHud .be-num-hud-inner{ display:flex; gap:6px; align-items:center; justify-content:center; background: rgba(10,10,12,0.95); border-radius: 10px; padding:6px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.06); }
+    #_beNumHud .be-num-hud-btn{ display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius: 8px; border: none; background: rgba(255,255,255,0.04); color: var(--text-main); font-size: 1.1rem; font-weight:700; cursor:pointer; }
+    @media (max-width:420px){
+      #_beNumHud .be-num-hud-btn{ width:36px; height:36px; font-size:1rem; }
     }
     .stepper button:active{ background: rgba(192,255,122,0.14); }
 
