@@ -468,7 +468,9 @@ function injectSheetStylesOnce() {
       .sheet-row{ grid-template-columns: repeat(4, 1fr); }
       /* show all small stats inline as a single row */
       .stat-strip{ grid-template-columns: repeat(5, 1fr); font-size:0.9rem; }
-      .sheet-buttons{ grid-template-columns: 1fr; }
+  /* keep three buttons in a single row; shrink their padding so they fit */
+  .sheet-buttons{ grid-template-columns: repeat(3, 1fr); }
+  .sheet-action{ padding: 0.7rem 0.5rem; font-size: 0.9rem; }
       /* make steppers more compact on mobile */
       .stepper{ width: 30px; flex: 0 0 30px; }
       .stepper button{ font-size: 0.75rem; }
