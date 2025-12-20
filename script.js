@@ -235,7 +235,7 @@ function injectSheetStylesOnce() {
       margin-top: 0.25rem;
       user-select:none;
       pointer-events:none;
-      filter: drop-shadow(0 10px 22px rgba(0,0,0,0.65));
+      filter: none;
     }
     .home-btn{
       width:min(560px, 92vw);
@@ -275,7 +275,7 @@ function injectSheetStylesOnce() {
     .sheet-title-logo{
       height: 44px; width:auto; object-fit:contain;
       user-select:none; pointer-events:none;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.65));
+      filter: none;
     }
     .sheet-title-btn{
       background: transparent;
@@ -550,16 +550,16 @@ function injectArmorStylesOnce(){
   const s = document.createElement('style');
   s.id = '_beArmorStyles';
   s.textContent = `
-  .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 1rem 1.25rem; background: #4f5754; border-radius: 12px; }
+  .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 1rem 1.25rem; background: var(--bg-panel); border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
   /* left: large avatar area; right: stacked pills column */
   .armor-avatar-col{ flex: 0 0 58%; display:flex; align-items:center; justify-content:center; }
   .armor-list-col{ flex: 0 0 38%; max-width: 38%; min-width:220px; display:flex; flex-direction:column; gap:0.9rem; }
-    .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75)); }
+  .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: none; box-shadow: none; }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
     /* Pill should span almost full column; stats are shown below */
-    .armor-slot{ background:#2f7f8f; color:#fff; border:0; padding:10px 14px; border-radius:14px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:0.98rem; text-transform:uppercase; }
+  .armor-slot{ background: var(--accent); color:#111; border:0; padding:10px 14px; border-radius:14px; font-weight:800; letter-spacing:0.08em; cursor:pointer; width:100%; text-align:center; font-size:0.98rem; text-transform:uppercase; }
     .armor-slot.full{ width:100%; }
     .armor-stats{ font-size:0.9rem; color:#e6e6e6; display:flex; gap:18px; justify-content:center; padding-left:6px; white-space:nowrap; overflow:visible; align-items:center; margin-top:6px; }
     /* label is muted, value is highlighted yellow and sits close to label */
@@ -606,7 +606,7 @@ function injectArmorStylesOnce(){
   /* Armor overlay (fills right column area) */
   .armor-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; }
   .armor-overlay.be-hidden{ display:none; }
-  .armor-overlay-inner{ width:100%; height:100%; background: #2f7f8f; padding:10px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:8px; font-size:0.86rem; line-height:1.05; overflow: visible; }
+  .armor-overlay-inner{ width:100%; height:100%; background: var(--bg-panel-alt); padding:10px; box-sizing:border-box; color:#fff; border-radius:8px; display:flex; flex-direction:column; gap:8px; font-size:0.86rem; line-height:1.05; overflow: visible; }
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
   .overlay-section{ background: transparent; padding:0; border-radius:6px; display:flex; flex-direction:column; gap:8px; }
   .overlay-label{ font-weight:900; color:#e6e6e6; font-size:0.78rem; letter-spacing:0.08em; }
@@ -635,12 +635,12 @@ function injectWeaponStylesOnce(){
   const s = document.createElement('style');
   s.id = '_beWeaponStyles';
   s.textContent = `
-  .sheet-weapons-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem 1rem; background: #2a2f30; border-radius: 12px; }
+  .sheet-weapons-panel{ max-width:900px; margin: 1rem auto; padding: 0.85rem 1rem; background: var(--bg-panel); border-radius: 12px; }
   .weapons-grid{ display:flex; flex-direction:column; gap:0.6rem; }
   .weapon-row{ display:flex; gap:0.6rem; align-items:flex-start; padding:6px 8px; background: linear-gradient(180deg,#171818,#111213); border-radius:8px; border:1px solid rgba(255,255,255,0.04); position:relative; }
   .weapon-left{ display:flex; flex-direction:column; align-items:center; gap:8px; width:86px; flex:0 0 86px; }
   .weapon-label{ font-weight:900; text-transform:uppercase; letter-spacing:0.12em; font-size:0.85rem; }
-  .weapon-image-box{ width:64px; height:64px; background:#0d0d0f; border-radius:6px; border:1px solid rgba(255,255,255,0.04); box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); background-size:cover; background-position:center center; }
+  .weapon-image-box{ width:64px; height:64px; background:#0d0d0f; border-radius:6px; border:1px solid rgba(255,255,255,0.04); background-size:cover; background-position:center center; box-shadow: none; }
   .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
   /* compact selector + type grouping */
   .weapon-selector{ text-align:left; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.28); color:var(--text-main); font-weight:800; cursor:pointer; min-width:140px; }
@@ -664,7 +664,7 @@ function injectWeaponStylesOnce(){
   .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:center; }
   .rb-title{ font-weight:900; font-size:0.72rem; margin-right:6px; }
   .rb-row{ display:flex; gap:6px; align-items:center; flex-direction:column; }
-  .rb-label{ font-weight:900; color:#fff; background:#ff8a3c; padding:2px 6px; border-radius:6px; font-size:0.64rem; }
+  .rb-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
   .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.76rem; }
 
   /* Mobile / narrow screens: keep rows compact, move dice up, align header elements */
@@ -1577,7 +1577,8 @@ async function openArmorOverlay(slotKey, titleText){
   } catch (e) { /* ignore avatar swap errors */ }
 
   overlay.classList.remove('be-hidden');
-  overlay.style.background = getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
+  // Prefer CSS variable for panel alt background, fall back to computed armor-slot background or a safe color
+  overlay.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-panel-alt') || getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
   document.getElementById('overlayTitle').textContent = titleText || slotKey;
   overlay.dataset.slot = slotKey;
 

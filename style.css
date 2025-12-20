@@ -27,16 +27,16 @@ header .subtitle {
 
 
 :root {
-  --bg-main: #050607;
-  --bg-panel: #111318;
-  --bg-panel-alt: #171922;
-  --parchment: #2a2520;
-  --parchment-light: #3a332b;
-  --accent: #c0ff7a;
-  --accent-soft: #8bbb5b;
+  --bg-main: #0b0d0e;
+  --bg-panel: #2a2f30; /* match sheet-weapons-panel base */
+  --bg-panel-alt: #232728;
+  --parchment: #352b22;
+  --parchment-light: #46382f;
+  --accent: #c0ff7a; /* bright green accent retained */
+  --accent-soft: #ff8a3c; /* warm orange soft accent for highlights */
   --accent-danger: #ff7a7a;
-  --text-main: #f5f5f5;
-  --text-muted: #a8a8b3;
+  --text-main: #f5f5f0;
+  --text-muted: #bdbdb0;
   --border-soft: rgba(255, 255, 255, 0.08);
   --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.6);
   --radius-lg: 18px;
@@ -58,6 +58,12 @@ body {
   display: flex;
   justify-content: center;
   padding: 1rem;
+}
+
+/* Remove drop shadows from images sitewide per design request */
+img, .sheet-title-logo, .home-logo, .armor-avatar-img, .weapon-image-box, .weapon-row img {
+  filter: none !important;
+  box-shadow: none !important;
 }
 
 #app {
