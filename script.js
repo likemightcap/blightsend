@@ -343,12 +343,21 @@ function injectSheetStylesOnce() {
     }
     .sheet-menu-item:active{ background: rgba(192,255,122,0.14); }
 
-    /* Tiny: stack top grid if narrow */
+    /* Tiny: keep name + HP side-by-side and make stat rows inline on narrow screens per mobile design */
     @media (max-width: 420px){
-      .sheet-grid-top{ grid-template-columns: 1fr; }
-      .sheet-row{ grid-template-columns: repeat(2, 1fr); }
-      .stat-strip{ grid-template-columns: repeat(2, 1fr); }
+      /* keep name and HP next to each other */
+      .sheet-grid-top{ grid-template-columns: 1fr 110px; }
+      /* show stamina/ephem/walk/run each in their own column (inputs under labels)
+         if the screen is too narrow, they will shrink but remain inline per reference */
+      .sheet-row{ grid-template-columns: repeat(4, 1fr); }
+      /* show all small stats inline as a single row */
+      .stat-strip{ grid-template-columns: repeat(5, 1fr); font-size:0.9rem; }
       .sheet-buttons{ grid-template-columns: 1fr; }
+      /* make steppers more compact on mobile */
+      .stepper{ width: 30px; flex: 0 0 30px; }
+      .stepper button{ font-size: 0.75rem; }
+      /* slightly reduce input paddings to fit */
+      input[type="number"].be-num{ padding: 0 0.5rem; font-size: 0.95rem; }
     }
 
     /* Toast */
@@ -564,7 +573,10 @@ function ensureScreens() {
           </div>
           <div>
             <div class="field-label">HP</div>
-            ${numField("cs_hp")}
+            <div class="hp-pair">
+              ${numField("cs_hp")}
+              ${numField("cs_hp_max")}
+            </div>
           </div>
         </div>
 
@@ -795,6 +807,7 @@ function getSheetState() {
   return {
     name: ($("#cs_name")?.value || "").trim(),
     hp: getNum("cs_hp"),
+  hpMax: getNum("cs_hp_max"),
     stamina: getNum("cs_stamina"),
     ephem: getNum("cs_ephem"),
     walk: getNum("cs_walk"),
@@ -824,6 +837,7 @@ function setSheetState(state) {
   };
 
   setNum("cs_hp", state.hp);
+  setNum("cs_hp_max", state.hpMax);
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
