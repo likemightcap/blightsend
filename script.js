@@ -610,7 +610,8 @@ function injectArmorStylesOnce(){
   .overlay-title{ font-weight:900; font-size:1.0rem; text-align:center; margin-bottom:4px; }
   .overlay-section{ background: transparent; padding:0; border-radius:6px; display:flex; flex-direction:column; gap:8px; }
   .overlay-label{ font-weight:900; color:#e6e6e6; font-size:0.78rem; letter-spacing:0.08em; }
-  .overlay-select{ width:100%; padding:6px; border-radius:4px; border:0; background:#fff; color:#1a1a1a; font-size:0.92rem; }
+  /* Make overlay selects visually match weapon selectors for cohesion */
+  .overlay-select{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.28); color: var(--text-main); font-size:0.92rem; font-weight:800; box-sizing:border-box; }
   .overlay-select-wrap{ position:relative; }
   .overlay-input{ width:100%; padding:6px 8px; border-radius:3px; border:0; background:#fff; color:#111; font-size:0.86rem; font-weight:700; }
   .overlay-list{ position:absolute; left:0; right:0; top:36px; max-height:140px; overflow:auto; background:#fff; color:#111; border-radius:6px; box-shadow:0 6px 16px rgba(0,0,0,0.5); z-index:9999; }
