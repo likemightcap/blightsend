@@ -674,14 +674,19 @@ function injectWeaponStylesOnce(){
     /* Move dice to top-right of the card to be closer to name/type */
     .weapon-dice{ position:absolute; right:8px; top:8px; width:auto; align-items:flex-end; }
     .weapon-list{ left:8px; right:8px; top:calc(100% + 6px); }
-    /* Stats should flow into two tight rows */
+    /* General stats spacing */
     .weapon-stats{ gap:8px; }
     .weapon-stats .stat{ min-width:56px; }
-    /* Ranged-specific: force single horizontal stat row and center range bands below */
-    .weapon-row[data-category="Ranged"] .weapon-stats{ flex-wrap:nowrap; justify-content:flex-start; }
-    .weapon-row[data-category="Ranged"] .weapon-stats .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; }
-    .range-band-block{ padding:6px 8px; gap:10px; margin:6px auto 4px; display:flex; align-items:center; justify-content:center; }
-    .range-band-block .rb-row{ flex-direction:row; align-items:center; gap:12px; }
+
+    /* RANGED SLOT: Ensure small-stats are a single horizontal row */
+    .weapon-row[data-category="Ranged"] .weapon-stats{ display:flex; flex-direction:column; align-items:stretch; }
+    .weapon-row[data-category="Ranged"] .weapon-stats .small-stats{ display:flex; flex-direction:row; gap:8px; justify-content:space-between; flex-wrap:nowrap; width:100%; }
+    .weapon-row[data-category="Ranged"] .weapon-stats .small-stats .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-width:0; }
+
+    /* Range bands centered below the small-stats row */
+    .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:center; justify-content:center; }
+    .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block .rb-row{ flex-direction:row; align-items:center; gap:10px; }
+
     /* Make placeholders compact and same footprint as values */
     .stat-val{ min-height:20px; display:inline-flex; align-items:center; justify-content:center; }
   }
