@@ -690,6 +690,14 @@ function injectWeaponStylesOnce(){
     /* Make placeholders compact and same footprint as values */
     .stat-val{ min-height:20px; display:inline-flex; align-items:center; justify-content:center; }
   }
+  /* Make dice label smaller and right-justify the dice block within each weapon-row */
+  .weapon-row .weapon-dice{ margin-left: auto; display:flex; flex-direction:column; align-items:flex-end; }
+  .weapon-row .dice-label{ font-size:0.64rem; opacity:0.9; }
+  /* Limit selector width so it doesn't stretch too far right; allow it to grow but cap it */
+  .weapon-selector{ max-width:58%; min-width:120px; }
+  @media (max-width:520px){
+    .weapon-selector{ max-width:62%; }
+  }
   `;
   document.head.appendChild(s);
 }
