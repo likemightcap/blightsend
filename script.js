@@ -677,8 +677,11 @@ function injectWeaponStylesOnce(){
     /* Stats should flow into two tight rows */
     .weapon-stats{ gap:8px; }
     .weapon-stats .stat{ min-width:56px; }
-    .range-band-block{ padding:6px 8px; gap:8px; }
-    .rb-row{ flex-direction:row; align-items:center; }
+    /* Ranged-specific: force single horizontal stat row and center range bands below */
+    .weapon-row[data-category="Ranged"] .weapon-stats{ flex-wrap:nowrap; justify-content:flex-start; }
+    .weapon-row[data-category="Ranged"] .weapon-stats .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; }
+    .range-band-block{ padding:6px 8px; gap:10px; margin:6px auto 4px; display:flex; align-items:center; justify-content:center; }
+    .range-band-block .rb-row{ flex-direction:row; align-items:center; gap:12px; }
     /* Make placeholders compact and same footprint as values */
     .stat-val{ min-height:20px; display:inline-flex; align-items:center; justify-content:center; }
   }
