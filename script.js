@@ -656,7 +656,8 @@ function injectWeaponStylesOnce(){
   .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:132px; flex:0 0 132px; }
   .dice-label{ font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; }
   .dice-val{ font-weight:900; color:var(--accent); }
-  .weapon-list{ position:absolute; left:120px; right:8px; top:100%; background: #0b0b0b; color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:220px; overflow:auto; z-index:80; padding:6px; }
+  /* overlay the entire weapon-row when opened */
+  .weapon-list{ position:absolute; inset:0; background: rgba(11,11,11,0.98); color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:none; overflow:auto; z-index:120; padding:10px; box-sizing:border-box; }
   .weapon-list .weapon-item{ padding:8px; border-radius:6px; cursor:pointer; }
   .weapon-list .weapon-item:hover{ background:rgba(255,255,255,0.03); }
   /* Compact range band block: inline labels to save vertical space */
@@ -673,7 +674,8 @@ function injectWeaponStylesOnce(){
     .weapon-main{ flex:1 1 auto; margin-right:8px; }
     /* Move dice to top-right of the card to be closer to name/type */
     .weapon-dice{ position:absolute; right:8px; top:8px; width:auto; align-items:flex-end; }
-    .weapon-list{ left:8px; right:8px; top:calc(100% + 6px); }
+  /* on mobile still overlay the row, ensure it fits within the row bounds */
+  .weapon-list{ inset:0; padding:10px; }
     /* General stats spacing */
     .weapon-stats{ gap:8px; }
     .weapon-stats .stat{ min-width:56px; }
