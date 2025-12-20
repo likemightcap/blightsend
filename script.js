@@ -894,6 +894,9 @@ function ensureScreens() {
   // install app-like behaviors (block image context menu / drag)
   try { installAppLikeBehaviors(); } catch(e) { /* ignore */ }
 
+  // initialize import input so Import menu works
+  initImportInput();
+
   // The existing compendium is already inside #app (your current site).
   compendiumRoot = $("#app");
   if (!compendiumRoot) {
@@ -1131,6 +1134,8 @@ function ensureScreens() {
             <button class="sheet-menu-item" type="button" data-action="home">Home</button>
             <button class="sheet-menu-item" type="button" data-action="save">Save Character</button>
             <button class="sheet-menu-item" type="button" data-action="load">Load Character</button>
+                <button class="sheet-menu-item" type="button" data-action="export">Export Character</button>
+                <button class="sheet-menu-item" type="button" data-action="import">Import Character</button>
             <button class="sheet-menu-item" type="button" data-action="compendium">Open Compendium</button>
             <button class="sheet-menu-item" type="button" data-action="close">Close</button>
           </div>
@@ -1200,6 +1205,67 @@ function ensureScreens() {
   renderArmorPanel();
   // Render weapons UI placeholders
   renderWeaponsPanel();
+}
+
+// ---------------------- Export / Import helpers ----------------------
+function exportActiveCharacter() {
+  const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+  const saved = readSavedCharacters();
+  const data = (active && saved[active]) ? saved[active] : getSheetState();
+  const out = {
+    __format: 'be-character-v1',
+    exportedAt: new Date().toISOString(),
+    character: data
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(data.name || 'character')}.bechar.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('Character exported to file.');
+}
+
+function initImportInput() {
+  let input = document.getElementById('_beImportInput');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = '_beImportInput';
+    input.accept = '.json,.bechar.json,application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (f) importCharacterFile(f);
+      input.value = '';
+    });
+    document.body.appendChild(input);
+  }
+}
+
+async function importCharacterFile(file) {
+  const text = await file.text();
+  try {
+    const parsed = JSON.parse(text);
+    const candidate = parsed.character || parsed;
+    if (!candidate || !candidate.name) {
+      toast('Imported file seems invalid (missing name).');
+      return;
+    }
+    // save into saved characters and load it
+    const saved = readSavedCharacters();
+    saved[candidate.name] = candidate;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+    setSheetState(candidate);
+    localStorage.setItem(STORAGE_KEY_ACTIVE, candidate.name);
+    toast(`Imported and loaded: ${candidate.name}`);
+  } catch (err) {
+    console.error(err);
+    toast('Failed to import character file (invalid JSON).');
+  }
 }
 
 function numField(id) {
@@ -1414,6 +1480,17 @@ function handleSheetMenuAction(action) {
     case "save":
       toggleSheetMenu(false);
       saveCharacter();
+      return;
+    case "export":
+      toggleSheetMenu(false);
+      exportActiveCharacter();
+      return;
+    case "import":
+      toggleSheetMenu(false);
+      // open the hidden file input
+      initImportInput();
+      const inp = document.getElementById('_beImportInput');
+      if (inp) inp.click();
       return;
     case "load": {
       toggleSheetMenu(false);
