@@ -15,6 +15,11 @@ let advancedSkillsData = [];
 let armorData = [];
 let conditionsData = [];
 
+// Current weapon selections on the sheet (persisted with character)
+const weaponsState = {
+  // keys are data-slot values (eg. melee1, melee2, ranged1)
+};
+
 let _dataLoaded = false;
 let _dataLoadPromise = null;
 
@@ -825,6 +830,30 @@ function applyWeaponToRow(row, item){
   if (rbEff) rbEff.textContent = (item.rangeBands && (item.rangeBands.effective || item.rangeBands.eff)) || '--';
   if (rbFar) rbFar.textContent = (item.rangeBands && (item.rangeBands.far)) || '--';
   if (rbMax) rbMax.textContent = (item.rangeBands && (item.rangeBands.max)) || '--';
+
+  // Persist the selected weapon into weaponsState so it can be saved with the character
+  try {
+    const slot = row.dataset.slot;
+    if (slot) {
+      // store a minimal snapshot of the selected weapon to avoid depending on weaponsData later
+      weaponsState[slot] = {
+        name: item.name || null,
+        diePool: item.diePool != null ? item.diePool : null,
+        dieSize: item.dieSize != null ? item.dieSize : null,
+        damage: item.damage != null ? item.damage : null,
+        penetration: item.penetration != null ? item.penetration : null,
+        durability: item.durability != null ? item.durability : null,
+        hands: item.hands != null ? item.hands : null,
+        weight: item.weight != null ? item.weight : (item.wt != null ? item.wt : null),
+        range: item.range != null ? item.range : null,
+        rangeBands: item.rangeBands || null,
+        image: item.image || item.icon || null,
+        category: item.category || null
+      };
+      // if a character is active, persist immediately
+      persistActiveCharacterState();
+    }
+  } catch (e) { console.error('Failed to persist weapon selection', e); }
 }
 
 function toast(msg) {
@@ -1248,6 +1277,8 @@ function getSheetState() {
     focus: getNum("cs_focus"),
     // include armor state so it persists with the character
     armor: JSON.parse(JSON.stringify(armorState || {})),
+    // include weapon selections so they persist with the character
+    weapons: JSON.parse(JSON.stringify(weaponsState || {})),
     updatedAt: Date.now()
   };
 }
@@ -1285,6 +1316,23 @@ function setSheetState(state) {
       renderArmorPanel();
     } catch (e) { console.error('Failed to restore armor state', e); }
   }
+  // restore weapons if present
+  if (state.weapons) {
+    try {
+      Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+      Object.assign(weaponsState, JSON.parse(JSON.stringify(state.weapons || {})));
+      // re-apply weapons to the UI rows so the sheet reflects saved selections
+      $all('.weapon-row').forEach(row => {
+        const slot = row.dataset.slot;
+        const saved = weaponsState[slot];
+        if (saved && saved.name) {
+          // try to find the weapon by name in loaded weaponsData, fallback to saved object
+          const found = (weaponsData || []).find(w => w.name === saved.name) || saved;
+          applyWeaponToRow(row, found);
+        }
+      });
+    } catch (e) { console.error('Failed to restore weapons state', e); }
+  }
 }
 
 // When armor changes, persist it into the currently active saved character (if any)
@@ -1295,6 +1343,8 @@ function persistActiveCharacterState(){
     const saved = readSavedCharacters();
     const cur = saved[active] || {};
     cur.armor = JSON.parse(JSON.stringify(armorState || {}));
+    // persist weapon selections as well
+    cur.weapons = JSON.parse(JSON.stringify(weaponsState || {}));
     cur.updatedAt = Date.now();
     saved[active] = cur;
     localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
