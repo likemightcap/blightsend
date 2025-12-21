@@ -772,7 +772,7 @@ function ensureExportOverlayOnce(){
   document.getElementById('_beExportClose').addEventListener('click', closeExportOverlay);
   document.getElementById('_beExportCancel').addEventListener('click', closeExportOverlay);
   document.getElementById('_beExportOk').addEventListener('click', () => {
-    const name = document.getElementById('_beExportName').value.trim() || 'ender';
+  const name = document.getElementById('_beExportName').value.trim() || 'ender';
     // temporarily set export filename by creating the blob ourselves (exportActiveCharacter uses a download name)
     const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
     const saved = readSavedCharacters();
@@ -781,7 +781,7 @@ function ensureExportOverlayOnce(){
     const out = { __format: 'be-character-v1', exportedAt: new Date().toISOString(), character: enriched };
     const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `${name}.bechar.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = `${sanitizeExportBasename(name)}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     closeExportOverlay(); toast(`Exported: ${name}`);
   });
 }
@@ -1430,12 +1430,27 @@ function exportActiveCharacter() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${(data.name || 'character')}.bechar.json`;
+  a.download = `${sanitizeExportBasename((data.name || 'ender'))}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
   toast('Character exported to file.');
+}
+
+// Make a safe filename base from user-entered names. Removes problematic characters
+// and strips any provided extension so we always append .json ourselves.
+function sanitizeExportBasename(rawName){
+  if (!rawName) return 'ender';
+  let name = String(rawName).trim();
+  // If user included a .json extension, strip it
+  if (name.toLowerCase().endsWith('.json')) name = name.slice(0, -5).trim();
+  // Replace path separators and other reserved characters with hyphens
+  // (Windows/Unix reserved chars and control chars)
+  name = name.replace(/[\\\/<>:\"\|\?\*\x00-\x1F]/g, '-');
+  // Collapse multiple hyphens or spaces into single hyphen and trim
+  name = name.replace(/[\s\-]+/g, '-').replace(/^-+|-+$/g, '');
+  return name || 'ender';
 }
 
 function initImportInput() {
