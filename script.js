@@ -651,10 +651,13 @@ function injectWeaponStylesOnce(){
   .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
   /* compact selector + type grouping */
   /* weapon-selector is now plain text styled like weapon-type but white */
-  .weapon-selector{ text-align:left; padding:0; border-radius:0; border:0; background: transparent; color: #ffffff; font-weight:800; cursor:pointer; min-width:120px; display:inline-block; }
+  .weapon-selector{ text-align:left; padding:0; border-radius:0; border:0; background: transparent; color: #ffffff; font-weight:800; cursor:pointer; min-width:120px; display:inline-block; text-transform:uppercase; }
   .weapon-selector:active{ transform: none; }
-  .weapon-type{ font-weight:800; letter-spacing:0.10em; text-transform:uppercase; color:var(--accent); font-size:0.92rem; }
-  .weapon-type.two-line{ display:flex; flex-direction:row; gap:8px; align-items:center; }
+  /* small spacing between selector and type */
+  .weapon-selector{ margin-right:6px; }
+  .weapon-type{ font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); font-size:0.82rem; }
+  .weapon-type.two-line{ display:flex; flex-direction:row; gap:6px; align-items:center; font-size:0.82rem; }
+  .weapon-type.two-line .type-top, .weapon-type.two-line .type-bottom{ display:inline-block; }
   .weapon-type.two-line .type-bottom{ color: var(--accent-soft); }
   /* Stats: keep compact and allow wrapping into two rows */
   .weapon-stats{ display:flex; gap:10px; align-items:flex-start; margin-top:4px; flex-wrap:wrap; }
