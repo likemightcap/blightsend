@@ -636,6 +636,75 @@ function injectArmorStylesOnce(){
   document.head.appendChild(s);
 }
 
+// Create Load Character overlay markup + style once
+function ensureLoadOverlayOnce(){
+  if (document.getElementById('_beLoadOverlay')) return;
+  const ov = document.createElement('div');
+  ov.id = '_beLoadOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beLoadOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Load Character">
+        <div class="be-overlay-header"><h3>Load Character</h3><button id="_beLoadClose" aria-label="Close">✕</button></div>
+        <div id="_beLoadList" class="be-load-list"></div>
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end;"><button id="_beLoadCancel">Cancel</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+
+  // styling (lightweight; uses existing theme variables)
+  const css = document.createElement('style');
+  css.id = '_beLoadOverlayStyles';
+  css.textContent = `
+    #_beLoadOverlayBackdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.75); z-index:1200; }
+    .be-overlay-panel{ width:100%; max-width:420px; background: linear-gradient(180deg, rgba(20,20,22,0.98), rgba(10,10,12,0.98)); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); }
+    .be-overlay-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .be-overlay-header h3{ margin:0; font-size:1.0rem; text-transform:uppercase; letter-spacing:0.12em; }
+    .be-load-list{ display:flex; flex-direction:column; gap:6px; max-height:40vh; overflow:auto; }
+    .be-load-item{ padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); cursor:pointer; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.04); }
+    .be-load-item:hover{ background: rgba(192,255,122,0.06); border-color: rgba(192,255,122,0.14); }
+    .be-load-item .meta{ color:var(--text-muted); font-size:0.82rem; }
+    #_beLoadClose, #_beLoadCancel{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); padding:6px 8px; border-radius:8px; cursor:pointer; }
+  `;
+  document.head.appendChild(css);
+
+  // wire close/cancel
+  document.getElementById('_beLoadOverlay').addEventListener('click', (e) => { if (e.target.id === '_beLoadOverlay') closeLoadOverlay(); });
+  document.getElementById('_beLoadClose').addEventListener('click', closeLoadOverlay);
+  document.getElementById('_beLoadCancel').addEventListener('click', closeLoadOverlay);
+}
+
+function openLoadOverlay(){
+  ensureLoadOverlayOnce();
+  const saved = readSavedCharacters();
+  const names = Object.keys(saved).sort((a,b)=> a.localeCompare(b));
+  const list = document.getElementById('_beLoadList');
+  list.innerHTML = '';
+  if (!names.length) {
+    const msg = document.createElement('div');
+    msg.textContent = 'No saved characters yet.';
+    msg.style.padding = '12px';
+    list.appendChild(msg);
+  }
+  names.forEach(name => {
+    const item = document.createElement('div');
+    item.className = 'be-load-item';
+    item.tabIndex = 0;
+    item.innerHTML = `<div class="label">${name}</div><div class="meta">${new Date((saved[name] && saved[name].updatedAt) || 0).toLocaleString()}</div>`;
+    item.addEventListener('click', () => { loadCharacter(name); closeLoadOverlay(); });
+    item.addEventListener('keydown', (e) => { if (e.key === 'Enter') { loadCharacter(name); closeLoadOverlay(); } });
+    list.appendChild(item);
+  });
+  const ov = document.getElementById('_beLoadOverlay');
+  if (ov) ov.classList.remove('be-hidden');
+}
+
+function closeLoadOverlay(){
+  const ov = document.getElementById('_beLoadOverlay');
+  if (ov) ov.classList.add('be-hidden');
+}
+
 // Weapons panel styles
 function injectWeaponStylesOnce(){
   if ($('#_beWeaponStyles')) return;
@@ -1567,18 +1636,7 @@ function handleSheetMenuAction(action) {
       return;
     case "load": {
       toggleSheetMenu(false);
-      const saved = readSavedCharacters();
-      const names = Object.keys(saved);
-      if (!names.length) {
-        toast("No saved characters yet.");
-        return;
-      }
-      // simple chooser prompt (we can upgrade this to a nice modal later)
-      const chosen = prompt(
-        "Type a character name to load:\n\n" + names.join("\n")
-      );
-      if (!chosen) return;
-      loadCharacter(chosen.trim());
+      openLoadOverlay();
       return;
     }
     case "close":
