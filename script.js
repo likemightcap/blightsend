@@ -861,8 +861,10 @@ function applyWeaponToRow(row, item){
     const slot = row.dataset.slot;
     if (slot) {
       // store a minimal snapshot of the selected weapon to avoid depending on weaponsData later
-  weaponsState[slot] = {
+      weaponsState[slot] = {
         name: item.name || null,
+        type: item.type || null,
+        description: item.description || item.summary || null,
         diePool: item.diePool != null ? item.diePool : null,
         dieSize: item.dieSize != null ? item.dieSize : null,
         damage: item.damage != null ? item.damage : null,
@@ -1498,11 +1500,28 @@ function loadCharacter(name) {
   toast(`Loaded: ${name}`);
 }
 
-function loadActiveCharacterIfAny() {
+async function loadActiveCharacterIfAny() {
   const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
   if (!active) return;
   const saved = readSavedCharacters();
-  if (saved[active]) setSheetState(saved[active]);
+  if (saved[active]) {
+    // Ensure data (weapons/armor) is loaded before trying to reapply weapon types
+    await ensureDataLoaded();
+    setSheetState(saved[active]);
+    // Re-apply weapon visuals for saved weapons (in case weaponsData provides richer objects)
+    try {
+      Object.keys(weaponsState || {}).forEach(slot => delete weaponsState[slot]);
+      Object.assign(weaponsState, saved[active].weapons || {});
+      $all('.weapon-row').forEach(row => {
+        const slot = row.dataset.slot;
+        const savedW = weaponsState[slot];
+        if (savedW && savedW.name) {
+          const found = (weaponsData || []).find(w => w.name === savedW.name) || savedW;
+          applyWeaponToRow(row, found);
+        }
+      });
+    } catch (e) { console.error('Failed to reapply saved weapons', e); }
+  }
 }
 
 function readSavedCharacters() {
