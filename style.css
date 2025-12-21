@@ -765,3 +765,25 @@ main {
 @media (max-width: 520px) {
   .comp-back-btn { font-size: 0.9rem; }
 }
+
+/* Portrait lock overlay (shown when device is in landscape and orientation lock isn't available) */
+#be-portrait-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  background: rgba(0,0,0,0.95);
+  color: var(--text-main);
+  text-align: center;
+  padding: 1rem;
+}
+#be-portrait-overlay.show { display: flex; }
+#be-portrait-overlay .inner { max-width: 480px; }
+#be-portrait-overlay h2 { font-size: 1.15rem; margin-bottom: 0.4rem; }
+#be-portrait-overlay p { opacity: 0.92; color: var(--text-muted); }
+
+/* Keep the app layout usable but hidden from pointer events when overlay active */
+body.be-portrait-locked * { pointer-events: none !important; }
+body.be-portrait-locked #be-portrait-overlay { pointer-events: auto !important; }

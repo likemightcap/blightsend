@@ -3,6 +3,7 @@
   "short_name": "BlightsEnd",
   "start_url": "/blightsend/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "icons": [
