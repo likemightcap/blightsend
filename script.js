@@ -637,7 +637,27 @@ function injectArmorStylesOnce(){
 }
 
 // Create Load Character overlay markup + style once
+// Ensure overlay styles are present once (shared for Load/Save/Export overlays)
+function ensureOverlayStylesOnce(){
+  if (document.getElementById('_beOverlaySharedStyles')) return;
+  const css = document.createElement('style');
+  css.id = '_beOverlaySharedStyles';
+  css.textContent = `
+    .be-overlay-backdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.75); z-index:1200; }
+    .be-overlay-panel{ width:100%; max-width:420px; background: linear-gradient(180deg, rgba(20,20,22,0.98), rgba(10,10,12,0.98)); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); }
+    .be-overlay-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .be-overlay-header h3{ margin:0; font-size:1.0rem; text-transform:uppercase; letter-spacing:0.12em; }
+    .be-load-list{ display:flex; flex-direction:column; gap:6px; max-height:40vh; overflow:auto; }
+    .be-load-item{ padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); cursor:pointer; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.04); }
+    .be-load-item:hover{ background: rgba(192,255,122,0.06); border-color: rgba(192,255,122,0.14); }
+    .be-load-item .meta{ color:var(--text-muted); font-size:0.82rem; }
+    #_beLoadClose, #_beLoadCancel, #_beSaveClose, #_beSaveCancel, #_beExportClose, #_beExportCancel { background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); padding:6px 8px; border-radius:8px; cursor:pointer; }
+  `;
+  document.head.appendChild(css);
+}
+
 function ensureLoadOverlayOnce(){
+  ensureOverlayStylesOnce();
   if (document.getElementById('_beLoadOverlay')) return;
   const ov = document.createElement('div');
   ov.id = '_beLoadOverlay';
@@ -654,20 +674,7 @@ function ensureLoadOverlayOnce(){
   document.body.appendChild(ov);
 
   // styling (lightweight; uses existing theme variables)
-  const css = document.createElement('style');
-  css.id = '_beLoadOverlayStyles';
-  css.textContent = `
-    .be-overlay-backdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.75); z-index:1200; }
-    .be-overlay-panel{ width:100%; max-width:420px; background: linear-gradient(180deg, rgba(20,20,22,0.98), rgba(10,10,12,0.98)); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); }
-    .be-overlay-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .be-overlay-header h3{ margin:0; font-size:1.0rem; text-transform:uppercase; letter-spacing:0.12em; }
-    .be-load-list{ display:flex; flex-direction:column; gap:6px; max-height:40vh; overflow:auto; }
-    .be-load-item{ padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); cursor:pointer; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.04); }
-    .be-load-item:hover{ background: rgba(192,255,122,0.06); border-color: rgba(192,255,122,0.14); }
-    .be-load-item .meta{ color:var(--text-muted); font-size:0.82rem; }
-    #_beLoadClose, #_beLoadCancel{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); padding:6px 8px; border-radius:8px; cursor:pointer; }
-  `;
-  document.head.appendChild(css);
+  // styles are injected by ensureOverlayStylesOnce
 
   // wire close/cancel
   document.getElementById('_beLoadOverlay').addEventListener('click', (e) => { if (e.target.id === '_beLoadOverlay') closeLoadOverlay(); });
@@ -707,6 +714,7 @@ function closeLoadOverlay(){
 
 // Save overlay (name the Ender before saving)
 function ensureSaveOverlayOnce(){
+  ensureOverlayStylesOnce();
   if (document.getElementById('_beSaveOverlay')) return;
   const ov = document.createElement('div');
   ov.id = '_beSaveOverlay';
@@ -745,6 +753,7 @@ function closeSaveOverlay(){ const ov = document.getElementById('_beSaveOverlay'
 
 // Export overlay (name the export file)
 function ensureExportOverlayOnce(){
+  ensureOverlayStylesOnce();
   if (document.getElementById('_beExportOverlay')) return;
   const ov = document.createElement('div');
   ov.id = '_beExportOverlay';
