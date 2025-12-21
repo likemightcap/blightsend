@@ -668,7 +668,7 @@ function injectWeaponStylesOnce(){
   .weapon-list .weapon-item{ padding:8px; border-radius:6px; cursor:pointer; }
   .weapon-list .weapon-item:hover{ background:rgba(255,255,255,0.03); }
   /* Compact range band block: inline labels to save vertical space */
-  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:center; }
+  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:flex-start; }
   .rb-title{ font-weight:900; font-size:0.72rem; margin-right:6px; }
   .rb-row{ display:flex; gap:6px; align-items:center; flex-direction:column; }
   .rb-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
@@ -693,8 +693,8 @@ function injectWeaponStylesOnce(){
     .weapon-row[data-category="Ranged"] .weapon-stats .small-stats .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-width:0; }
 
     /* Range bands centered below the small-stats row */
-    .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:center; justify-content:center; }
-    .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block .rb-row{ flex-direction:row; align-items:center; gap:10px; }
+  .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:flex-start; justify-content:center; }
+  .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block .rb-row{ flex-direction:row; align-items:flex-start; gap:10px; }
 
     /* Make placeholders compact and same footprint as values */
     .stat-val{ min-height:20px; display:inline-flex; align-items:center; justify-content:center; }
