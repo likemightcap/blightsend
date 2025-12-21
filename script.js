@@ -650,9 +650,10 @@ function injectWeaponStylesOnce(){
   .weapon-image-box{ width:64px; height:64px; background:#0d0d0f; border-radius:6px; border:1px solid rgba(255,255,255,0.04); background-size:cover; background-position:center center; box-shadow: none; }
   .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
   /* compact selector + type grouping */
-  .weapon-selector{ text-align:left; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.28); color:var(--text-main); font-weight:800; cursor:pointer; min-width:140px; }
-  .weapon-selector:active{ transform:scale(0.997); }
-  .weapon-type{ font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
+  /* weapon-selector is now plain text styled like weapon-type but white */
+  .weapon-selector{ text-align:left; padding:0; border-radius:0; border:0; background: transparent; color: #ffffff; font-weight:800; cursor:pointer; min-width:120px; display:inline-block; }
+  .weapon-selector:active{ transform: none; }
+  .weapon-type{ font-weight:800; letter-spacing:0.10em; text-transform:uppercase; color:var(--accent); font-size:0.92rem; }
   .weapon-type.two-line{ display:flex; flex-direction:row; gap:8px; align-items:center; }
   .weapon-type.two-line .type-bottom{ color: var(--accent-soft); }
   /* Stats: keep compact and allow wrapping into two rows */
@@ -1048,7 +1049,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
+                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1073,7 +1074,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
+                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1098,7 +1099,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <button class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</button>
+                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
                 <div class="weapon-type two-line"><div class="type-top">--</div><div class="type-bottom">--</div></div>
                 <div class="weapon-stats ranged-stats">
                   <div class="small-stats">
