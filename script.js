@@ -679,6 +679,11 @@ function injectWeaponStylesOnce(){
   .rb-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
   .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.76rem; }
 
+  /* MELEE: style the RANGE stat box to match range-band-block */
+  .weapon-row[data-category="Melee"] .weapon-stats .stat:last-child{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; align-items:center; gap:8px; }
+  .weapon-row[data-category="Melee"] .weapon-stats .stat:last-child .stat-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
+  .weapon-row[data-category="Melee"] .weapon-stats .stat:last-child .stat-val.range{ color:#ffe9c8; font-weight:900; font-size:0.76rem; }
+
   /* Mobile / narrow screens: keep rows compact, move dice up, align header elements */
   @media (max-width:520px){
     .weapon-row{ flex-direction:row; align-items:flex-start; padding:6px; }
