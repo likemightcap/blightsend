@@ -653,7 +653,8 @@ function injectWeaponStylesOnce(){
   .weapon-selector{ text-align:left; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.28); color:var(--text-main); font-weight:800; cursor:pointer; min-width:140px; }
   .weapon-selector:active{ transform:scale(0.997); }
   .weapon-type{ font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
-  .weapon-type.two-line{ display:flex; flex-direction:column; }
+  .weapon-type.two-line{ display:flex; flex-direction:row; gap:8px; align-items:center; }
+  .weapon-type.two-line .type-bottom{ color: var(--accent-soft); }
   /* Stats: keep compact and allow wrapping into two rows */
   .weapon-stats{ display:flex; gap:10px; align-items:flex-start; margin-top:4px; flex-wrap:wrap; }
   .weapon-stats .stat{ display:flex; flex-direction:column; align-items:center; min-width:62px; max-width:120px; }
@@ -661,7 +662,7 @@ function injectWeaponStylesOnce(){
   .stat-val{ font-size:1rem; font-weight:900; color:var(--accent-soft); line-height:1; }
   /* Dice stays right-aligned on wide view, but is repositioned on narrow screens */
   .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:132px; flex:0 0 132px; }
-  .dice-label{ font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; }
+  .dice-label{ font-size:0.56rem; color:var(--text-muted); text-transform:uppercase; }
   .dice-val{ font-weight:900; color:var(--accent); }
   /* overlay the entire weapon-row when opened */
   .weapon-list{ position:absolute; inset:0; background: rgba(11,11,11,0.98); color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:none; overflow:auto; z-index:120; padding:10px; box-sizing:border-box; }
@@ -701,7 +702,7 @@ function injectWeaponStylesOnce(){
   }
   /* Make dice label smaller and right-justify the dice block within each weapon-row */
   .weapon-row .weapon-dice{ margin-left: auto; display:flex; flex-direction:column; align-items:flex-end; }
-  .weapon-row .dice-label{ font-size:0.64rem; opacity:0.9; }
+  .weapon-row .dice-label{ font-size:0.52rem; opacity:0.9; }
   /* Limit selector width so it doesn't stretch too far right; allow it to grow but cap it */
   .weapon-selector{ max-width:58%; min-width:120px; }
   @media (max-width:520px){
