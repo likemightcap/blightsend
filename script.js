@@ -651,7 +651,7 @@ function injectWeaponStylesOnce(){
   .weapon-main{ flex:1 1 auto; display:flex; flex-direction:column; gap:6px; }
   /* compact selector + type grouping */
   /* weapon-selector is now plain text styled like weapon-type but white */
-  .weapon-selector{ text-align:left; padding:0; border-radius:0; border:0; background: transparent; color: #ffffff; font-weight:800; cursor:pointer; min-width:120px; display:inline-block; text-transform:uppercase; }
+  .weapon-selector{ text-align:left; padding:0; border-radius:0; border:0; background: transparent; color: #ffffff; font-weight:800; cursor:pointer; min-width:120px; display:inline-block; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .weapon-selector:active{ transform: none; }
   /* small spacing between selector and type */
   .weapon-selector{ margin-right:6px; }
@@ -708,9 +708,9 @@ function injectWeaponStylesOnce(){
   .weapon-row .weapon-dice{ margin-left: auto; display:flex; flex-direction:column; align-items:flex-end; }
   .weapon-row .dice-label{ font-size:0.52rem; opacity:0.9; }
   /* Limit selector width so it doesn't stretch too far right; allow it to grow but cap it */
-  .weapon-selector{ max-width:58%; min-width:120px; }
+  .weapon-selector{ max-width:70%; min-width:120px; }
   @media (max-width:520px){
-    .weapon-selector{ max-width:62%; }
+    .weapon-selector{ max-width:72%; }
   }
   `;
   document.head.appendChild(s);
