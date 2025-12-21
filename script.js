@@ -792,11 +792,26 @@ function applyWeaponToRow(row, item){
   const dicePool = row.querySelector('.dice-pool');
   const diceSize = row.querySelector('.dice-size');
 
-  // set image if item.image exists, otherwise keep placeholder
+  // set image if item.image exists, otherwise try item.icon, otherwise attempt an assets/weapon-<slug>.png lookup
+  let appliedImageUrl = null;
+  if (item && item.image) appliedImageUrl = item.image;
+  else if (item && item.icon) appliedImageUrl = item.icon;
+  else if (item && item.name) {
+    // slugify the weapon name: lowercase, replace non-alnum with hyphens, trim hyphens
+    const slug = (item.name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (slug) appliedImageUrl = `assets/weapon-${slug}.png`;
+  }
+
   if (imgBox) {
-    if (item.image) imgBox.style.backgroundImage = `url(${item.image})`;
-    else if (item.icon) imgBox.style.backgroundImage = `url(${item.icon})`;
-    else imgBox.style.backgroundImage = '';
+    if (!appliedImageUrl) {
+      imgBox.style.backgroundImage = '';
+    } else {
+      // preload image and only set background if it loads successfully
+      const _img = new Image();
+      _img.onload = () => { try { imgBox.style.backgroundImage = `url(${appliedImageUrl})`; } catch (e) {} };
+      _img.onerror = () => { try { imgBox.style.backgroundImage = ''; } catch (e) {} };
+      _img.src = appliedImageUrl;
+    }
   }
   if (selector) selector.textContent = item.name || selector.dataset.placeholder || selector.textContent;
 
@@ -846,7 +861,7 @@ function applyWeaponToRow(row, item){
     const slot = row.dataset.slot;
     if (slot) {
       // store a minimal snapshot of the selected weapon to avoid depending on weaponsData later
-      weaponsState[slot] = {
+  weaponsState[slot] = {
         name: item.name || null,
         diePool: item.diePool != null ? item.diePool : null,
         dieSize: item.dieSize != null ? item.dieSize : null,
@@ -857,7 +872,7 @@ function applyWeaponToRow(row, item){
         weight: item.weight != null ? item.weight : (item.wt != null ? item.wt : null),
         range: item.range != null ? item.range : null,
         rangeBands: item.rangeBands || null,
-        image: item.image || item.icon || null,
+        image: appliedImageUrl || null,
         category: item.category || null
       };
       // if a character is active, persist immediately
