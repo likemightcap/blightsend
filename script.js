@@ -1060,7 +1060,7 @@ function ensureScreens() {
                 </div>
               </div>
               <div class="weapon-dice">
-                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-label">DP/DS</div>
                 <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
               </div>
               <div class="weapon-list be-hidden" aria-hidden="true"></div>
@@ -1085,7 +1085,7 @@ function ensureScreens() {
                 </div>
               </div>
               <div class="weapon-dice">
-                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-label">DP/DS</div>
                 <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
               </div>
               <div class="weapon-list be-hidden" aria-hidden="true"></div>
@@ -1117,7 +1117,7 @@ function ensureScreens() {
                 </div>
               </div>
               <div class="weapon-dice">
-                <div class="dice-label">DICE POOL / DIE SIZE:</div>
+                <div class="dice-label">DP/DS</div>
                 <div class="dice-val"><span class="dice-pool">--</span> <span class="dice-size">--</span></div>
               </div>
               <div class="weapon-list be-hidden" aria-hidden="true"></div>
