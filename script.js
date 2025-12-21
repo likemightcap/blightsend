@@ -644,8 +644,8 @@ function ensureLoadOverlayOnce(){
   ov.className = 'be-hidden';
   ov.innerHTML = `
     <div class="be-overlay-backdrop" id="_beLoadOverlayBackdrop">
-      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Load Character">
-        <div class="be-overlay-header"><h3>Load Character</h3><button id="_beLoadClose" aria-label="Close">✕</button></div>
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Load Ender">
+        <div class="be-overlay-header"><h3>Load Ender</h3><button id="_beLoadClose" aria-label="Close">✕</button></div>
         <div id="_beLoadList" class="be-load-list"></div>
         <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end;"><button id="_beLoadCancel">Cancel</button></div>
       </div>
@@ -683,7 +683,7 @@ function openLoadOverlay(){
   list.innerHTML = '';
   if (!names.length) {
     const msg = document.createElement('div');
-    msg.textContent = 'No saved characters yet.';
+    msg.textContent = 'No saved Enders yet.';
     msg.style.padding = '12px';
     list.appendChild(msg);
   }
@@ -704,6 +704,81 @@ function closeLoadOverlay(){
   const ov = document.getElementById('_beLoadOverlay');
   if (ov) ov.classList.add('be-hidden');
 }
+
+// Save overlay (name the Ender before saving)
+function ensureSaveOverlayOnce(){
+  if (document.getElementById('_beSaveOverlay')) return;
+  const ov = document.createElement('div');
+  ov.id = '_beSaveOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beSaveOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Save Ender">
+        <div class="be-overlay-header"><h3>Save Ender</h3><button id="_beSaveClose" aria-label="Close">✕</button></div>
+        <label style="display:block;margin-bottom:6px;">Name your Ender</label>
+        <input id="_beSaveName" placeholder="Ender name" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.3);color:var(--text-main);" />
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end;"><button id="_beSaveCancel">Cancel</button><button id="_beSaveOk">Save</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beSaveClose').addEventListener('click', closeSaveOverlay);
+  document.getElementById('_beSaveCancel').addEventListener('click', closeSaveOverlay);
+  document.getElementById('_beSaveOk').addEventListener('click', async () => {
+    const name = document.getElementById('_beSaveName').value.trim();
+    if (!name) { toast('Enter a name before saving.'); return; }
+    // gather current sheet state and save under provided name
+    const state = getSheetState();
+    state.name = name;
+    const saved = readSavedCharacters();
+    saved[name] = state;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+    localStorage.setItem(STORAGE_KEY_ACTIVE, name);
+    closeSaveOverlay();
+    toast(`Saved: ${name}`);
+    // optional delayed confirmation bubble already handled by toast
+  });
+}
+
+function openSaveOverlay(){ ensureSaveOverlayOnce(); document.getElementById('_beSaveName').value = ($('#cs_name')?.value || ''); document.getElementById('_beSaveOverlay').classList.remove('be-hidden'); document.getElementById('_beSaveName').focus(); }
+function closeSaveOverlay(){ const ov = document.getElementById('_beSaveOverlay'); if (ov) ov.classList.add('be-hidden'); }
+
+// Export overlay (name the export file)
+function ensureExportOverlayOnce(){
+  if (document.getElementById('_beExportOverlay')) return;
+  const ov = document.createElement('div');
+  ov.id = '_beExportOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beExportOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Export Ender">
+        <div class="be-overlay-header"><h3>Export Ender</h3><button id="_beExportClose" aria-label="Close">✕</button></div>
+        <label style="display:block;margin-bottom:6px;">Filename (without extension)</label>
+        <input id="_beExportName" placeholder="export-name" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.3);color:var(--text-main);" />
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end;"><button id="_beExportCancel">Cancel</button><button id="_beExportOk">Export</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beExportClose').addEventListener('click', closeExportOverlay);
+  document.getElementById('_beExportCancel').addEventListener('click', closeExportOverlay);
+  document.getElementById('_beExportOk').addEventListener('click', () => {
+    const name = document.getElementById('_beExportName').value.trim() || 'ender';
+    // temporarily set export filename by creating the blob ourselves (exportActiveCharacter uses a download name)
+    const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+    const saved = readSavedCharacters();
+    const data = (active && saved[active]) ? saved[active] : getSheetState();
+    const enriched = JSON.parse(JSON.stringify(data));
+    const out = { __format: 'be-character-v1', exportedAt: new Date().toISOString(), character: enriched };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${name}.bechar.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    closeExportOverlay(); toast(`Exported: ${name}`);
+  });
+}
+
+function openExportOverlay(){ ensureExportOverlayOnce(); document.getElementById('_beExportName').value = ($('#cs_name')?.value || 'ender'); document.getElementById('_beExportOverlay').classList.remove('be-hidden'); document.getElementById('_beExportName').focus(); }
+function closeExportOverlay(){ const ov = document.getElementById('_beExportOverlay'); if (ov) ov.classList.add('be-hidden'); }
 
 // Weapons panel styles
 function injectWeaponStylesOnce(){
@@ -1008,7 +1083,7 @@ function ensureScreens() {
     homeScreen.innerHTML = `
       <div class="home-wrap">
         <img class="home-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-        <button class="home-btn" id="btnGoSheet">Character Sheet</button>
+        <button class="home-btn" id="btnGoSheet">Ender</button>
         <button class="home-btn" id="btnGoCompendium">Compendium</button>
       </div>
     `;
@@ -1224,14 +1299,14 @@ function ensureScreens() {
       
 
       <div id="sheetMenuOverlay" aria-hidden="true">
-        <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Character Sheet Menu">
+        <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Ender Menu">
           <div class="sheet-menu-title">Menu</div>
           <div class="sheet-menu-list">
-            <button class="sheet-menu-item" type="button" data-action="home">Home</button>
-            <button class="sheet-menu-item" type="button" data-action="save">Save Character</button>
-            <button class="sheet-menu-item" type="button" data-action="load">Load Character</button>
-                <button class="sheet-menu-item" type="button" data-action="export">Export Character</button>
-                <button class="sheet-menu-item" type="button" data-action="import">Import Character</button>
+                <button class="sheet-menu-item" type="button" data-action="home">Home</button>
+                <button class="sheet-menu-item" type="button" data-action="save">Save Ender</button>
+                <button class="sheet-menu-item" type="button" data-action="load">Load Ender</button>
+                    <button class="sheet-menu-item" type="button" data-action="export">Export Ender</button>
+                    <button class="sheet-menu-item" type="button" data-action="import">Import Ender</button>
             <button class="sheet-menu-item" type="button" data-action="compendium">Open Compendium</button>
             <button class="sheet-menu-item" type="button" data-action="close">Close</button>
           </div>
@@ -1621,11 +1696,11 @@ function handleSheetMenuAction(action) {
       return;
     case "save":
       toggleSheetMenu(false);
-      saveCharacter();
+      openSaveOverlay();
       return;
     case "export":
       toggleSheetMenu(false);
-      exportActiveCharacter();
+      openExportOverlay();
       return;
     case "import":
       toggleSheetMenu(false);
