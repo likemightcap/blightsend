@@ -657,7 +657,7 @@ function ensureLoadOverlayOnce(){
   const css = document.createElement('style');
   css.id = '_beLoadOverlayStyles';
   css.textContent = `
-    #_beLoadOverlayBackdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.75); z-index:1200; }
+    .be-overlay-backdrop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.75); z-index:1200; }
     .be-overlay-panel{ width:100%; max-width:420px; background: linear-gradient(180deg, rgba(20,20,22,0.98), rgba(10,10,12,0.98)); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.06); color:var(--text-main); }
     .be-overlay-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .be-overlay-header h3{ margin:0; font-size:1.0rem; text-transform:uppercase; letter-spacing:0.12em; }
