@@ -309,11 +309,16 @@ function injectSheetStylesOnce() {
       align-items:end;
       margin-bottom: 0.9rem;
     }
+    /* hide the static NAME label (we display the name directly) */
+    #cs_name_display { display: none; }
+    /* Make the HP slider area have extra bottom spacing */
+    .hp-slider-row { margin-bottom: 30px; }
     .sheet-row{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 0.75rem;
       margin-bottom: 0.9rem;
+      text-align: center; /* center align all text in stat rows */
     }
 
     .stat-strip{
@@ -325,7 +330,17 @@ function injectSheetStylesOnce() {
       grid-template-columns: repeat(5, 1fr);
       gap: 0.75rem;
       margin-bottom: 1rem;
+      text-align: center; /* center align stat-strip */
     }
+
+    /* load specific Cinzel weights for stat titles and values */
+    @font-face{ font-family: 'Cinzel-600'; src: url('assets/fonts/cinzel-v26-latin-600.woff2') format('woff2'); font-weight:600; font-style:normal; font-display:swap; }
+    @font-face{ font-family: 'Cinzel-900'; src: url('assets/fonts/cinzel-v26-latin-900.woff2') format('woff2'); font-weight:900; font-style:normal; font-display:swap; }
+
+    /* stat title (labels) uses 600 weight */
+    .field-label.stat-title { font-family: 'Cinzel-600', 'CinzelCustom', serif; }
+    /* stat value/display uses 900 weight */
+    .stat-val-display { font-family: 'Cinzel-900', 'CinzelCustom', serif; }
 
     .sheet-buttons{
       display:grid;
