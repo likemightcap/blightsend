@@ -850,12 +850,12 @@ function injectWeaponStylesOnce(){
     .weapon-stats{ gap:8px; }
     .weapon-stats .stat{ min-width:56px; }
 
-    /* RANGED SLOT: Ensure small-stats are a single horizontal row */
-    .weapon-row[data-category="Ranged"] .weapon-stats{ display:flex; flex-direction:column; align-items:stretch; }
-    .weapon-row[data-category="Ranged"] .weapon-stats .small-stats{ display:flex; flex-direction:row; gap:8px; justify-content:space-between; flex-wrap:nowrap; width:100%; }
-    .weapon-row[data-category="Ranged"] .weapon-stats .small-stats .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-width:0; }
+  /* RANGED SLOT: ensure ranged-stats display their stat children inline on narrow screens */
+  .weapon-row[data-category="Ranged"] .weapon-stats{ display:flex; flex-direction:column; align-items:stretch; }
+  .weapon-row[data-category="Ranged"] .weapon-stats.ranged-stats{ display:flex; flex-direction:row; gap:8px; justify-content:space-between; flex-wrap:nowrap; width:100%; }
+  .weapon-row[data-category="Ranged"] .weapon-stats.ranged-stats > .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-width:0; }
 
-    /* Range bands centered below the small-stats row */
+  /* Range bands centered below the ranged-stats row */
   .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:flex-start; justify-content:center; }
   .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block .rb-row{ flex-direction:row; align-items:flex-start; gap:10px; }
 
@@ -1280,12 +1280,10 @@ function ensureScreens() {
                 <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
                 <div class="weapon-type two-line"><div class="type-top">--</div><div class="type-bottom">--</div></div>
                 <div class="weapon-stats ranged-stats">
-                  <div class="small-stats">
-                    <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
-                    <div class="stat"><div class="stat-label">PEN</div><div class="stat-val pen">--</div></div>
-                    <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
-                    <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
-                  </div>
+                  <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
+                  <div class="stat"><div class="stat-label">PEN</div><div class="stat-val pen">--</div></div>
+                  <div class="stat"><div class="stat-label">HANDS</div><div class="stat-val hands">--</div></div>
+                  <div class="stat"><div class="stat-label">WT</div><div class="stat-val wt">--</div></div>
                 </div>
                 <div class="range-band-block">
                   <div class="rb-title">RANGE BANDS</div>
