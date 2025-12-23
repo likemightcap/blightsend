@@ -1212,7 +1212,7 @@ function ensureScreens() {
           <h2 style="text-align:center;margin:0.2rem 0 0.6rem;">ARMOR</h2>
           <div class="armor-grid">
             <div class="armor-avatar-col">
-              <img src="assets/armor-avatar.png" alt="Avatar" class="armor-avatar-img" />
+              <img src="assets/avatars/armor-avatar2.png" alt="Avatar" class="armor-avatar-img" />
             </div>
             <div class="armor-list-col">
               <div class="armor-row">
@@ -1953,9 +1953,18 @@ async function openArmorOverlay(slotKey, titleText){
     if (avatar) {
       // save original if not already saved
       if (!overlay.dataset.origAvatar) overlay.dataset.origAvatar = avatar.src || '';
-      // compute filename token, convert camelCase / camel to UPPER-KEBAB
-      const token = (slotKey || '').replace(/([a-z])([A-Z])/g, '$1-$2').replace(/_/g,'-').toUpperCase();
-      const imgName = `assets/armor-avatar-${token}.png`;
+      // compute filename token, convert camelCase to UPPER-KEBAB and map to expected file names
+      // slotKey examples: head, torso, leftArm, rightArm, leftLeg, rightLeg
+      const mapToken = {
+        head: 'HEAD',
+        torso: 'TORSO',
+        leftArm: 'LEFT-ARM',
+        rightArm: 'RIGHT-ARM',
+        leftLeg: 'LEFT-LEG',
+        rightLeg: 'RIGHT-LEG'
+      };
+      const token = mapToken[slotKey] || String(slotKey || '').replace(/([a-z])([A-Z])/g, '$1-$2').replace(/_/g,'-').toUpperCase();
+      const imgName = `assets/avatars/armor-avatar2-${token}.png`;
       avatar.src = imgName;
     }
   } catch (e) { /* ignore avatar swap errors */ }
