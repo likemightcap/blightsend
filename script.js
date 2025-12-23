@@ -29,7 +29,6 @@ function ensureDataLoaded() {
 
   _dataLoadPromise = (async () => {
     try {
-      // If a built bundle provided data (dist/bundle.js -> window.__be_built), prefer it to avoid duplicate fetches
       if (typeof window !== 'undefined' && window.__be_built) {
         const built = window.__be_built;
         echoesData = built.echoes || [];
@@ -40,12 +39,13 @@ function ensureDataLoaded() {
         _dataLoaded = true;
         return;
       }
-      // Dynamically compute the site root for GH Pages compatibility
+
       function getSiteRoot() {
         const path = window.location.pathname;
         const match = path.match(/^\/(.+?)\//);
         return match ? `/${match[1]}/` : '/';
       }
+
       const siteRoot = getSiteRoot();
       const [echoesR, weaponsR, skillsR, armorR, conditionsR] = await Promise.all([
         fetch(siteRoot + 'data/echoes.json'),
@@ -55,31 +55,17 @@ function ensureDataLoaded() {
         fetch(siteRoot + 'data/conditions.json')
       ]);
 
-      // parse responses if ok, otherwise default to empty array
-      let _showedDataError = false;
       const safeJson = async (res, name) => {
-        if (!res) {
-          console.error('Missing response for', name);
-          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: no response`); }
-          return [];
-        }
-        if (!res.ok) {
-          console.error(`Failed to load ${name}: ${res.status} ${res.statusText}`);
-          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: ${res.status} ${res.statusText}`); }
-          return [];
-        }
         try {
-          return await res.json();
+          if (res && res.ok) return await res.json();
         } catch (e) {
           console.error('JSON parse error for', name, e);
-          if (!_showedDataError) { _showedDataError = true; showDataError(`${name}: invalid JSON`); }
-          return [];
         }
+        return [];
       };
 
       echoesData = await safeJson(echoesR, 'echoes');
       weaponsData = await safeJson(weaponsR, 'weapons');
-      // NOTE: skills.json maps to advancedSkillsData in memory
       advancedSkillsData = await safeJson(skillsR, 'skills');
       armorData = await safeJson(armorR, 'armor');
       conditionsData = await safeJson(conditionsR, 'conditions');
@@ -691,7 +677,10 @@ function ensureLoadOverlayOnce(){
       <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Load Ender">
         <div class="be-overlay-header"><h3>Load Ender</h3><button id="_beLoadClose" aria-label="Close">✕</button></div>
         <div id="_beLoadList" class="be-load-list"></div>
-        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:flex-end;"><button id="_beLoadCancel">Cancel</button></div>
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:space-between;align-items:center;">
+          <button id="_beCreateNew">Create New Ender</button>
+          <div style="margin-left:8px;"><button id="_beLoadCancel">Cancel</button></div>
+        </div>
       </div>
     </div>
   `;
@@ -729,11 +718,123 @@ function openLoadOverlay(){
   });
   const ov = document.getElementById('_beLoadOverlay');
   if (ov) ov.classList.remove('be-hidden');
+  // wire Create New button
+  const btnCreate = document.getElementById('_beCreateNew');
+  if (btnCreate && !btnCreate.dataset.bound) {
+    btnCreate.dataset.bound = '1';
+    btnCreate.addEventListener('click', () => {
+      closeLoadOverlay();
+      openCreateOverlay();
+    });
+  }
 }
 
 function closeLoadOverlay(){
   const ov = document.getElementById('_beLoadOverlay');
   if (ov) ov.classList.add('be-hidden');
+}
+
+// Stat edit overlay: used to edit a single stat (set or add/subtract)
+function ensureStatOverlayOnce(){
+  if (document.getElementById('_beStatOverlay')) return;
+  ensureOverlayStylesOnce();
+  const ov = document.createElement('div');
+  ov.id = '_beStatOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beStatOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Edit Stat">
+        <div class="be-overlay-header"><h3 id="_beStatTitle">Edit Stat</h3><button id="_beStatClose" aria-label="Close">✕</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label class="overlay-label">Set Value</label>
+          <input id="_beStatSet" class="overlay-input" />
+          <label class="overlay-label">Or Adjust (+/-)</label>
+          <input id="_beStatAdjust" class="overlay-input" placeholder="e.g. +2 or -1" />
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beStatCancel">Cancel</button><button id="_beStatOk">Apply</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beStatClose').addEventListener('click', closeStatOverlay);
+  document.getElementById('_beStatCancel').addEventListener('click', closeStatOverlay);
+  document.getElementById('_beStatOk').addEventListener('click', () => {
+    const stat = ov.dataset.stat;
+    if (!stat) return;
+    const setValRaw = document.getElementById('_beStatSet').value.trim();
+    const adjRaw = document.getElementById('_beStatAdjust').value.trim();
+    const hidden = document.getElementById('cs_' + stat);
+    if (!hidden) return;
+    let cur = Number(hidden.value || '0');
+    if (setValRaw !== '') {
+      const v = Number.parseInt(setValRaw) || 0;
+      hidden.value = String(v);
+      cur = v;
+    }
+    if (adjRaw) {
+      const m = Number.parseInt(adjRaw);
+      if (!Number.isNaN(m)) {
+        cur = Math.max(0, cur + m);
+        hidden.value = String(cur);
+      }
+    }
+    // update displays and slider binding
+    const disp = document.getElementById('cs_' + stat + '_display');
+    if (disp) disp.textContent = String(cur);
+    if (stat === 'hp') {
+      const slider = document.getElementById('cs_hp_slider');
+      if (slider) slider.value = String(cur);
+      const hpDisplay = document.getElementById('cs_hp_display'); if (hpDisplay) hpDisplay.textContent = String(cur);
+    }
+    // persist to active character
+    persistActiveCharacterState();
+    closeStatOverlay();
+  });
+}
+
+function openStatOverlay(statName, title){
+  ensureStatOverlayOnce();
+  const ov = document.getElementById('_beStatOverlay');
+  if (!ov) return;
+  ov.dataset.stat = statName;
+  document.getElementById('_beStatTitle').textContent = title || `Edit ${statName}`;
+  document.getElementById('_beStatSet').value = '';
+  document.getElementById('_beStatAdjust').value = '';
+  ov.classList.remove('be-hidden');
+  document.getElementById('_beStatSet').focus();
+}
+
+function closeStatOverlay(){
+  const ov = document.getElementById('_beStatOverlay');
+  if (ov) ov.classList.add('be-hidden');
+}
+
+// wire stat-title clicks to open stat overlay
+function wireStatTitleClicks(){
+  document.querySelectorAll('.stat-title').forEach(el => {
+    if (el.dataset.bound) return;
+    el.dataset.bound = '1';
+    el.addEventListener('click', () => {
+      const stat = el.dataset.stat;
+      openStatOverlay(stat, el.textContent || stat);
+    });
+  });
+}
+
+// HP slider wiring
+function wireHpSlider(){
+  const slider = document.getElementById('cs_hp_slider');
+  if (!slider || slider.dataset.bound) return;
+  slider.dataset.bound = '1';
+  slider.addEventListener('input', () => {
+    const v = Number(slider.value || '0');
+    const max = Number(slider.max || '0');
+    const hv = Math.max(0, Math.min(v, max));
+    const hidden = document.getElementById('cs_hp');
+    if (hidden) hidden.value = String(hv);
+    const disp = document.getElementById('cs_hp_display'); if (disp) disp.textContent = String(hv);
+    persistActiveCharacterState();
+  });
 }
 
 // Save overlay (name the Ender before saving)
@@ -770,6 +871,102 @@ function ensureSaveOverlayOnce(){
     toast(`Saved: ${name}`);
     // optional delayed confirmation bubble already handled by toast
   });
+}
+
+// Create Ender overlay (form-driven)
+function ensureCreateOverlayOnce(){
+  ensureOverlayStylesOnce();
+  if (document.getElementById('_beCreateOverlay')) return;
+  const ov = document.createElement('div');
+  ov.id = '_beCreateOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beCreateOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Create Ender">
+        <div class="be-overlay-header"><h3>Create New Ender</h3><button id="_beCreateClose" aria-label="Close">✕</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input id="_beCreate_name" placeholder="Name" class="overlay-input" />
+          <input id="_beCreate_hpMax" placeholder="Max HP" class="overlay-input" />
+          <input id="_beCreate_stamina" placeholder="Stamina" class="overlay-input" />
+          <input id="_beCreate_ephem" placeholder="Ephem" class="overlay-input" />
+          <input id="_beCreate_walk" placeholder="Walk" class="overlay-input" />
+          <input id="_beCreate_run" placeholder="Run" class="overlay-input" />
+          <input id="_beCreate_fight" placeholder="Fight" class="overlay-input" />
+          <input id="_beCreate_volley" placeholder="Volley" class="overlay-input" />
+          <input id="_beCreate_guts" placeholder="Guts" class="overlay-input" />
+          <input id="_beCreate_grit" placeholder="Grit" class="overlay-input" />
+          <input id="_beCreate_focus" placeholder="Focus" class="overlay-input" />
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beCreateCancel">Cancel</button><button id="_beCreateOk">Create</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+
+  document.getElementById('_beCreateClose').addEventListener('click', closeCreateOverlay);
+  document.getElementById('_beCreateCancel').addEventListener('click', closeCreateOverlay);
+  document.getElementById('_beCreateOk').addEventListener('click', () => {
+    // Validate and create
+    const vals = {
+      name: (document.getElementById('_beCreate_name').value || '').trim(),
+      hpMax: Number.parseInt(document.getElementById('_beCreate_hpMax').value || '0') || 0,
+      stamina: Number.parseInt(document.getElementById('_beCreate_stamina').value || '0') || 0,
+      ephem: Number.parseInt(document.getElementById('_beCreate_ephem').value || '0') || 0,
+      walk: Number.parseInt(document.getElementById('_beCreate_walk').value || '0') || 0,
+      run: Number.parseInt(document.getElementById('_beCreate_run').value || '0') || 0,
+      fight: Number.parseInt(document.getElementById('_beCreate_fight').value || '0') || 0,
+      volley: Number.parseInt(document.getElementById('_beCreate_volley').value || '0') || 0,
+      guts: Number.parseInt(document.getElementById('_beCreate_guts').value || '0') || 0,
+      grit: Number.parseInt(document.getElementById('_beCreate_grit').value || '0') || 0,
+      focus: Number.parseInt(document.getElementById('_beCreate_focus').value || '0') || 0
+    };
+    if (!vals.name) { toast('Name is required'); return; }
+    // Build basic character object matching getSheetState shape
+    const charObj = {
+      name: vals.name,
+      hp: vals.hpMax,
+      hpMax: vals.hpMax,
+      stamina: vals.stamina,
+      ephem: vals.ephem,
+      walk: vals.walk,
+      run: vals.run,
+      fight: vals.fight,
+      volley: vals.volley,
+      guts: vals.guts,
+      grit: vals.grit,
+      focus: vals.focus,
+      armor: JSON.parse(JSON.stringify(armorState || {})),
+      weapons: JSON.parse(JSON.stringify(weaponsState || {})),
+      updatedAt: Date.now()
+    };
+    // persist to saved characters
+    const saved = readSavedCharacters();
+    saved[vals.name] = charObj;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+    // set active and load into sheet
+    localStorage.setItem(STORAGE_KEY_ACTIVE, vals.name);
+    setSheetState(charObj);
+    closeCreateOverlay();
+    // open sheet view
+    location.hash = '#sheet';
+    showOnly('sheet');
+    toast(`Created Ender: ${vals.name}`);
+  });
+}
+
+function openCreateOverlay(){
+  ensureCreateOverlayOnce();
+  const ov = document.getElementById('_beCreateOverlay');
+  if (!ov) return;
+  // clear inputs
+  ['_beCreate_name','_beCreate_hpMax','_beCreate_stamina','_beCreate_ephem','_beCreate_walk','_beCreate_run','_beCreate_fight','_beCreate_volley','_beCreate_guts','_beCreate_grit','_beCreate_focus'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ov.classList.remove('be-hidden');
+  document.getElementById('_beCreate_name').focus();
+}
+
+function closeCreateOverlay(){
+  const ov = document.getElementById('_beCreateOverlay');
+  if (ov) ov.classList.add('be-hidden');
 }
 
 function openSaveOverlay(){ ensureSaveOverlayOnce(); document.getElementById('_beSaveName').value = ($('#cs_name')?.value || ''); document.getElementById('_beSaveOverlay').classList.remove('be-hidden'); document.getElementById('_beSaveName').focus(); }
@@ -1147,57 +1344,72 @@ function ensureScreens() {
   <section class="sheet-card">
         <div class="sheet-grid-top">
           <div>
-            <div class="field-label">Name</div>
-            <input class="be-text" id="cs_name" type="text" placeholder="Name" autocomplete="off" />
+            <div class="field-label" style="font-weight:900;font-size:1.1rem;" id="cs_name_display">Name</div>
+            <div id="cs_name_visible" style="font-weight:900;font-size:1.2rem;">--</div>
+            <!-- Hidden input for compatibility -->
+            <input type="hidden" id="cs_name" value="" />
           </div>
-          <div>
-            <div class="field-label">HP</div>
-            <div class="hp-pair">
-              ${numField("cs_hp")}
-              ${numField("cs_hp_max")}
-            </div>
+          <div style="width:1px;opacity:0;pointer-events:none;">&nbsp;</div>
+        </div>
+        <div style="margin-top:6px;">
+          <div class="field-label stat-title" data-stat="hp">HP</div>
+          <div class="hp-slider-row" style="display:flex;gap:8px;align-items:center;">
+            <input id="cs_hp_slider" type="range" min="0" max="100" value="100" style="flex:1; accent-color: var(--accent-soft);" />
+            <div style="min-width:90px;text-align:right;font-weight:600;"> <span id="cs_hp_display">0</span> / <span id="cs_hp_max_display">0</span></div>
           </div>
+          <!-- Hidden fields to keep compatibility with existing persistence functions -->
+          <input type="hidden" id="cs_hp" value="0" />
+          <input type="hidden" id="cs_hp_max" value="0" />
         </div>
 
   <div class="sheet-row">
           <div>
-            <div class="field-label">Stamina</div>
-            ${numField("cs_stamina")}
+            <div class="field-label stat-title" data-stat="stamina">Stamina</div>
+            <div class="stat-val-display" id="cs_stamina_display">0</div>
+            <input type="hidden" id="cs_stamina" value="0" />
           </div>
           <div>
-            <div class="field-label">Ephem</div>
-            ${numField("cs_ephem")}
+            <div class="field-label stat-title" data-stat="ephem">Ephem</div>
+            <div class="stat-val-display" id="cs_ephem_display">0</div>
+            <input type="hidden" id="cs_ephem" value="0" />
           </div>
           <div>
-            <div class="field-label">Walk</div>
-            ${numField("cs_walk")}
+            <div class="field-label stat-title" data-stat="walk">Walk</div>
+            <div class="stat-val-display" id="cs_walk_display">0</div>
+            <input type="hidden" id="cs_walk" value="0" />
           </div>
           <div>
-            <div class="field-label">Run</div>
-            ${numField("cs_run")}
+            <div class="field-label stat-title" data-stat="run">Run</div>
+            <div class="stat-val-display" id="cs_run_display">0</div>
+            <input type="hidden" id="cs_run" value="0" />
           </div>
         </div>
 
         <div class="stat-strip">
           <div>
-            <div class="field-label">Fight</div>
-            ${numField("cs_fight")}
+            <div class="field-label stat-title" data-stat="fight">Fight</div>
+            <div class="stat-val-display" id="cs_fight_display">0</div>
+            <input type="hidden" id="cs_fight" value="0" />
           </div>
           <div>
-            <div class="field-label">Volley</div>
-            ${numField("cs_volley")}
+            <div class="field-label stat-title" data-stat="volley">Volley</div>
+            <div class="stat-val-display" id="cs_volley_display">0</div>
+            <input type="hidden" id="cs_volley" value="0" />
           </div>
           <div>
-            <div class="field-label">Guts</div>
-            ${numField("cs_guts")}
+            <div class="field-label stat-title" data-stat="guts">Guts</div>
+            <div class="stat-val-display" id="cs_guts_display">0</div>
+            <input type="hidden" id="cs_guts" value="0" />
           </div>
           <div>
-            <div class="field-label">Grit</div>
-            ${numField("cs_grit")}
+            <div class="field-label stat-title" data-stat="grit">Grit</div>
+            <div class="stat-val-display" id="cs_grit_display">0</div>
+            <input type="hidden" id="cs_grit" value="0" />
           </div>
           <div>
-            <div class="field-label">Focus</div>
-            ${numField("cs_focus")}
+            <div class="field-label stat-title" data-stat="focus">Focus</div>
+            <div class="stat-val-display" id="cs_focus_display">0</div>
+            <input type="hidden" id="cs_focus" value="0" />
           </div>
         </div>
 
@@ -1360,10 +1572,9 @@ function ensureScreens() {
   const btnGoCompendium = $("#btnGoCompendium");
   if (btnGoSheet && !btnGoSheet.dataset.bound) {
     btnGoSheet.dataset.bound = "1";
+    // New behavior: open the Load Ender overlay instead of directly opening the sheet
     btnGoSheet.addEventListener("click", () => {
-      // Always switch view immediately, even if hash is already set
-      location.hash = "#sheet";
-      showOnly("sheet");
+      openLoadOverlay();
     });
   }
   if (btnGoCompendium && !btnGoCompendium.dataset.bound) {
@@ -1410,6 +1621,9 @@ function ensureScreens() {
   renderArmorPanel();
   // Render weapons UI placeholders
   renderWeaponsPanel();
+  // Wire stat title click handlers and HP slider
+  wireStatTitleClicks();
+  wireHpSlider();
 }
 
 // ---------------------- Export / Import helpers ----------------------
@@ -1603,16 +1817,32 @@ function getSheetState() {
 function setSheetState(state) {
   if (!state) return;
   if ($("#cs_name")) $("#cs_name").value = state.name || "";
-
+  const nameVisible = document.getElementById('cs_name_visible');
+  if (nameVisible) nameVisible.textContent = state.name || '--';
   const setNum = (id, val) => {
-    const el = $("#" + id);
-    if (!el) return;
+    const hidden = $("#" + id);
+    if (!hidden) return;
     const n = Number(val);
-    el.value = Number.isFinite(n) ? String(n) : "0";
+    hidden.value = Number.isFinite(n) ? String(n) : "0";
+    // update display if present
+    const disp = document.getElementById(id + '_display');
+    if (disp) disp.textContent = Number.isFinite(n) ? String(n) : '0';
   };
 
   setNum("cs_hp", state.hp);
   setNum("cs_hp_max", state.hpMax);
+  // set slider
+  const slider = document.getElementById('cs_hp_slider');
+  if (slider) {
+    slider.max = Math.max(1, Number(state.hpMax) || 1);
+    slider.value = Math.max(0, Number(state.hp) || 0);
+  }
+  // update the display numbers
+  const hpDisplay = document.getElementById('cs_hp_display');
+  const hpMaxDisplay = document.getElementById('cs_hp_max_display');
+  if (hpDisplay) hpDisplay.textContent = String(Number(state.hp) || 0);
+  if (hpMaxDisplay) hpMaxDisplay.textContent = String(Number(state.hpMax) || 0);
+
   setNum("cs_stamina", state.stamina);
   setNum("cs_ephem", state.ephem);
   setNum("cs_walk", state.walk);
@@ -1648,6 +1878,8 @@ function setSheetState(state) {
       });
     } catch (e) { console.error('Failed to restore weapons state', e); }
   }
+  // ensure interactive bindings exist for stat editing and HP slider
+  setTimeout(() => { wireStatTitleClicks(); wireHpSlider(); }, 40);
 }
 
 // When armor changes, persist it into the currently active saved character (if any)
