@@ -587,7 +587,7 @@ function injectArmorStylesOnce(){
     }
     /* medium-large specific scaling handled by clamp() on .armor-avatar-col above */
     /* Tighter mobile rules to ensure right column fits within the panel */
-    @media (max-width:480px) {
+  @media (max-width:639px) {
       .sheet-armor-panel { padding: 0.6rem; }
       .armor-grid{ gap:0.5rem; }
       /* make avatar a bit smaller, give more room to right column */
@@ -601,7 +601,7 @@ function injectArmorStylesOnce(){
       .overlay-section{ gap:6px; }
     }
     /* Force overlay to be compact on small/mobile viewports */
-    @media (max-width:480px) {
+  @media (max-width:639px) {
   /* Ensure overlay inner uses a fixed compact width (180px) when opened */
   /* prevent the inner from being stretched by its parent; use flex-basis for predictability */
   .armor-overlay{ overflow: visible !important; }
