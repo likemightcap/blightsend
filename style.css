@@ -82,6 +82,25 @@ body {
   padding: 1rem;
 }
 
+/* Make native buttons use Cinzel 600 for consistent UI */
+button, input[type="button"], input[type="submit"], .chip, .top-nav button, .sheet-menu-item,
+#btnGoSheet, #btnGoCompendium, .sheet-buttons button, .armor-list-col button {
+  font-family: 'CinzelCustom', inherit;
+  font-weight: 600;
+}
+
+/* Explicit override for the home screen buttons (ensure visibility even if other rules apply) */
+#btnGoSheet, #btnGoCompendium {
+  font-family: 'CinzelCustom', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+/* Force Cinzel 600 on other interactive controls */
+.sheet-buttons button, .armor-list-col button, .top-nav button, .chip, .home-btn, .sheet-action {
+  font-family: 'CinzelCustom', sans-serif !important;
+  font-weight: 600 !important;
+}
+
 /* Prefer bold Cinzel for headings */
 h1, h2, h3 { font-family: 'CinzelCustom', inherit; font-weight: 900; }
 

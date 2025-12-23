@@ -259,6 +259,17 @@ function injectSheetStylesOnce() {
       cursor:pointer;
       box-shadow: 0 18px 40px rgba(0,0,0,0.55);
     }
+    .home-btn, .sheet-action, .sheet-menu-btn, .sheet-title-btn, .top-nav button, .sheet-menu-item, .be-num-hud-btn, .chip,
+    #btnGoSheet, #btnGoCompendium, .sheet-buttons button, .armor-list-col button {
+      font-family: 'CinzelCustom', inherit !important;
+      font-weight: 600 !important;
+    }
+
+    /* High-specificity runtime override for interactive elements */
+    .sheet-buttons button, .armor-list-col button, .top-nav button, .chip, .home-btn, .sheet-action {
+      font-family: 'CinzelCustom', inherit !important;
+      font-weight: 600 !important;
+    }
     .home-btn:active{ transform: scale(0.985); }
 
     .sheet-header{
@@ -1108,8 +1119,8 @@ function ensureScreens() {
     homeScreen.innerHTML = `
       <div class="home-wrap">
         <img class="home-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-        <button class="home-btn" id="btnGoSheet">Ender</button>
-        <button class="home-btn" id="btnGoCompendium">Compendium</button>
+  <button class="home-btn" id="btnGoSheet" style="font-family: 'CinzelCustom', inherit; font-weight:600;">Ender</button>
+  <button class="home-btn" id="btnGoCompendium" style="font-family: 'CinzelCustom', inherit; font-weight:600;">Compendium</button>
       </div>
     `;
     compendiumRoot.parentNode.insertBefore(homeScreen, compendiumRoot);
