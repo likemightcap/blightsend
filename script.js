@@ -559,14 +559,14 @@ function injectArmorStylesOnce(){
   const s = document.createElement('style');
   s.id = '_beArmorStyles';
   s.textContent = `
-  .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 1rem 1.25rem; background: var(--bg-panel); border-radius: 12px; }
+  .sheet-armor-panel{ max-width:900px; margin: 1rem auto; padding: 1rem 0.5rem; background: var(--bg-panel); border-radius: 12px; }
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
   /* left: large avatar area; right: stacked pills column */
   /* Avatar column scales between ~282px at 600px viewport up to 680px at 920px viewport */
   /* Scale from 282px at 600px viewport to 300px at 920px viewport, cap at 300px */
   .armor-avatar-col{ flex: 0 0 clamp(282px, calc(282px + ((100vw - 600px) * 0.05625)), 300px); display:flex; align-items:center; justify-content:center; }
-  .armor-list-col{ flex: 0 0 38%; max-width: 38%; min-width:220px; display:flex; flex-direction:column; gap:0.9rem; }
+  .armor-list-col{ flex: 0 0 38%; max-width: 38%; min-width:220px; display:flex; flex-direction:column; gap:0.9rem; box-sizing: border-box; padding: 0 12px; }
   .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: none; box-shadow: none; }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
     /* Pill should span almost full column; stats are shown below */
@@ -593,12 +593,18 @@ function injectArmorStylesOnce(){
       /* make avatar a bit smaller, give more room to right column */
       .armor-avatar-col{ flex: 0 0 50%; }
       .armor-avatar-img{ max-width: 80%; }
-      .armor-list-col{ flex: 0 0 44%; max-width:44%; min-width:140px; gap:0.5rem; }
+  .armor-list-col{ flex: 0 0 44%; max-width:44%; min-width:140px; gap:0.5rem; padding: 0 8px; }
       .armor-slot{ padding:5px 6px; font-size:0.82rem; border-radius:8px; }
       .armor-stats{ font-size:0.75rem; gap:6px; margin-top:3px; }
       .overlay-input{ font-size:0.92rem; padding:8px 10px; }
       .overlay-stats-row{ font-size:0.86rem; gap:8px; }
       .overlay-section{ gap:6px; }
+    }
+    /* On larger screens give the list column symmetric horizontal padding so it's visually centered
+       relative to the avatar column rather than flush-left */
+    @media (min-width:640px) {
+      /* rely on panel padding for outer spacing; keep left inset for visual separation from avatar */
+      .armor-list-col{ padding-left: 24px; padding-right: 0; }
     }
     /* Force overlay to be compact on small/mobile viewports */
   @media (max-width:639px) {
@@ -823,7 +829,7 @@ function injectWeaponStylesOnce(){
   .weapon-stats{ display:flex; gap:10px; align-items:flex-start; margin-top:4px; flex-wrap:wrap; }
   .weapon-stats .stat{ display:flex; flex-direction:column; align-items:center; min-width:62px; max-width:120px; }
   .stat-label{ font-size:0.68rem; color:var(--text-muted); font-weight:800; }
-  .stat-val{ font-size:1rem; font-weight:900; color:var(--accent-soft); line-height:1; }
+  .stat-val{ font-size:1rem; font-weight:600; color:var(--accent-soft); line-height:1; font-family: 'CinzelCustom', inherit; }
   /* Dice stays right-aligned on wide view, but is repositioned on narrow screens */
   .weapon-dice{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; width:132px; flex:0 0 132px; }
   .dice-label{ font-size:0.56rem; color:var(--text-muted); text-transform:uppercase; }
@@ -838,6 +844,9 @@ function injectWeaponStylesOnce(){
   .rb-row{ display:flex; gap:6px; align-items:center; flex-direction:column; }
   .rb-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
   .rb-val{ color:#ffe9c8; font-weight:900; font-size:0.76rem; }
+
+  /* Ensure prominent labels/headings use the bold Cinzel weight */
+  .weapon-label, .armor-title, h1, h2, h3 { font-family: 'CinzelCustom', inherit; font-weight:900; }
 
   /* MELEE: style the RANGE stat box to match range-band-block */
   .weapon-row[data-category="Melee"] .weapon-stats .stat:last-child{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; align-items:center; gap:8px; }

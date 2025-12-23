@@ -49,9 +49,31 @@ header .subtitle {
   padding: 0;
 }
 
+/* Load local Cinzel webfonts (woff2) and fall back to system fonts */
+@font-face{
+  font-family: 'CinzelCustom';
+  src: url('/assets/fonts/cinzel-v26-latin-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: 'CinzelCustom';
+  src: url('/assets/fonts/cinzel-v26-latin-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: 'CinzelCustom';
+  src: url('/assets/fonts/cinzel-v26-latin-900.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: 'CinzelCustom', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: radial-gradient(circle at top, #181b23 0, #050607 55%);
   color: var(--text-main);
   min-height: 100vh;
@@ -59,6 +81,9 @@ body {
   justify-content: center;
   padding: 1rem;
 }
+
+/* Prefer bold Cinzel for headings */
+h1, h2, h3 { font-family: 'CinzelCustom', inherit; font-weight: 900; }
 
 /* Remove drop shadows from images sitewide per design request */
 img, .sheet-title-logo, .home-logo, .armor-avatar-img, .weapon-image-box, .weapon-row img {
