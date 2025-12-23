@@ -578,7 +578,7 @@ function injectArmorStylesOnce(){
   .armor-stats .stat-label{ color:var(--text-muted); font-weight:700; margin-right:6px; }
   .armor-stats .stat-val{ color:var(--accent-soft); font-weight:900; min-width:20px; display:inline-block; text-align:left; }
     /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
-    @media (max-width:520px){
+    @media (max-width:599px){
       .armor-grid{ flex-direction:row; }
       .armor-avatar-col{ flex:0 0 50%; }
       .armor-list-col{ flex:1 1 50%; }
