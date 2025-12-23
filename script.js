@@ -712,8 +712,8 @@ function openLoadOverlay(){
     item.className = 'be-load-item';
     item.tabIndex = 0;
     item.innerHTML = `<div class="label">${name}</div><div class="meta">${new Date((saved[name] && saved[name].updatedAt) || 0).toLocaleString()}</div>`;
-    item.addEventListener('click', () => { loadCharacter(name); closeLoadOverlay(); });
-    item.addEventListener('keydown', (e) => { if (e.key === 'Enter') { loadCharacter(name); closeLoadOverlay(); } });
+  item.addEventListener('click', () => { loadCharacter(name); closeLoadOverlay(); location.hash = '#sheet'; showOnly('sheet'); });
+  item.addEventListener('keydown', (e) => { if (e.key === 'Enter') { loadCharacter(name); closeLoadOverlay(); location.hash = '#sheet'; showOnly('sheet'); } });
     list.appendChild(item);
   });
   const ov = document.getElementById('_beLoadOverlay');
