@@ -563,7 +563,9 @@ function injectArmorStylesOnce(){
     /* Make the avatar column larger so the avatar is more prominent */
     .armor-grid{ display:flex; gap: 0.85rem; align-items:center; }
   /* left: large avatar area; right: stacked pills column */
-  .armor-avatar-col{ flex: 0 0 58%; display:flex; align-items:center; justify-content:center; }
+  /* Avatar column scales between ~282px at 600px viewport up to 680px at 920px viewport */
+  /* Scale from 282px at 600px viewport to 300px at 920px viewport, cap at 300px */
+  .armor-avatar-col{ flex: 0 0 clamp(282px, calc(282px + ((100vw - 600px) * 0.05625)), 300px); display:flex; align-items:center; justify-content:center; }
   .armor-list-col{ flex: 0 0 38%; max-width: 38%; min-width:220px; display:flex; flex-direction:column; gap:0.9rem; }
   .armor-avatar-img{ max-width: 100%; height:auto; display:block; filter: none; box-shadow: none; }
     .armor-row{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
@@ -583,6 +585,7 @@ function injectArmorStylesOnce(){
       .armor-stats{ font-size:0.82rem; gap:8px; }
       .sheet-buttons{ grid-template-columns: 1fr; }
     }
+    /* medium-large specific scaling handled by clamp() on .armor-avatar-col above */
     /* Tighter mobile rules to ensure right column fits within the panel */
     @media (max-width:480px) {
       .sheet-armor-panel { padding: 0.6rem; }
