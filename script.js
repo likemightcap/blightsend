@@ -219,7 +219,11 @@ function injectSheetStylesOnce() {
   style.id = "_beSheetStyles";
   style.textContent = `
     /* Character Sheet injected styles (kept minimal + matches your dark vibe) */
-    #homeScreen, #sheetScreen { width: 100%; max-width: 900px; margin: 0 auto; }
+    /* Page background and centered content max width */
+    html, body { background: #07080a; min-height: 100%; }
+    body { display:flex; align-items:flex-start; justify-content:center; padding: 24px 12px; }
+    #app { width: 100%; max-width: 920px; box-sizing: border-box; }
+    #homeScreen, #sheetScreen { width: 100%; max-width: 920px; margin: 0 auto; }
     .be-hidden { display: none !important; }
 
     /* Make the app feel native: prevent text selection and image dragging globally,
