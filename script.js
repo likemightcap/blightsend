@@ -942,20 +942,57 @@ function ensureCreateOverlayOnce(){
   ov.className = 'be-hidden';
   ov.innerHTML = `
     <div class="be-overlay-backdrop" id="_beCreateOverlayBackdrop">
-      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Create Ender">
-        <div class="be-overlay-header"><h3>Create New Ender</h3><button id="_beCreateClose" aria-label="Close">✕</button></div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <input id="_beCreate_name" placeholder="Name" class="overlay-input" />
-          <input id="_beCreate_hpMax" placeholder="Max HP" class="overlay-input" />
-          <input id="_beCreate_stamina" placeholder="Stamina" class="overlay-input" />
-          <input id="_beCreate_ephem" placeholder="Ephem" class="overlay-input" />
-          <input id="_beCreate_walk" placeholder="Walk" class="overlay-input" />
-          <input id="_beCreate_run" placeholder="Run" class="overlay-input" />
-          <input id="_beCreate_fight" placeholder="Fight" class="overlay-input" />
-          <input id="_beCreate_volley" placeholder="Volley" class="overlay-input" />
-          <input id="_beCreate_guts" placeholder="Guts" class="overlay-input" />
-          <input id="_beCreate_grit" placeholder="Grit" class="overlay-input" />
-          <input id="_beCreate_focus" placeholder="Focus" class="overlay-input" />
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Create or Edit Ender">
+        <div class="be-overlay-header"><h3 id="_beCreateHeader">Create New Ender</h3><button id="_beCreateClose" aria-label="Close">✕</button></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label style="font-size:0.85rem">Name</label>
+          <input id="_beCreate_name" placeholder="Name" class="overlay-input" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.3);color:var(--text-main);" />
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <!-- Max HP -->
+            <div>
+              <label class="overlay-label">Max HP</label>
+              <div class="be-num-wrap"><input id="_beCreate_hpMax" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <!-- Stamina -->
+            <div>
+              <label class="overlay-label">Stamina</label>
+              <div class="be-num-wrap"><input id="_beCreate_stamina" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <!-- Ephem -->
+            <div>
+              <label class="overlay-label">Ephem</label>
+              <div class="be-num-wrap"><input id="_beCreate_ephem" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div>
+              <label class="overlay-label">Fight</label>
+              <div class="be-num-wrap"><input id="_beCreate_fight" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <div>
+              <label class="overlay-label">Volley</label>
+              <div class="be-num-wrap"><input id="_beCreate_volley" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <div>
+              <label class="overlay-label">Guts</label>
+              <div class="be-num-wrap"><input id="_beCreate_guts" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <div>
+              <label class="overlay-label">Grit</label>
+              <div class="be-num-wrap"><input id="_beCreate_grit" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+            <div>
+              <label class="overlay-label">Focus</label>
+              <div class="be-num-wrap"><input id="_beCreate_focus" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+            </div>
+            <div></div>
+          </div>
+
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beCreateCancel">Cancel</button><button id="_beCreateOk">Create</button></div>
         </div>
       </div>
@@ -965,15 +1002,34 @@ function ensureCreateOverlayOnce(){
 
   document.getElementById('_beCreateClose').addEventListener('click', closeCreateOverlay);
   document.getElementById('_beCreateCancel').addEventListener('click', closeCreateOverlay);
-  document.getElementById('_beCreateOk').addEventListener('click', () => {
-    // Validate and create
+
+  // Helper: ensure numeric-only input and clamp to integers
+  function clampIntInput(el){
+    if(!el) return;
+    el.addEventListener('input', ()=>{
+      // strip non-digits
+      el.value = (el.value || '').replace(/[^0-9\-]/g,'');
+    });
+  }
+
+  // Wire steppers inside the overlay
+  ov.querySelectorAll('.be-num-wrap').forEach(wrap => {
+    const input = wrap.querySelector('.be-num');
+    const up = wrap.querySelector('button[data-step="up"]');
+    const down = wrap.querySelector('button[data-step="down"]');
+    clampIntInput(input);
+    if (up) up.addEventListener('click', ()=>{ const v = parseInt(input.value||'0')||0; input.value = String(v+1); input.dispatchEvent(new Event('input')); });
+    if (down) down.addEventListener('click', ()=>{ const v = parseInt(input.value||'0')||0; input.value = String(Math.max(0, v-1)); input.dispatchEvent(new Event('input')); });
+  });
+
+  // Shared submit handler used for both Create and Edit modes
+  const submitBtn = document.getElementById('_beCreateOk');
+  submitBtn.addEventListener('click', () => {
     const vals = {
       name: (document.getElementById('_beCreate_name').value || '').trim(),
       hpMax: Number.parseInt(document.getElementById('_beCreate_hpMax').value || '0') || 0,
       stamina: Number.parseInt(document.getElementById('_beCreate_stamina').value || '0') || 0,
       ephem: Number.parseInt(document.getElementById('_beCreate_ephem').value || '0') || 0,
-      walk: Number.parseInt(document.getElementById('_beCreate_walk').value || '0') || 0,
-      run: Number.parseInt(document.getElementById('_beCreate_run').value || '0') || 0,
       fight: Number.parseInt(document.getElementById('_beCreate_fight').value || '0') || 0,
       volley: Number.parseInt(document.getElementById('_beCreate_volley').value || '0') || 0,
       guts: Number.parseInt(document.getElementById('_beCreate_guts').value || '0') || 0,
@@ -981,15 +1037,16 @@ function ensureCreateOverlayOnce(){
       focus: Number.parseInt(document.getElementById('_beCreate_focus').value || '0') || 0
     };
     if (!vals.name) { toast('Name is required'); return; }
-    // Build basic character object matching getSheetState shape
+
+    // Build character object (re-using existing armor/weapons state)
     const charObj = {
       name: vals.name,
       hp: vals.hpMax,
       hpMax: vals.hpMax,
       stamina: vals.stamina,
       ephem: vals.ephem,
-      walk: vals.walk,
-      run: vals.run,
+      walk: Number($('#cs_walk')?.value || 0),
+      run: Number($('#cs_run')?.value || 0),
       fight: vals.fight,
       volley: vals.volley,
       guts: vals.guts,
@@ -999,19 +1056,42 @@ function ensureCreateOverlayOnce(){
       weapons: JSON.parse(JSON.stringify(weaponsState || {})),
       updatedAt: Date.now()
     };
-    // persist to saved characters
+
+    // Save into saved characters and make active
     const saved = readSavedCharacters();
     saved[vals.name] = charObj;
     localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
-    // set active and load into sheet
     localStorage.setItem(STORAGE_KEY_ACTIVE, vals.name);
     setSheetState(charObj);
     closeCreateOverlay();
-    // open sheet view
     location.hash = '#sheet';
     showOnly('sheet');
-    toast(`Created Ender: ${vals.name}`);
+    toast(`Saved Ender: ${vals.name}`);
   });
+
+  // Provide an edit entrypoint that pre-fills fields with the current Ender state
+  window.openEditOverlay = function(){
+    closeAllOverlays();
+    ensureCreateOverlayOnce();
+    const ovEl = document.getElementById('_beCreateOverlay');
+    if (!ovEl) return;
+    try { setBottomNavVisible(false); } catch(e) {}
+    const st = (function(){ const active = localStorage.getItem(STORAGE_KEY_ACTIVE); const saved = readSavedCharacters(); return (active && saved[active]) ? saved[active] : getSheetState(); })();
+    document.getElementById('_beCreateHeader').textContent = 'Edit Ender';
+    document.getElementById('_beCreateOk').textContent = 'Save';
+    // prefill values
+    document.getElementById('_beCreate_name').value = st.name || '';
+    document.getElementById('_beCreate_hpMax').value = String(Number(st.hpMax) || 0);
+    document.getElementById('_beCreate_stamina').value = String(Number(st.stamina) || 0);
+    document.getElementById('_beCreate_ephem').value = String(Number(st.ephem) || 0);
+    document.getElementById('_beCreate_fight').value = String(Number(st.fight) || 0);
+    document.getElementById('_beCreate_volley').value = String(Number(st.volley) || 0);
+    document.getElementById('_beCreate_guts').value = String(Number(st.guts) || 0);
+    document.getElementById('_beCreate_grit').value = String(Number(st.grit) || 0);
+    document.getElementById('_beCreate_focus').value = String(Number(st.focus) || 0);
+    ovEl.classList.remove('be-hidden');
+    document.getElementById('_beCreate_name').focus();
+  };
 }
 
 function openCreateOverlay(){
@@ -1695,7 +1775,7 @@ function ensureScreens() {
     const btnSave = document.getElementById('bnSave');
 
     if (btnComp) btnComp.addEventListener('click', () => { openCompendiumOverlay(); });
-    if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); openCreateOverlay(); });
+  if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); if (window.openEditOverlay) window.openEditOverlay(); else openCreateOverlay(); });
     if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
     if (btnSave) btnSave.addEventListener('click', () => { closeAllOverlays(); openSaveOverlay(); });
   }
