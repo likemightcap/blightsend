@@ -316,8 +316,9 @@ function injectSheetStylesOnce() {
     /* Make the HP slider area have extra bottom spacing */
     .hp-slider-row { margin-bottom: 30px; }
   /* HP slider visual theming: use app orange accent for the filled/thumb */
-  input[type="range"]#cs_hp_slider{ -webkit-appearance:none; appearance:none; width:100%; height:10px; background: rgba(255,255,255,0.06); border-radius:999px; outline:none; }
-  input[type="range"]#cs_hp_slider::-webkit-slider-runnable-track{ height:10px; background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent-soft) 50%, rgba(255,255,255,0.06) 50%); border-radius:999px; }
+  input[type="range"]#cs_hp_slider{ -webkit-appearance:none; appearance:none; width:100%; height:10px; background: rgba(255,255,255,0.06); border-radius:999px; outline:none; --hp-fill-pct: 50%; }
+  /* Use a neutral track background for WebKit; JS will paint the filled portion via inline background so it matches the value. */
+  input[type="range"]#cs_hp_slider::-webkit-slider-runnable-track{ height:10px; background: linear-gradient(90deg, var(--accent-soft) var(--hp-fill-pct), rgba(255,255,255,0.06) var(--hp-fill-pct)); border-radius:999px; }
   input[type="range"]#cs_hp_slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%; background: var(--accent-soft); border:2px solid rgba(0,0,0,0.25); margin-top:-4px; box-shadow:0 6px 14px rgba(0,0,0,0.45); }
   input[type="range"]#cs_hp_slider::-moz-range-track{ height:10px; background: rgba(255,255,255,0.06); border-radius:999px; }
   input[type="range"]#cs_hp_slider::-moz-range-progress{ background: var(--accent-soft); height:10px; border-radius:999px; }
@@ -713,6 +714,7 @@ function closeAllOverlays(){
   try { closeArmorOverlay(); } catch (e) {}
   try { closeCompendiumOverlay(); } catch (e) {}
   try { closeModal(); } catch (e) {}
+  try { toggleSheetMenu(false); } catch (e) {}
 }
 
 function ensureLoadOverlayOnce(){
@@ -882,15 +884,15 @@ function wireHpSlider(){
   const slider = document.getElementById('cs_hp_slider');
   if (!slider || slider.dataset.bound) return;
   slider.dataset.bound = '1';
-  slider.addEventListener('input', () => {
+    slider.addEventListener('input', () => {
     const v = Number(slider.value || '0');
     const max = Number(slider.max || '0');
     const hv = Math.max(0, Math.min(v, max));
     const hidden = document.getElementById('cs_hp');
     if (hidden) hidden.value = String(hv);
     const disp = document.getElementById('cs_hp_display'); if (disp) disp.textContent = String(hv);
-    // update visual fill for slider
-    try { const pct = Math.round((hv / (max || 1)) * 100); slider.style.background = `linear-gradient(90deg, var(--accent-soft) ${pct}%, rgba(255,255,255,0.06) ${pct}% )`; } catch(e) {}
+    // update visual fill for slider by setting a CSS variable used in the track background
+    try { const pct = Math.round((hv / (max || 1)) * 100); slider.style.setProperty('--hp-fill-pct', pct + '%'); } catch(e) {}
     persistActiveCharacterState();
   });
 }
@@ -1652,20 +1654,8 @@ function ensureScreens() {
     `;
     document.head.appendChild(sx);
 
-    // ensure only one overlay visible at a time helper
-    function closeAllOverlays() {
-      closeLoadOverlay();
-      closeCreateOverlay();
-      closeSaveOverlay();
-      closeExportOverlay();
-      closeStatOverlay();
-      closeArmorOverlay();
-      // compendium is the existing #compendiumScreen; we'll hide it to close
-      const comp = document.getElementById('compendiumScreen'); if (comp) comp.classList.add('be-hidden');
-      // close modals
-      closeModal();
-      toggleSheetMenu(false);
-    }
+    // Use the global `closeAllOverlays()` helper defined elsewhere to avoid duplication
+    // (the global helper will hide overlays, modals and close the sheet menu).
 
     // bottom nav visibility is handled by the global setBottomNavVisible helper
 
@@ -1961,7 +1951,7 @@ function setSheetState(state) {
     const curVal = Math.max(0, Number(state.hp) || 0);
     slider.max = maxVal;
     slider.value = curVal;
-    try { const pct = Math.round((curVal / maxVal) * 100); slider.style.background = `linear-gradient(90deg, var(--accent-soft) ${pct}%, rgba(255,255,255,0.06) ${pct}% )`; } catch(e) {}
+    try { const pct = Math.round((curVal / maxVal) * 100); slider.style.setProperty('--hp-fill-pct', pct + '%'); } catch(e) {}
   }
   // update the display numbers
   const hpDisplay = document.getElementById('cs_hp_display');
