@@ -925,6 +925,10 @@ function closeStatOverlay(){
 // wire stat-title clicks to open stat overlay
 function wireStatTitleClicks(){
   document.querySelectorAll('.stat-title').forEach(el => {
+    // don't bind overlays for walk/run — these should not open the stat overlay
+    const statName = el.dataset.stat;
+    if (!statName) return;
+    if (statName === 'walk' || statName === 'run') return;
     if (el.dataset.bound) return;
     el.dataset.bound = '1';
     el.addEventListener('click', () => {
