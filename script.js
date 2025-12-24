@@ -701,8 +701,28 @@ function setBottomNavVisible(visible){
     const bnEl = document.getElementById('beBottomNav');
     if (!bnEl) return;
     bnEl.style.display = visible ? 'flex' : 'none';
+    // update sheet padding to avoid hiding content
+    try { updateBottomPadding(); } catch(e) {}
   } catch (e) { /* ignore */ }
 }
+
+// Ensure the sheet content isn't obscured by the fixed bottom nav by adding padding-bottom
+function updateBottomPadding(){
+  try {
+    const bnEl = document.getElementById('beBottomNav');
+    const sheet = document.getElementById('sheetScreen');
+    if (!bnEl || !sheet) return;
+    const style = window.getComputedStyle(bnEl);
+    // compute outer height including margins
+    const rect = bnEl.getBoundingClientRect();
+    const h = Math.ceil(rect.height + (parseFloat(style.marginTop||0) || 0) + (parseFloat(style.marginBottom||0) || 0));
+    // apply padding to sheet so content isn't hidden
+    sheet.style.paddingBottom = h + 12 + 'px'; // add small buffer
+  } catch (e) {}
+}
+
+// keep padding updated on resize
+window.addEventListener('resize', () => { try { updateBottomPadding(); } catch(e){} });
 
 // Global helper: close any open overlays so only one overlay can be visible at a time
 function closeAllOverlays(){
@@ -1737,6 +1757,8 @@ function ensureScreens() {
       @media (min-width:900px){ .be-bottom-btn{ padding:14px 10px; } .be-bottom-btn img{ width:32px; height:32px; } }
     `;
     document.head.appendChild(s);
+  // set initial padding so page content isn't hidden by the nav
+  try { updateBottomPadding(); } catch (e) {}
     // compendium close 'X' style
     const sx = document.createElement('style');
     sx.id = '_beCompCloseStyles';
