@@ -737,6 +737,29 @@ function ensureLoadOverlayOnce(){
   `;
   document.body.appendChild(ov);
 
+  // Scoped styles for the Create/Edit overlay numeric inputs and steppers
+  if (!document.getElementById('_beCreateOverlayStyles')){
+    const css = document.createElement('style');
+    css.id = '_beCreateOverlayStyles';
+    css.textContent = `
+      /* compact numeric input + stepper layout inside create/edit overlay */
+      #_beCreateOverlay .be-num-wrap{ display:flex; align-items:center; gap:6px; }
+      #_beCreateOverlay .be-num{ width:64px; max-width:100%; box-sizing:border-box; padding:6px 8px; text-align:right; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); color:var(--text-main); }
+      #_beCreateOverlay .be-num::placeholder{ color:var(--text-muted); }
+      #_beCreateOverlay .stepper{ display:flex; flex-direction:column; gap:4px; margin-left:4px; }
+      #_beCreateOverlay .stepper button{ width:30px; height:22px; padding:0; border-radius:6px; border:0; background:rgba(255,255,255,0.04); color:var(--text-main); cursor:pointer; }
+      #_beCreateOverlay .stepper button:active{ transform:translateY(1px); }
+      /* ensure grids wrap on very small screens */
+      @media (max-width:560px){
+        #_beCreateOverlay .be-overlay-panel{ padding:10px; }
+        #_beCreateOverlay .be-num{ width:56px; }
+        #_beCreateOverlay div[style*="grid-template-columns:repeat(4"]{ grid-template-columns: repeat(2, 1fr); }
+        #_beCreateOverlay div[style*="grid-template-columns:repeat(3"]{ grid-template-columns: repeat(2, 1fr); }
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
   // styling (lightweight; uses existing theme variables)
   // styles are injected by ensureOverlayStylesOnce
 
