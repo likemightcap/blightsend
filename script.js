@@ -1367,6 +1367,17 @@ function populateWeaponListForRow(row){
   if (!list) return;
   list.innerHTML = '';
   const options = (weaponsData || []).filter(w => normalize(w.category) === cat);
+  // insert a "NONE" option at the top to allow clearing the slot
+  const noneDiv = document.createElement('div');
+  noneDiv.className = 'weapon-item none-item';
+  noneDiv.textContent = 'NONE';
+  noneDiv.addEventListener('click', (e) => {
+    e.stopPropagation();
+    clearWeaponRow(row);
+    list.classList.add('be-hidden');
+    list.setAttribute('aria-hidden', 'true');
+  });
+  list.appendChild(noneDiv);
   options.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
   options.forEach(item => {
     const div = document.createElement('div');
@@ -1380,6 +1391,36 @@ function populateWeaponListForRow(row){
     });
     list.appendChild(div);
   });
+}
+
+// Helper to clear a weapon row selection and update state/UI
+function clearWeaponRow(row){
+  if (!row) return;
+  const imgBox = row.querySelector('.weapon-image-box');
+  const selector = row.querySelector('.weapon-selector');
+  const typeEl = row.querySelector('.weapon-type');
+  const dicePool = row.querySelector('.dice-pool');
+  const diceSize = row.querySelector('.dice-size');
+  // clear visuals
+  if (imgBox) imgBox.style.backgroundImage = '';
+  if (selector) selector.textContent = selector.dataset.placeholder || '';
+  if (typeEl) typeEl.textContent = '';
+  if (dicePool) dicePool.textContent = '--';
+  if (diceSize) diceSize.textContent = '--';
+  // clear stats
+  ['dam','pen','dur','hands','wt','range'].forEach(cls => {
+    const el = row.querySelector('.stat-val.' + cls);
+    if (el) el.textContent = '--';
+  });
+  // clear persisted state for this slot
+  try {
+    const slot = row.dataset.slot;
+    if (slot && weaponsState && weaponsState[slot]) {
+      delete weaponsState[slot];
+      persistActiveCharacterState();
+      try { updateWalkRunFromEquipment(); } catch (e) {}
+    }
+  } catch (e) { console.error('Failed to clear weapon row', e); }
 }
 
 function applyWeaponToRow(row, item){
@@ -2808,6 +2849,19 @@ function populateOverlayOptions(slotKey, layerName, overlay){
   list.innerHTML = '';
   const options = getArmorOptionsForLayer(slotKey, layerName);
   console.log('[DEBUG] options length for', layerName, 'slot', slotKey, options.length, options.slice(0,6).map(o=>o.name));
+  // add a NONE entry to allow clearing this layer
+  const noneDiv = document.createElement('div');
+  noneDiv.className = 'overlay-item none-item';
+  noneDiv.textContent = 'NONE';
+  noneDiv.tabIndex = 0;
+  noneDiv.addEventListener('click', () => {
+    const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
+    if (inp) inp.value = '';
+    list.classList.add('be-hidden');
+    populateOverlayStatsForLayer(overlay, layerName);
+  });
+  noneDiv.addEventListener('keydown', (e) => { if (e.key === 'Enter') noneDiv.click(); });
+  list.appendChild(noneDiv);
   options.forEach(item => {
     const div = document.createElement('div');
     div.className = 'overlay-item';
