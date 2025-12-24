@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BlightsEnd</title>
+  <title>BlightsEnd Compendium</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="style.css" />
@@ -17,21 +17,14 @@
   <link rel="apple-touch-icon" sizes="512x512" href="Icons/icon-512.png">
 </head>
 
-<body data-page="home">
+<body data-page="compendium">
   <div id="app">
     <header id="siteHeader">
-      <!-- site logo removed per request -->
+      <img id="siteLogo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd Logo">
+      <div class="subtitle">Field Reference · Echoes · Weapons · Skills · Armor</div>
     </header>
 
-    <!-- Home screen removed: app now starts at the Character Sheet with a Load overlay on top. -->
-  </div>
-
-  <!-- Compendium SPA screen (hidden by default) -->
-  <div id="compendiumScreen" class="be-hidden">
-    <div class="compendium-wrap">
-      <header class="compendium-header" style="display:flex;align-items:center;justify-content:center;padding:0.5rem 0;">
-        <!-- compendium header logo removed per request -->
-      </header>
+    <main>
       <nav class="top-nav" id="topNav">
         <button data-page="echoes" class="active">Echoes</button>
         <button data-page="weapons">Weapons</button>
@@ -53,31 +46,28 @@
       <div class="empty-message" id="emptyMessage" style="display:none;">
         Nothing matches your search. Try a different term or clear filters.
       </div>
-    </div>
-
-    <div class="modal-backdrop" id="modalBackdrop">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <div class="modal-header">
-          <div>
-            <div class="modal-title" id="modalTitle"></div>
-            <div class="modal-subtitle" id="modalSubtitle"></div>
-          </div>
-          <button class="modal-close" id="modalClose" aria-label="Close details">✕</button>
-        </div>
-
-        <div class="modal-grid" id="modalPills"></div>
-        <div class="modal-body" id="modalBody"></div>
-      </div>
-    </div>
-
-    <!-- Close button for compendium overlay (top-right) -->
-    <button id="_beCompClose" aria-label="Close Compendium" class="be-comp-close">✕</button>
+    </main>
   </div>
 
-    <script>
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle"></div>
+          <div class="modal-subtitle" id="modalSubtitle"></div>
+        </div>
+        <button class="modal-close" id="modalClose" aria-label="Close details">✕</button>
+      </div>
+
+      <div class="modal-grid" id="modalPills"></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        // Use a relative path so the site works from different base paths / during local testing
+        // Relative registration path is more resilient when serving from subfolders or locally
         navigator.serviceWorker.register("./sw.js").catch(console.error);
       });
     }

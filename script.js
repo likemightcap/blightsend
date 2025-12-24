@@ -1849,7 +1849,7 @@ function ensureScreens() {
       /* Constrain the inner compendium content to match the sheet max width and make it visually distinct */
       #compendiumScreen .compendium-wrap { width: 100%; max-width: 920px; box-sizing: border-box; background: linear-gradient(180deg, rgba(18,18,18,0.98), rgba(8,8,10,0.98)); border-radius: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
       /* Ensure the big close X sits above the content */
-      #_beCompClose { position: absolute; top: 18px; right: 18px; z-index: 1301; background: rgba(0,0,0,0.7); color: #fff; border: 0; width:48px; height:48px; border-radius: 999px; font-size:20px; cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,0.6); }
+  #_beCompClose { position: absolute; top: 18px; right: 18px; z-index: 1301; display: block; background: rgba(0,0,0,0.7); color: #fff; border: 0; width:48px; height:48px; border-radius: 999px; font-size:20px; cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,0.6); }
       @media (min-width:700px){ #_beCompClose{ width:56px; height:56px; font-size:22px; } }
 
       /* Small-screen adjustments: keep the overlay pinned so top/bottom aren't clipped and allow scrolling */
@@ -1876,9 +1876,8 @@ function ensureScreens() {
       comp.classList.remove('be-hidden');
       try { setBottomNavVisible(false); } catch (e) {}
       // ensure compendium UI is initialized
-      try { initCompendiumOnce().catch(console.error); } catch (e) {}
-          // mark as explicit NONE so it will be saved with the character
-          weaponsState[slot] = { name: 'NONE' };
+    try { initCompendiumOnce().catch(console.error); } catch (e) {}
+    // ensure any pre-existing close button is visible and wired
       let x = document.getElementById('_beCompClose');
       if (!x) {
         x = document.createElement('button');
@@ -1887,14 +1886,25 @@ function ensureScreens() {
         x.innerHTML = '✕';
         x.setAttribute('aria-label','Close Compendium');
         comp.appendChild(x);
-        x.addEventListener('click', () => { closeCompendiumOverlay(); });
+      } else {
+        // ensure it's attached to the current compendium container and visible
+        try { if (x.parentNode !== comp) comp.appendChild(x); } catch (e) {}
+        try { x.style.display = 'block'; x.classList.remove('be-hidden'); } catch (e) {}
       }
+      // Ensure the close button behaves like a button and always has an active handler
+      try {
+        x.type = 'button';
+        // Use onclick to guarantee exact single handler and avoid duplication issues
+        x.onclick = function (ev) { ev.stopPropagation(); closeCompendiumOverlay(); };
+      } catch (e) {}
     }
 
     function closeCompendiumOverlay(){
       const comp = document.getElementById('compendiumScreen');
       if (!comp) return;
       comp.classList.add('be-hidden');
+      // hide the close button when closing
+      try { const x = document.getElementById('_beCompClose'); if (x) x.style.display = 'none'; } catch(e) {}
       try { setBottomNavVisible(true); } catch (e) {}
     }
 

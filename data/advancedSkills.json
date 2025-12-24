@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Stat Upgrade",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Raise any one stat (Fight, Volley, Guts, Grit, or Focus) by +1, up to a maximum of 3."
+  },
+  {
+    "name": "Fleet Step",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Increase Walk and Run speeds (per your latest movement table; originally 4\"→5\" and 6\"→7\" in an older draft)."
+  },
+  {
+    "name": "Iron Reserves",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Raise your Stamina pool by +1."
+  },
+  {
+    "name": "Ephem Pool (Initial)",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Unlocks Echo Channeling and grants an Ephem pool based on rank (I–IV) and Echoes Prepared limits."
+  },
+  {
+    "name": "Ephem Pool Upgrade",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Increase your maximum Ephem pool (exact increments TBD)."
+  },
+  {
+    "name": "Ephem Regeneration Upgrade",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Increase Ephem regeneration per turn (1→2, then 2→3)."
+  },
+  {
+    "name": "Weapon Second Function",
+    "requirement": null,
+    "cost": "—",
+    "effect": "Placeholder – mechanics and options still to be defined."
+  },
+  {
+    "name": "Circle of Iron",
+    "requirement": "Two-handed Slashing, Blunt, or Cleave weapon (not Piercing).",
+    "cost": "2 AP + 2 Stamina",
+    "effect": "Make a Fight action. Roll your normal melee dice pool plus 1 extra die for each enemy within melee range (360°). Hits may be assigned to any enemies in range regardless of facing."
+  },
+  {
+    "name": "Shadow Step",
+    "requirement": null,
+    "cost": "1 Ephem",
+    "effect": "Teleport up to 3\" ignoring terrain and models as long as your base fits in the destination."
+  },
+  {
+    "name": "Lunge",
+    "requirement": "Piercing weapon",
+    "cost": "2 AP + 1 Stamina",
+    "effect": "Increase melee range of your attack by +1\"."
+  },
+  {
+    "name": "Phantom Shot",
+    "requirement": null,
+    "cost": "2 AP (Volley) + 1 Ephem",
+    "effect": "When you make a Volley action, the attack ignores line of sight."
+  },
+  {
+    "name": "Ground Slam",
+    "requirement": "Blunt weapon",
+    "cost": "2 AP + scaling Ephem (1–3)",
+    "effect": "Create a shockwave around you: 1 Ephem = 3\" radius, 2 = 4\", 3 = 5\". All enemies in radius take 3 damage; Small/Medium enemies are pushed out of the radius."
+  },
+  {
+    "name": "Earthshatter",
+    "requirement": "Blunt weapon",
+    "cost": "2 AP + 2 Ephem",
+    "effect": "Create a 6\" spray template from your base. All enemies in the template take 3 damage and are knocked Prone."
+  },
+  {
+    "name": "Shield Bash",
+    "requirement": "Shield equipped",
+    "cost": "2 AP (sometimes noted 1 AP in draft)",
+    "effect": "Make a Fight action using 1d8. Small and Medium enemies hit are knocked Prone."
+  },
+  {
+    "name": "Heavy Bash",
+    "requirement": "Blunt weapon",
+    "cost": "2 AP",
+    "effect": "Make a Fight action targeting a shielded enemy. On a hit, their shield provides no benefit until the end of your turn."
+  },
+  {
+    "name": "Intimidating Shout",
+    "requirement": null,
+    "cost": "2 AP",
+    "effect": "All enemies within 10\" must target you on their next activation if able, moving toward you and attacking if possible. Place a Two-Turn token next to your model."
+  },
+  {
+    "name": "Sharpened Instinct",
+    "requirement": null,
+    "cost": "1 Stamina",
+    "effect": "Before a Fight, Volley, or targeted Echo attack roll, spend 1 Stamina to increase your Direct Hit window by +1 for that action (e.g., d8 Direct Hits on 7–8). Stacks with other modifiers."
+  },
+  {
+    "name": "Dual Wield",
+    "requirement": "Two one-handed weapons equipped",
+    "cost": "—",
+    "effect": "When making a Fight action while dual-wielding, halve the dice pool of each weapon (round up) and roll them together. Die sizes stay the same; allocate hits following normal melee rules."
+  },
+  {
+    "name": "Leap",
+    "requirement": null,
+    "cost": "1 AP + 1 Ephem",
+    "effect": "Choose a facing, then jump up to 6\" straight ahead (including vertically). You may leap over terrain and Small/Medium enemies if the landing space is clear. End facing unchanged."
+  },
+  {
+    "name": "Riposte",
+    "requirement": "You must have successfully Parried a melee attack",
+    "cost": "1 Stamina",
+    "effect": "After a successful Parry, roll 1d8 with Fight as TN adjustment. On success, deal your weapon’s base damage to the attacker; Direct Hits apply."
+  },
+  {
+    "name": "Grinding Edge",
+    "requirement": "Cleave weapon",
+    "cost": "1 Stamina",
+    "effect": "When you score a Direct Hit with a Cleave weapon, after resolving damage against the primary target, choose one enemy within 1\" of that target; it takes 2 damage ignoring armor."
+  },
+  {
+    "name": "Reflexive Guard",
+    "requirement": "Shield equipped",
+    "cost": "1 Stamina",
+    "effect": "After an enemy’s attack roll against you is made but before damage, cancel that attack entirely. Your shield takes 1 Durability damage. You may use this multiple times per enemy turn while you can pay Stamina and have Durability."
+  },
+  {
+    "name": "Veil Point",
+    "requirement": "Spear",
+    "cost": "1 Ephem",
+    "effect": "When making a Fight action with a spear, increase melee range by +1\" as a blade of force extends from the tip."
+  },
+  {
+    "name": "Reaving Cut",
+    "requirement": "Slashing weapon",
+    "cost": "1 Stamina",
+    "effect": "Before a Fight action with a Slashing weapon, spend 1 Stamina. If that attack scores any Direct Hits, choose one enemy that took a Direct Hit; that enemy suffers +1 Bleed in addition to normal Bleed from Slashing (once per attack)."
+  }
+]
