@@ -1380,9 +1380,6 @@ function ensureScreens() {
     sheetScreen.innerHTML = `
       <div class="sheet-header">
         <div style="width:44px;"></div>
-        <button class="sheet-title-btn" id="sheetLogoBtn" type="button" aria-label="Load Ender">
-          <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-        </button>
         <div style="width:64px;"></div>
       </div>
 
@@ -1709,14 +1706,7 @@ function ensureScreens() {
     openSheetMenu.dataset.bound = "1";
     openSheetMenu.addEventListener("click", () => toggleSheetMenu(true));
   }
-  // Wire sheet logo button to open the Load Ender overlay (since there's no Home screen)
-  const sheetLogoBtn = $("#sheetLogoBtn");
-  if (sheetLogoBtn && !sheetLogoBtn.dataset.bound) {
-    sheetLogoBtn.dataset.bound = "1";
-    sheetLogoBtn.addEventListener("click", () => {
-      openLoadOverlay();
-    });
-  }
+  // sheet logo removed — no logo button to wire
   const overlay = $("#sheetMenuOverlay");
   if (overlay && !overlay.dataset.bound) {
     overlay.dataset.bound = "1";
