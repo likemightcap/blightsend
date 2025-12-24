@@ -309,10 +309,23 @@ function injectSheetStylesOnce() {
       align-items:end;
       margin-bottom: 0.9rem;
     }
-    /* hide the static NAME label (we display the name directly) */
-    #cs_name_display { display: none; }
+  /* hide the static NAME label (we display the name directly) */
+  #cs_name_display { display: none; }
+  /* Prominent name display */
+  #cs_name_visible { font-size: 2.2rem; line-height: 1.05; font-weight: 900; margin-bottom: 6px; }
     /* Make the HP slider area have extra bottom spacing */
     .hp-slider-row { margin-bottom: 30px; }
+  /* HP slider visual theming: use app orange accent for the filled/thumb */
+  input[type="range"]#cs_hp_slider{ -webkit-appearance:none; appearance:none; width:100%; height:10px; background: rgba(255,255,255,0.06); border-radius:999px; outline:none; }
+  input[type="range"]#cs_hp_slider::-webkit-slider-runnable-track{ height:10px; background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent-soft) 50%, rgba(255,255,255,0.06) 50%); border-radius:999px; }
+  input[type="range"]#cs_hp_slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%; background: var(--accent-soft); border:2px solid rgba(0,0,0,0.25); margin-top:-4px; box-shadow:0 6px 14px rgba(0,0,0,0.45); }
+  input[type="range"]#cs_hp_slider::-moz-range-track{ height:10px; background: rgba(255,255,255,0.06); border-radius:999px; }
+  input[type="range"]#cs_hp_slider::-moz-range-progress{ background: var(--accent-soft); height:10px; border-radius:999px; }
+  input[type="range"]#cs_hp_slider::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--accent-soft); border:2px solid rgba(0,0,0,0.25); }
+  .hp-row{ display:flex; gap:12px; align-items:center; }
+  .hp-row .hp-slider-wrap{ flex:1 1 0; }
+  .hp-row .hp-numbers{ min-width:72px; text-align:right; font-weight:900; }
+  .hp-block{ margin-bottom: 30px; }
     .sheet-row{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
@@ -681,6 +694,27 @@ function ensureOverlayStylesOnce(){
   document.head.appendChild(css);
 }
 
+// Global helper: show/hide bottom nav — overlays should hide the bottom nav
+function setBottomNavVisible(visible){
+  try {
+    const bnEl = document.getElementById('beBottomNav');
+    if (!bnEl) return;
+    bnEl.style.display = visible ? 'flex' : 'none';
+  } catch (e) { /* ignore */ }
+}
+
+// Global helper: close any open overlays so only one overlay can be visible at a time
+function closeAllOverlays(){
+  try { closeLoadOverlay(); } catch (e) {}
+  try { closeCreateOverlay(); } catch (e) {}
+  try { closeSaveOverlay(); } catch (e) {}
+  try { closeExportOverlay(); } catch (e) {}
+  try { closeStatOverlay(); } catch (e) {}
+  try { closeArmorOverlay(); } catch (e) {}
+  try { closeCompendiumOverlay(); } catch (e) {}
+  try { closeModal(); } catch (e) {}
+}
+
 function ensureLoadOverlayOnce(){
   ensureOverlayStylesOnce();
   if (document.getElementById('_beLoadOverlay')) return;
@@ -711,7 +745,10 @@ function ensureLoadOverlayOnce(){
 }
 
 function openLoadOverlay(){
+  closeAllOverlays();
   ensureLoadOverlayOnce();
+  // hide bottom nav while overlay is open
+  try { setBottomNavVisible(false); } catch (e) {}
   const saved = readSavedCharacters();
   const names = Object.keys(saved).sort((a,b)=> a.localeCompare(b));
   const list = document.getElementById('_beLoadList');
@@ -747,6 +784,7 @@ function openLoadOverlay(){
 function closeLoadOverlay(){
   const ov = document.getElementById('_beLoadOverlay');
   if (ov) ov.classList.add('be-hidden');
+  try { setBottomNavVisible(true); } catch (e) {}
 }
 
 // Stat edit overlay: used to edit a single stat (set or add/subtract)
@@ -808,9 +846,11 @@ function ensureStatOverlayOnce(){
 }
 
 function openStatOverlay(statName, title){
+  closeAllOverlays();
   ensureStatOverlayOnce();
   const ov = document.getElementById('_beStatOverlay');
   if (!ov) return;
+  try { setBottomNavVisible(false); } catch (e) {}
   ov.dataset.stat = statName;
   document.getElementById('_beStatTitle').textContent = title || `Edit ${statName}`;
   document.getElementById('_beStatSet').value = '';
@@ -822,6 +862,7 @@ function openStatOverlay(statName, title){
 function closeStatOverlay(){
   const ov = document.getElementById('_beStatOverlay');
   if (ov) ov.classList.add('be-hidden');
+  try { setBottomNavVisible(true); } catch (e) {}
 }
 
 // wire stat-title clicks to open stat overlay
@@ -848,6 +889,8 @@ function wireHpSlider(){
     const hidden = document.getElementById('cs_hp');
     if (hidden) hidden.value = String(hv);
     const disp = document.getElementById('cs_hp_display'); if (disp) disp.textContent = String(hv);
+    // update visual fill for slider
+    try { const pct = Math.round((hv / (max || 1)) * 100); slider.style.background = `linear-gradient(90deg, var(--accent-soft) ${pct}%, rgba(255,255,255,0.06) ${pct}% )`; } catch(e) {}
     persistActiveCharacterState();
   });
 }
@@ -970,9 +1013,11 @@ function ensureCreateOverlayOnce(){
 }
 
 function openCreateOverlay(){
+  closeAllOverlays();
   ensureCreateOverlayOnce();
   const ov = document.getElementById('_beCreateOverlay');
   if (!ov) return;
+  try { setBottomNavVisible(false); } catch (e) {}
   // clear inputs
   ['_beCreate_name','_beCreate_hpMax','_beCreate_stamina','_beCreate_ephem','_beCreate_walk','_beCreate_run','_beCreate_fight','_beCreate_volley','_beCreate_guts','_beCreate_grit','_beCreate_focus'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   ov.classList.remove('be-hidden');
@@ -982,10 +1027,11 @@ function openCreateOverlay(){
 function closeCreateOverlay(){
   const ov = document.getElementById('_beCreateOverlay');
   if (ov) ov.classList.add('be-hidden');
+  try { setBottomNavVisible(true); } catch (e) {}
 }
 
-function openSaveOverlay(){ ensureSaveOverlayOnce(); document.getElementById('_beSaveName').value = ($('#cs_name')?.value || ''); document.getElementById('_beSaveOverlay').classList.remove('be-hidden'); document.getElementById('_beSaveName').focus(); }
-function closeSaveOverlay(){ const ov = document.getElementById('_beSaveOverlay'); if (ov) ov.classList.add('be-hidden'); }
+function openSaveOverlay(){ closeAllOverlays(); ensureSaveOverlayOnce(); document.getElementById('_beSaveName').value = ($('#cs_name')?.value || ''); document.getElementById('_beSaveOverlay').classList.remove('be-hidden'); document.getElementById('_beSaveName').focus(); try { setBottomNavVisible(false); } catch (e) {} }
+function closeSaveOverlay(){ const ov = document.getElementById('_beSaveOverlay'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch (e) {} }
 
 // Export overlay (name the export file)
 function ensureExportOverlayOnce(){
@@ -1022,8 +1068,8 @@ function ensureExportOverlayOnce(){
   });
 }
 
-function openExportOverlay(){ ensureExportOverlayOnce(); document.getElementById('_beExportName').value = ($('#cs_name')?.value || 'ender'); document.getElementById('_beExportOverlay').classList.remove('be-hidden'); document.getElementById('_beExportName').focus(); }
-function closeExportOverlay(){ const ov = document.getElementById('_beExportOverlay'); if (ov) ov.classList.add('be-hidden'); }
+function openExportOverlay(){ closeAllOverlays(); ensureExportOverlayOnce(); document.getElementById('_beExportName').value = ($('#cs_name')?.value || 'ender'); document.getElementById('_beExportOverlay').classList.remove('be-hidden'); document.getElementById('_beExportName').focus(); try { setBottomNavVisible(false); } catch (e) {} }
+function closeExportOverlay(){ const ov = document.getElementById('_beExportOverlay'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch (e) {} }
 
 // Weapons panel styles
 function injectWeaponStylesOnce(){
@@ -1324,60 +1370,44 @@ function ensureScreens() {
     return;
   }
 
-  // Create Home screen (insert before compendium)
-  if (!$("#homeScreen")) {
-    homeScreen = document.createElement("div");
-    homeScreen.id = "homeScreen";
-    homeScreen.innerHTML = `
-      <div class="home-wrap">
-        <img class="home-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
-  <button class="home-btn" id="btnGoSheet" style="font-family: 'CinzelCustom', inherit; font-weight:600;">Ender</button>
-  <button class="home-btn" id="btnGoCompendium" style="font-family: 'CinzelCustom', inherit; font-weight:600;">Compendium</button>
-      </div>
-    `;
-    compendiumRoot.parentNode.insertBefore(homeScreen, compendiumRoot);
-  } else {
-    homeScreen = $("#homeScreen");
-  }
+  // Note: home screen removed. The Character Sheet (`sheetScreen`) is now the app root.
 
   // Create Character Sheet screen (insert after home, before compendium)
   if (!$("#sheetScreen")) {
     sheetScreen = document.createElement("div");
     sheetScreen.id = "sheetScreen";
-    sheetScreen.classList.add("be-hidden");
+    // sheetScreen is the root and should be visible by default (overlays will block interaction)
     sheetScreen.innerHTML = `
       <div class="sheet-header">
-        <button class="sheet-menu-btn" id="openSheetMenu" type="button">
-          <span style="font-size:1.1rem; line-height:0;">☰</span> <span>Menu</span>
-        </button>
-        <button class="sheet-title-btn" id="sheetLogoBtn" type="button" aria-label="Home">
+        <div style="width:44px;"></div>
+        <button class="sheet-title-btn" id="sheetLogoBtn" type="button" aria-label="Load Ender">
           <img class="sheet-title-logo" src="assets/BlightsEnd-Logo.png" alt="BlightsEnd" />
         </button>
         <div style="width:64px;"></div>
       </div>
 
-  <section class="sheet-card">
+      <section class="sheet-card">
         <div class="sheet-grid-top">
           <div>
-            <div class="field-label" style="font-weight:900;font-size:1.1rem;" id="cs_name_display">Name</div>
-            <div id="cs_name_visible" style="font-weight:900;font-size:1.2rem;">--</div>
-            <!-- Hidden input for compatibility -->
+            <div class="stat-val-display" id="cs_name_visible">--</div>
+            <!-- hidden name input retained for persistence; name is set from create/load flows -->
             <input type="hidden" id="cs_name" value="" />
           </div>
-          <div style="width:1px;opacity:0;pointer-events:none;">&nbsp;</div>
         </div>
-        <div style="margin-top:6px;">
-          <div class="field-label stat-title" data-stat="hp">HP</div>
-          <div class="hp-slider-row" style="display:flex;gap:8px;align-items:center;">
-            <input id="cs_hp_slider" type="range" min="0" max="100" value="100" style="flex:1; accent-color: var(--accent-soft);" />
-            <div style="min-width:90px;text-align:right;font-weight:600;"> <span id="cs_hp_display">0</span> / <span id="cs_hp_max_display">0</span></div>
+
+        <div class="hp-block" style="margin-top:0.6rem;">
+          <div class="field-label">HP</div>
+          <div class="hp-row">
+            <div class="hp-slider-wrap">
+              <input id="cs_hp_slider" type="range" min="0" max="10" value="0" />
+            </div>
+            <div class="hp-numbers"><span id="cs_hp_display">0</span>/<span id="cs_hp_max_display">0</span></div>
           </div>
-          <!-- Hidden fields to keep compatibility with existing persistence functions -->
           <input type="hidden" id="cs_hp" value="0" />
           <input type="hidden" id="cs_hp_max" value="0" />
         </div>
 
-  <div class="sheet-row">
+        <div class="sheet-row">
           <div>
             <div class="field-label stat-title" data-stat="stamina">Stamina</div>
             <div class="stat-val-display" id="cs_stamina_display">0</div>
@@ -1557,7 +1587,6 @@ function ensureScreens() {
         </section>
       </section>
 
-      
 
       <div id="sheetMenuOverlay" aria-hidden="true">
         <div class="sheet-menu-modal" role="dialog" aria-modal="true" aria-label="Ender Menu">
@@ -1579,26 +1608,100 @@ function ensureScreens() {
     sheetScreen = $("#sheetScreen");
   }
 
-  // Hide compendium by default (home first)
-  compendiumRoot.classList.add("be-hidden");
+  // Create persistent bottom navigation bar (fixed) after sheet is present
+  if (!document.getElementById('beBottomNav')) {
+    const bn = document.createElement('nav');
+    bn.id = 'beBottomNav';
+    bn.innerHTML = '<div class="be-bottom-inner">'
+      + '<button class="be-bottom-btn" id="bnCompendium"><img src="Icons/compendium-icon.png" alt="Compendium" /><div class="be-bottom-label">Compendium</div></button>'
+      + '<button class="be-bottom-btn" id="bnEdit"><img src="Icons/edit-icon.png" alt="Edit Ender" /><div class="be-bottom-label">Edit</div></button>'
+      + '<button class="be-bottom-btn" id="bnLoad"><img src="Icons/load-icon.png" alt="Load Ender" /><div class="be-bottom-label">Load</div></button>'
+      + '<button class="be-bottom-btn" id="bnSave"><img src="Icons/save-icon.png" alt="Save Ender" /><div class="be-bottom-label">Save</div></button>'
+      + '</div>';
+    document.body.appendChild(bn);
 
-  // Wire home buttons once
-  const btnGoSheet = $("#btnGoSheet");
-  const btnGoCompendium = $("#btnGoCompendium");
-  if (btnGoSheet && !btnGoSheet.dataset.bound) {
-    btnGoSheet.dataset.bound = "1";
-    // New behavior: open the Load Ender overlay instead of directly opening the sheet
-    btnGoSheet.addEventListener("click", () => {
-      openLoadOverlay();
-    });
+    // style injection for bottom nav (minimal, uses app theme variables)
+    const s = document.createElement('style');
+    s.id = '_beBottomNavStyles';
+    s.textContent = `
+      #beBottomNav{ position:fixed; left:0; right:0; bottom:0; z-index:900; display:flex; justify-content:center; padding:12px 12px; background: linear-gradient(180deg, rgba(6,6,8,0.98), rgba(8,8,10,0.99)); box-shadow:0 -8px 30px rgba(0,0,0,0.6); }
+      #beBottomNav .be-bottom-inner{ width:100%; max-width:920px; display:flex; justify-content:space-between; gap:8px; }
+      .be-bottom-btn{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:10px 6px; border-radius:14px; background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text-main); cursor:pointer; }
+      .be-bottom-btn img{ width:28px; height:28px; pointer-events:none; user-drag:none; }
+      .be-bottom-label{ font-family: 'Cinzel-600', 'CinzelCustom', serif; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; }
+      @media (min-width:900px){ .be-bottom-btn{ padding:14px 10px; } .be-bottom-btn img{ width:32px; height:32px; } }
+    `;
+    document.head.appendChild(s);
+    // compendium close 'X' style
+    const sx = document.createElement('style');
+    sx.id = '_beCompCloseStyles';
+    sx.textContent = `
+      #compendiumScreen { position: fixed; inset: 0; z-index: 1250; display: flex; align-items: center; justify-content: center; }
+      #_beCompClose { position: absolute; top: 18px; right: 18px; z-index: 1301; background: rgba(0,0,0,0.7); color: #fff; border: 0; width:48px; height:48px; border-radius: 999px; font-size:20px; cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,0.6); }
+      @media (min-width:700px){ #_beCompClose{ width:56px; height:56px; font-size:22px; } }
+    `;
+    document.head.appendChild(sx);
+
+    // ensure only one overlay visible at a time helper
+    function closeAllOverlays() {
+      closeLoadOverlay();
+      closeCreateOverlay();
+      closeSaveOverlay();
+      closeExportOverlay();
+      closeStatOverlay();
+      closeArmorOverlay();
+      // compendium is the existing #compendiumScreen; we'll hide it to close
+      const comp = document.getElementById('compendiumScreen'); if (comp) comp.classList.add('be-hidden');
+      // close modals
+      closeModal();
+      toggleSheetMenu(false);
+    }
+
+    // bottom nav visibility is handled by the global setBottomNavVisible helper
+
+    // Open compendium as a modal-like overlay by showing the compendium screen with a visible close X
+    function openCompendiumOverlay(){
+      closeAllOverlays();
+      const comp = document.getElementById('compendiumScreen');
+      if (!comp) return;
+      comp.classList.remove('be-hidden');
+      try { setBottomNavVisible(false); } catch (e) {}
+      // ensure compendium UI is initialized
+      try { initCompendiumOnce().catch(console.error); } catch (e) {}
+      // add big X if not present
+      let x = document.getElementById('_beCompClose');
+      if (!x) {
+        x = document.createElement('button');
+        x.id = '_beCompClose';
+        x.className = 'be-comp-close';
+        x.innerHTML = '✕';
+        x.setAttribute('aria-label','Close Compendium');
+        comp.appendChild(x);
+        x.addEventListener('click', () => { closeCompendiumOverlay(); });
+      }
+    }
+
+    function closeCompendiumOverlay(){
+      const comp = document.getElementById('compendiumScreen');
+      if (!comp) return;
+      comp.classList.add('be-hidden');
+      try { setBottomNavVisible(true); } catch (e) {}
+    }
+
+    // Wire bottom nav buttons
+    const btnComp = document.getElementById('bnCompendium');
+    const btnEdit = document.getElementById('bnEdit');
+    const btnLoad = document.getElementById('bnLoad');
+    const btnSave = document.getElementById('bnSave');
+
+    if (btnComp) btnComp.addEventListener('click', () => { openCompendiumOverlay(); });
+    if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); openCreateOverlay(); });
+    if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
+    if (btnSave) btnSave.addEventListener('click', () => { closeAllOverlays(); openSaveOverlay(); });
   }
-  if (btnGoCompendium && !btnGoCompendium.dataset.bound) {
-    btnGoCompendium.dataset.bound = "1";
-    btnGoCompendium.addEventListener("click", () => {
-      location.hash = "#compendium";
-      showOnly("compendium");
-    });
-  }
+
+  // Hide compendium by default; sheet is the primary visible screen
+  compendiumRoot.classList.add("be-hidden");
 
   // Wire sheet menu overlay once
   const openSheetMenu = $("#openSheetMenu");
@@ -1606,12 +1709,12 @@ function ensureScreens() {
     openSheetMenu.dataset.bound = "1";
     openSheetMenu.addEventListener("click", () => toggleSheetMenu(true));
   }
-  // Wire sheet logo button to navigate home
+  // Wire sheet logo button to open the Load Ender overlay (since there's no Home screen)
   const sheetLogoBtn = $("#sheetLogoBtn");
   if (sheetLogoBtn && !sheetLogoBtn.dataset.bound) {
     sheetLogoBtn.dataset.bound = "1";
     sheetLogoBtn.addEventListener("click", () => {
-      navigate("home");
+      openLoadOverlay();
     });
   }
   const overlay = $("#sheetMenuOverlay");
@@ -1768,12 +1871,12 @@ function numField(id) {
 }
 
 function showOnly(view) {
-  if (!homeScreen || !sheetScreen) return;
-
+  const homeEl = document.getElementById("homeScreen");
+  const sheetEl = document.getElementById("sheetScreen");
   const compendiumScreen = document.getElementById("compendiumScreen");
 
-  homeScreen.classList.toggle("be-hidden", view !== "home");
-  sheetScreen.classList.toggle("be-hidden", view !== "sheet");
+  if (homeEl) homeEl.classList.toggle("be-hidden", view !== "home");
+  if (sheetEl) sheetEl.classList.toggle("be-hidden", view !== "sheet");
   if (compendiumScreen) compendiumScreen.classList.toggle("be-hidden", view !== "compendium");
 
   // close modal overlays when switching
@@ -1834,6 +1937,8 @@ function setSheetState(state) {
   if ($("#cs_name")) $("#cs_name").value = state.name || "";
   const nameVisible = document.getElementById('cs_name_visible');
   if (nameVisible) nameVisible.textContent = state.name || '--';
+  // keep hidden name input in sync for persistence
+  if ($('#cs_name')) $('#cs_name').value = state.name || '';
   const setNum = (id, val) => {
     const hidden = $("#" + id);
     if (!hidden) return;
@@ -1849,8 +1954,11 @@ function setSheetState(state) {
   // set slider
   const slider = document.getElementById('cs_hp_slider');
   if (slider) {
-    slider.max = Math.max(1, Number(state.hpMax) || 1);
-    slider.value = Math.max(0, Number(state.hp) || 0);
+    const maxVal = Math.max(1, Number(state.hpMax) || 1);
+    const curVal = Math.max(0, Number(state.hp) || 0);
+    slider.max = maxVal;
+    slider.value = curVal;
+    try { const pct = Math.round((curVal / maxVal) * 100); slider.style.background = `linear-gradient(90deg, var(--accent-soft) ${pct}%, rgba(255,255,255,0.06) ${pct}% )`; } catch(e) {}
   }
   // update the display numbers
   const hpDisplay = document.getElementById('cs_hp_display');
@@ -1984,7 +2092,8 @@ function handleSheetMenuAction(action) {
   switch (action) {
     case "home":
       toggleSheetMenu(false);
-      navigate("home");
+      // Open Load overlay (Home removed)
+      openLoadOverlay();
       return;
     case "compendium":
       toggleSheetMenu(false);
@@ -2189,6 +2298,7 @@ function slotLabelForKey(key){
 }
 
 async function openArmorOverlay(slotKey, titleText){
+  closeAllOverlays();
   // Ensure we have armor data before attempting to populate options
   await ensureDataLoaded();
 
@@ -2217,6 +2327,7 @@ async function openArmorOverlay(slotKey, titleText){
   } catch (e) { /* ignore avatar swap errors */ }
 
   overlay.classList.remove('be-hidden');
+  try { setBottomNavVisible(false); } catch (e) {}
   // Prefer CSS variable for panel alt background, fall back to computed armor-slot background or a safe color
   overlay.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg-panel-alt') || getComputedStyle(document.querySelector('.armor-slot')).backgroundColor || '#2f7f8f';
   document.getElementById('overlayTitle').textContent = titleText || slotKey;
@@ -2263,6 +2374,7 @@ function closeArmorOverlay(){
       delete overlay.dataset.origAvatar;
     }
   } catch (e) {}
+  try { setBottomNavVisible(true); } catch (e) {}
 }
 
 function getArmorOptionsForLayer(slotKey, layerName){
@@ -2658,10 +2770,13 @@ function makePill(text) {
 function closeModal() {
   if (!modalBackdrop) return;
   modalBackdrop.classList.remove("show");
+  try { setBottomNavVisible(true); } catch (e) {}
 }
 
 function openModal(item, page) {
   if (!item || !modalBackdrop) return;
+  closeAllOverlays();
+  try { setBottomNavVisible(false); } catch (e) {}
 
   modalTitle.textContent = item.name || "";
 
@@ -2854,7 +2969,8 @@ function viewFromHash() {
   const h = (location.hash || "").toLowerCase();
   if (h.includes("sheet")) return "sheet";
   if (h.includes("compendium")) return "compendium";
-  return "home";
+  // default to sheet (home removed)
+  return "sheet";
 }
 
 window.addEventListener("hashchange", () => {
@@ -2864,6 +2980,9 @@ window.addEventListener("hashchange", () => {
 document.addEventListener("DOMContentLoaded", () => {
   ensureScreens();
   showOnly(viewFromHash());
+  // Show the Load Ender overlay on initial launch so the sheet exists underneath
+  // This matches the new UX: sheet is root and overlays block interaction until dismissed.
+  openLoadOverlay();
 });
 
 /* ===================================================
