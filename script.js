@@ -1633,10 +1633,10 @@ function ensureScreens() {
     const sx = document.createElement('style');
     sx.id = '_beCompCloseStyles';
     sx.textContent = `
-      /* Make compendium a true modal overlay with backdrop to block interaction underneath */
-      #compendiumScreen { position: fixed; inset: 0; z-index: 1250; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.78); padding: 20px; }
-      /* Constrain the inner compendium content to match the sheet max width */
-      #compendiumScreen .compendium-wrap { width: 100%; max-width: 920px; box-sizing: border-box; }
+      /* Make compendium a true modal overlay with a darker backdrop + subtle blur to block interaction underneath */
+      #compendiumScreen { position: fixed; inset: 0; z-index: 1250; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.94); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 20px; }
+      /* Constrain the inner compendium content to match the sheet max width and make it visually distinct */
+      #compendiumScreen .compendium-wrap { width: 100%; max-width: 920px; box-sizing: border-box; background: linear-gradient(180deg, rgba(18,18,18,0.98), rgba(8,8,10,0.98)); border-radius: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
       /* Ensure the big close X sits above the content */
       #_beCompClose { position: absolute; top: 18px; right: 18px; z-index: 1301; background: rgba(0,0,0,0.7); color: #fff; border: 0; width:48px; height:48px; border-radius: 999px; font-size:20px; cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,0.6); }
       @media (min-width:700px){ #_beCompClose{ width:56px; height:56px; font-size:22px; } }
