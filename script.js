@@ -1094,12 +1094,12 @@ function ensureCreateOverlayOnce(){
 
     // Build a clean character object (do NOT reuse existing armor/weapons state)
     const emptyArmor = {
-      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+  head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+  torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+  leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+  rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+  leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+  rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' }
     };
 
     const charObj = {
@@ -1117,7 +1117,7 @@ function ensureCreateOverlayOnce(){
       focus: vals.focus,
       // start fresh: empty armor + no weapons to avoid carrying over previous selections
       armor: JSON.parse(JSON.stringify(emptyArmor)),
-      weapons: {},
+  weapons: {},
       updatedAt: Date.now()
     };
 
@@ -1126,8 +1126,12 @@ function ensureCreateOverlayOnce(){
       // replace armorState contents
       Object.keys(armorState).forEach(k => delete armorState[k]);
       Object.assign(armorState, JSON.parse(JSON.stringify(charObj.armor || {})));
-      // clear weaponsState
+      // clear weaponsState and initialize each weapon slot to explicit NONE so the choice persists
       Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+      $all('.weapon-row').forEach(row => {
+        const slot = row.dataset.slot;
+        if (slot) weaponsState[slot] = { name: 'NONE' };
+      });
       // re-render UI panels to reflect cleared selections
       renderArmorPanel();
       try { renderWeaponsPanel(); } catch (e) { /* renderWeaponsPanel exists elsewhere; ignore if not */ }
@@ -1873,7 +1877,8 @@ function ensureScreens() {
       try { setBottomNavVisible(false); } catch (e) {}
       // ensure compendium UI is initialized
       try { initCompendiumOnce().catch(console.error); } catch (e) {}
-      // add big X if not present
+          // mark as explicit NONE so it will be saved with the character
+          weaponsState[slot] = { name: 'NONE' };
       let x = document.getElementById('_beCompClose');
       if (!x) {
         x = document.createElement('button');
@@ -2186,12 +2191,12 @@ function setSheetState(state) {
     try {
       Object.keys(armorState).forEach(k => delete armorState[k]);
       Object.assign(armorState, {
-        head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-        torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-        leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-        rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-        leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-        rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+        head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+        torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+        leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+        rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+        leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+        rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' }
       });
       renderArmorPanel();
     } catch (e) { console.error('Failed to clear armor state', e); }
@@ -2240,7 +2245,7 @@ function setSheetState(state) {
               if (bot) bot.textContent = '--';
               if (!top && !bot) typeEl.textContent = '--';
             }
-            weaponsState[slot] = {};
+            weaponsState[slot] = { name: 'NONE' };
           } catch (e) { /* ignore per-row clearing errors */ }
         }
       });
@@ -2248,6 +2253,11 @@ function setSheetState(state) {
   } else {
     try {
       Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+      // initialize each weapon slot to explicit NONE so a saved character will include the selection
+      $all('.weapon-row').forEach(row => {
+        const slot = row.dataset.slot;
+        if (slot) weaponsState[slot] = { name: 'NONE' };
+      });
       $all('.weapon-row').forEach(row => {
         try {
           const selector = row.querySelector('.weapon-selector');
@@ -2348,12 +2358,12 @@ function clearCurrentSheet(){
       Object.keys(armorState).forEach(k => delete armorState[k]);
     } catch(e){}
     Object.assign(armorState, {
-      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
+      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' }
     });
     try { renderArmorPanel(); } catch(e){}
 
