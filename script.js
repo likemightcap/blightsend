@@ -335,6 +335,10 @@ function injectSheetStylesOnce() {
       text-align: center; /* center align all text in stat rows */
     }
 
+  /* Visual grouping for Walk/Run: subtle outline without changing layout */
+  .walk-run-box{ display:contents; }
+  .walk-run-box > div{ box-sizing:border-box; border:1px solid rgba(255,255,255,0.04); border-radius:8px; padding:6px 8px; }
+
     .stat-strip{
       border-radius: var(--radius-md);
       border: 1px solid rgba(255,255,255,0.08);
@@ -1547,15 +1551,17 @@ function ensureScreens() {
             <div class="stat-val-display" id="cs_ephem_display">0</div>
             <input type="hidden" id="cs_ephem" value="0" />
           </div>
-          <div>
-            <div class="field-label stat-title" data-stat="walk">Walk</div>
-            <div class="stat-val-display" id="cs_walk_display">0</div>
-            <input type="hidden" id="cs_walk" value="0" />
-          </div>
-          <div>
-            <div class="field-label stat-title" data-stat="run">Run</div>
-            <div class="stat-val-display" id="cs_run_display">0</div>
-            <input type="hidden" id="cs_run" value="0" />
+          <div class="walk-run-box">
+            <div>
+              <div class="field-label stat-title" data-stat="walk">Walk</div>
+              <div class="stat-val-display" id="cs_walk_display">0</div>
+              <input type="hidden" id="cs_walk" value="0" />
+            </div>
+            <div>
+              <div class="field-label stat-title" data-stat="run">Run</div>
+              <div class="stat-val-display" id="cs_run_display">0</div>
+              <input type="hidden" id="cs_run" value="0" />
+            </div>
           </div>
         </div>
 
