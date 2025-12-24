@@ -1092,7 +1092,16 @@ function ensureCreateOverlayOnce(){
     };
     if (!vals.name) { toast('Name is required'); return; }
 
-    // Build character object (re-using existing armor/weapons state)
+    // Build a clean character object (do NOT reuse existing armor/weapons state)
+    const emptyArmor = {
+      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+    };
+
     const charObj = {
       name: vals.name,
       hp: vals.hpMax,
@@ -1106,16 +1115,31 @@ function ensureCreateOverlayOnce(){
       guts: vals.guts,
       grit: vals.grit,
       focus: vals.focus,
-      armor: JSON.parse(JSON.stringify(armorState || {})),
-      weapons: JSON.parse(JSON.stringify(weaponsState || {})),
+      // start fresh: empty armor + no weapons to avoid carrying over previous selections
+      armor: JSON.parse(JSON.stringify(emptyArmor)),
+      weapons: {},
       updatedAt: Date.now()
     };
+
+    // Clear in-memory armor/weapon state so the UI starts clean for the new character
+    try {
+      // replace armorState contents
+      Object.keys(armorState).forEach(k => delete armorState[k]);
+      Object.assign(armorState, JSON.parse(JSON.stringify(charObj.armor || {})));
+      // clear weaponsState
+      Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+      // re-render UI panels to reflect cleared selections
+      renderArmorPanel();
+      try { renderWeaponsPanel(); } catch (e) { /* renderWeaponsPanel exists elsewhere; ignore if not */ }
+      try { updateWalkRunFromEquipment(); } catch (e) {}
+    } catch (e) { console.error('Error clearing state for new character', e); }
 
     // Save into saved characters and make active
     const saved = readSavedCharacters();
     saved[vals.name] = charObj;
     localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
     localStorage.setItem(STORAGE_KEY_ACTIVE, vals.name);
+    // apply to sheet
     setSheetState(charObj);
     closeCreateOverlay();
     location.hash = '#sheet';
@@ -1453,6 +1477,8 @@ function applyWeaponToRow(row, item){
       };
       // if a character is active, persist immediately
       persistActiveCharacterState();
+      // update Walk/Run since weapon weight may have changed
+      try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
     }
   } catch (e) { console.error('Failed to persist weapon selection', e); }
 }
@@ -2106,7 +2132,7 @@ function setSheetState(state) {
   setNum("cs_guts", state.guts);
   setNum("cs_grit", state.grit);
   setNum("cs_focus", state.focus);
-  // restore armor if present
+  // restore armor if present, otherwise clear any existing armor state/UI
   if (state.armor) {
     try {
       // deep copy to avoid shared references
@@ -2114,8 +2140,21 @@ function setSheetState(state) {
       Object.assign(armorState, JSON.parse(JSON.stringify(state.armor || {})));
       renderArmorPanel();
     } catch (e) { console.error('Failed to restore armor state', e); }
+  } else {
+    try {
+      Object.keys(armorState).forEach(k => delete armorState[k]);
+      Object.assign(armorState, {
+        head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+        torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+        leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+        rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+        leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+        rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+      });
+      renderArmorPanel();
+    } catch (e) { console.error('Failed to clear armor state', e); }
   }
-  // restore weapons if present
+  // restore weapons if present, otherwise clear existing weapons UI/state
   if (state.weapons) {
     try {
       Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
@@ -2128,11 +2167,82 @@ function setSheetState(state) {
           // try to find the weapon by name in loaded weaponsData, fallback to saved object
           const found = (weaponsData || []).find(w => w.name === saved.name) || saved;
           applyWeaponToRow(row, found);
+        } else {
+          // clear the row
+          try {
+            const selector = row.querySelector('.weapon-selector');
+            const imgBox = row.querySelector('.weapon-image-box');
+            const typeEl = row.querySelector('.weapon-type');
+            const dam = row.querySelector('.stat-val.dam');
+            const pen = row.querySelector('.stat-val.pen');
+            const dur = row.querySelector('.stat-val.dur');
+            const hands = row.querySelector('.stat-val.hands');
+            const wt = row.querySelector('.stat-val.wt');
+            const range = row.querySelector('.stat-val.range');
+            const dicePool = row.querySelector('.dice-pool');
+            const diceSize = row.querySelector('.dice-size');
+            if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+            if (imgBox) imgBox.style.backgroundImage = '';
+            if (dam) dam.textContent = '--';
+            if (pen) pen.textContent = '--';
+            if (dur) dur.textContent = '--';
+            if (hands) hands.textContent = '--';
+            if (wt) wt.textContent = '--';
+            if (range) range.textContent = '--';
+            if (dicePool) dicePool.textContent = '--';
+            if (diceSize) diceSize.textContent = '--';
+            if (typeEl) {
+              const top = typeEl.querySelector && typeEl.querySelector('.type-top');
+              const bot = typeEl.querySelector && typeEl.querySelector('.type-bottom');
+              if (top) top.textContent = '--';
+              if (bot) bot.textContent = '--';
+              if (!top && !bot) typeEl.textContent = '--';
+            }
+            weaponsState[slot] = {};
+          } catch (e) { /* ignore per-row clearing errors */ }
         }
       });
     } catch (e) { console.error('Failed to restore weapons state', e); }
+  } else {
+    try {
+      Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+      $all('.weapon-row').forEach(row => {
+        try {
+          const selector = row.querySelector('.weapon-selector');
+          const imgBox = row.querySelector('.weapon-image-box');
+          const typeEl = row.querySelector('.weapon-type');
+          const dam = row.querySelector('.stat-val.dam');
+          const pen = row.querySelector('.stat-val.pen');
+          const dur = row.querySelector('.stat-val.dur');
+          const hands = row.querySelector('.stat-val.hands');
+          const wt = row.querySelector('.stat-val.wt');
+          const range = row.querySelector('.stat-val.range');
+          const dicePool = row.querySelector('.dice-pool');
+          const diceSize = row.querySelector('.dice-size');
+          if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+          if (imgBox) imgBox.style.backgroundImage = '';
+          if (dam) dam.textContent = '--';
+          if (pen) pen.textContent = '--';
+          if (dur) dur.textContent = '--';
+          if (hands) hands.textContent = '--';
+          if (wt) wt.textContent = '--';
+          if (range) range.textContent = '--';
+          if (dicePool) dicePool.textContent = '--';
+          if (diceSize) diceSize.textContent = '--';
+          if (typeEl) {
+            const top = typeEl.querySelector && typeEl.querySelector('.type-top');
+            const bot = typeEl.querySelector && typeEl.querySelector('.type-bottom');
+            if (top) top.textContent = '--';
+            if (bot) bot.textContent = '--';
+            if (!top && !bot) typeEl.textContent = '--';
+          }
+        } catch (e) { /* per-row ignore */ }
+      });
+    } catch (e) { console.error('Failed to clear weapons state', e); }
   }
   // ensure interactive bindings exist for stat editing and HP slider
+  // Update derived stats (Walk/Run) after restoring equipment state
+  try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
   setTimeout(() => { wireStatTitleClicks(); wireHpSlider(); }, 40);
 }
 
@@ -2174,6 +2284,55 @@ function loadCharacter(name) {
     toast("Could not find that character.");
     return;
   }
+  // clear any existing in-memory armor/weapon state and UI so the loaded state applies cleanly
+  try {
+    Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
+    Object.keys(armorState).forEach(k => delete armorState[k]);
+    // reset armorState slots to empty defaults to avoid undefined lookups
+    Object.assign(armorState, {
+      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+    });
+    renderArmorPanel();
+    // clear weapon rows UI
+    $all('.weapon-row').forEach(row => {
+      try {
+        const selector = row.querySelector('.weapon-selector');
+        const imgBox = row.querySelector('.weapon-image-box');
+        const typeEl = row.querySelector('.weapon-type');
+        const dam = row.querySelector('.stat-val.dam');
+        const pen = row.querySelector('.stat-val.pen');
+        const dur = row.querySelector('.stat-val.dur');
+        const hands = row.querySelector('.stat-val.hands');
+        const wt = row.querySelector('.stat-val.wt');
+        const range = row.querySelector('.stat-val.range');
+        const dicePool = row.querySelector('.dice-pool');
+        const diceSize = row.querySelector('.dice-size');
+        if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+        if (imgBox) imgBox.style.backgroundImage = '';
+        if (dam) dam.textContent = '--';
+        if (pen) pen.textContent = '--';
+        if (dur) dur.textContent = '--';
+        if (hands) hands.textContent = '--';
+        if (wt) wt.textContent = '--';
+        if (range) range.textContent = '--';
+        if (dicePool) dicePool.textContent = '--';
+        if (diceSize) diceSize.textContent = '--';
+        if (typeEl) {
+          const top = typeEl.querySelector && typeEl.querySelector('.type-top');
+          const bot = typeEl.querySelector && typeEl.querySelector('.type-bottom');
+          if (top) top.textContent = '--';
+          if (bot) bot.textContent = '--';
+          if (!top && !bot) typeEl.textContent = '--';
+        }
+      } catch (e) { /* ignore per-row errors */ }
+    });
+  } catch (e) { console.error('Error clearing sheet before load', e); }
+
   setSheetState(state);
   localStorage.setItem(STORAGE_KEY_ACTIVE, name);
   toast(`Loaded: ${name}`);
@@ -2662,7 +2821,64 @@ function commitArmorOverlay(){
   renderArmorPanel();
   // persist armor changes into the active saved character (if any)
   persistActiveCharacterState();
+  // update Walk/Run based on new equipped weight
+  try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
   closeArmorOverlay();
+}
+
+// Compute total equipped weight (armor + weapons + optional gear/backpack)
+function computeTotalEquippedWeight(){
+  let total = 0;
+  try {
+    // armor weights
+    if (typeof armorState === 'object' && armorState) {
+      Object.keys(armorState).forEach(k => {
+        const w = Number(armorState[k] && armorState[k].weight);
+        if (Number.isFinite(w) && w > 0) total += w;
+      });
+    }
+    // weapon weights
+    if (typeof weaponsState === 'object' && weaponsState) {
+      Object.keys(weaponsState).forEach(k => {
+        const w = Number(weaponsState[k] && weaponsState[k].weight);
+        if (Number.isFinite(w) && w > 0) total += w;
+      });
+    }
+    // optional gear/backpack: try hidden inputs or globals if present
+    const gearEl = document.getElementById('cs_gear_weight') || document.getElementById('cs_gear');
+    if (gearEl) { const g = Number(gearEl.value || gearEl.textContent || 0); if (Number.isFinite(g) && g > 0) total += g; }
+    const packEl = document.getElementById('cs_backpack_weight') || document.getElementById('cs_backpack');
+    if (packEl) { const p = Number(packEl.value || packEl.textContent || 0); if (Number.isFinite(p) && p > 0) total += p; }
+    // also allow any future global state objects to contribute if they expose a .weight or items
+    if (typeof gearState === 'object' && gearState) { const gw = Number(gearState.weight); if (Number.isFinite(gw) && gw > 0) total += gw; }
+    if (typeof backpackState === 'object' && backpackState) { const bw = Number(backpackState.weight); if (Number.isFinite(bw) && bw > 0) total += bw; }
+  } catch (e) {
+    console.error('Error computing total weight', e);
+  }
+  return total;
+}
+
+// Map weight to Walk/Run values per design and update the sheet display/hidden inputs
+function updateWalkRunFromEquipment(){
+  const total = computeTotalEquippedWeight();
+  // determine ranges
+  let walk = 6, run = 11;
+  if (total <= 20) { walk = 6; run = 11; }
+  else if (total <= 35) { walk = 6; run = 10; }
+  else if (total <= 55) { walk = 5; run = 9; }
+  else if (total <= 75) { walk = 4; run = 7; }
+  else { walk = 3; run = 5; }
+
+  // set hidden numeric inputs
+  const hidWalk = document.getElementById('cs_walk');
+  const hidRun = document.getElementById('cs_run');
+  if (hidWalk) hidWalk.value = String(walk);
+  if (hidRun) hidRun.value = String(run);
+  // set visible displays (show inches symbol as requested)
+  const dispWalk = document.getElementById('cs_walk_display');
+  const dispRun = document.getElementById('cs_run_display');
+  if (dispWalk) dispWalk.textContent = String(walk) + '"';
+  if (dispRun) dispRun.textContent = String(run) + '"';
 }
 
 /* ===================================================
