@@ -10,6 +10,7 @@
     "type": "Slashing",
     "range": "½\"",
     "hands": 1,
+    "weight": 2,
     "cost": null,
     "notes": ""
   },
@@ -24,6 +25,7 @@
     "type": "Slashing",
     "range": "1\"",
     "hands": 1,
+    "weight": 3,
     "cost": null,
     "notes": ""
   },
@@ -38,6 +40,7 @@
     "type": "Slashing",
     "range": "2\"",
     "hands": 2,
+    "weight": 4,
     "cost": null,
     "notes": ""
   },
@@ -52,6 +55,7 @@
     "type": "Piercing",
     "range": "1\"",
     "hands": 1,
+    "weight": 2,
     "cost": null,
     "notes": ""
   },
@@ -66,6 +70,7 @@
     "type": "Piercing",
     "range": "½\"",
     "hands": 1,
+    "weight": 1,
     "cost": null,
     "notes": ""
   },
@@ -80,6 +85,7 @@
     "type": "Cleave",
     "range": "½\"",
     "hands": 1,
+    "weight": 2,
     "cost": null,
     "notes": ""
   },
@@ -94,6 +100,7 @@
     "type": "Cleave",
     "range": "1\"",
     "hands": 2,
+    "weight": 5,
     "cost": null,
     "notes": ""
   },
@@ -108,6 +115,7 @@
     "type": "Blunt",
     "range": "½\"",
     "hands": 1,
+    "weight": 3,
     "cost": null,
     "notes": ""
   },
@@ -122,6 +130,7 @@
     "type": "Blunt",
     "range": "1\"",
     "hands": 2,
+    "weight": 6,
     "cost": null,
     "notes": ""
   },
@@ -136,6 +145,7 @@
     "type": "Blunt",
     "range": "½\"",
     "hands": 1,
+    "weight": 5,
     "cost": null,
     "notes": ""
   },
@@ -150,6 +160,7 @@
     "type": "Blunt",
     "range": "1\"",
     "hands": 1,
+    "weight": 4,
     "cost": null,
     "notes": ""
   },
@@ -164,6 +175,7 @@
     "type": "Cleave",
     "range": "2\"",
     "hands": 2,
+    "weight": 5,
     "cost": null,
     "notes": ""
   },
@@ -178,6 +190,7 @@
     "type": "Piercing",
     "range": "2\"",
     "hands": 2,
+    "weight": 4,
     "cost": null,
     "notes": ""
   },
@@ -192,6 +205,7 @@
     "type": "Piercing",
     "description": "Drawn",
     "hands": 2,
+    "weight": 2,
     "cost": null,
     "rangeBands": {
       "close": "1-5\" (-1 TN)",
@@ -211,6 +225,7 @@
     "type": "Piercing",
     "description": "Drawn",
     "hands": 2,
+    "weight": 3,
     "cost": null,
     "rangeBands": {
       "close": "2-6\" (-1)",
@@ -230,6 +245,7 @@
     "type": "Piercing",
     "description": "Mechanical",
     "hands": 1,
+    "weight": 4,
     "cost": null,
     "rangeBands": {
       "close": "1-4\" (-1)",
@@ -249,6 +265,7 @@
     "type": "Piercing",
     "description": "Mechanical",
     "hands": 2,
+    "weight": 5,
     "cost": null,
     "rangeBands": {
       "close": "1-6\" (-1)",
@@ -268,6 +285,7 @@
     "type": "Blunt",
     "description": "Sling",
     "hands": 1,
+    "weight": 1,
     "cost": null,
     "rangeBands": {
       "close": "1-6\" (-1)",
@@ -287,6 +305,7 @@
     "type": "Piercing",
     "description": "Mechanical",
     "hands": 1,
+    "weight": 2,
     "cost": null,
     "rangeBands": {
       "close": "1-8\" (-1)",
@@ -306,6 +325,7 @@
     "type": "Piercing",
     "description": "Mechanical",
     "hands": 2,
+    "weight": 4,
     "cost": null,
     "rangeBands": {
       "close": "2-8\" (-1)",
@@ -313,19 +333,5 @@
       "far": "18-24\" (-1)",
       "max": "24-30\" (-2)"
     }
-  },
-  {
-    "name": "Javelin",
-    "category": "Thrown",
-    "dieSize": null,
-    "diePool": null,
-    "damage": null,
-    "penetration": null,
-    "durability": null,
-    "type": "Piercing",
-    "range": "TBD",
-    "hands": 1,
-    "cost": 1,
-    "notes": "Stats not fully defined in current sheet; treat as thrown weapon per your latest rules."
   }
 ]

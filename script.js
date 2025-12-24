@@ -1997,7 +1997,8 @@ async function importCharacterFile(file) {
     const saved = readSavedCharacters();
     saved[candidate.name] = candidate;
     localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
-    setSheetState(candidate);
+  try { toast('Clearing existing Ender…'); clearCurrentSheet(); } catch(e) {}
+  setSheetState(candidate);
     localStorage.setItem(STORAGE_KEY_ACTIVE, candidate.name);
     toast(`Imported and loaded: ${candidate.name}`);
   } catch (err) {
@@ -2246,6 +2247,95 @@ function setSheetState(state) {
   setTimeout(() => { wireStatTitleClicks(); wireHpSlider(); }, 40);
 }
 
+// Clear all in-memory sheet state and related UI so the sheet is a clean slate
+function clearWeaponsUI() {
+  try {
+    $all('.weapon-row').forEach(row => {
+      try {
+        const selector = row.querySelector('.weapon-selector');
+        const imgBox = row.querySelector('.weapon-image-box');
+        const typeEl = row.querySelector('.weapon-type');
+        const dam = row.querySelector('.stat-val.dam');
+        const pen = row.querySelector('.stat-val.pen');
+        const dur = row.querySelector('.stat-val.dur');
+        const hands = row.querySelector('.stat-val.hands');
+        const wt = row.querySelector('.stat-val.wt');
+        const range = row.querySelector('.stat-val.range');
+        const dicePool = row.querySelector('.dice-pool');
+        const diceSize = row.querySelector('.dice-size');
+        if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+        if (imgBox) imgBox.style.backgroundImage = '';
+        if (dam) dam.textContent = '--';
+        if (pen) pen.textContent = '--';
+        if (dur) dur.textContent = '--';
+        if (hands) hands.textContent = '--';
+        if (wt) wt.textContent = '--';
+        if (range) range.textContent = '--';
+        if (dicePool) dicePool.textContent = '--';
+        if (diceSize) diceSize.textContent = '--';
+        if (typeEl) {
+          const top = typeEl.querySelector && typeEl.querySelector('.type-top');
+          const bot = typeEl.querySelector && typeEl.querySelector('.type-bottom');
+          if (top) top.textContent = '--';
+          if (bot) bot.textContent = '--';
+          if (!top && !bot) typeEl.textContent = '--';
+        }
+      } catch (e) { /* per-row ignore */ }
+    });
+  } catch (e) { console.error('Failed to clear weapons UI', e); }
+}
+
+function clearCurrentSheet(){
+  try {
+    // clear numeric/stat inputs
+    const ids = ['cs_name','cs_hp','cs_hp_max','cs_stamina','cs_ephem','cs_walk','cs_run','cs_fight','cs_volley','cs_guts','cs_grit','cs_focus'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') el.value = '';
+      else el.textContent = '';
+    });
+    // visible name display
+    const nameVisible = document.getElementById('cs_name_visible'); if (nameVisible) nameVisible.textContent = '--';
+    // hp displays and slider
+    const hpDisplay = document.getElementById('cs_hp_display'); if (hpDisplay) hpDisplay.textContent = '0';
+    const hpMaxDisplay = document.getElementById('cs_hp_max_display'); if (hpMaxDisplay) hpMaxDisplay.textContent = '0';
+    const slider = document.getElementById('cs_hp_slider'); if (slider) { slider.value = 0; slider.max = 1; try { slider.style.setProperty('--hp-fill-pct','0%'); } catch(e){} }
+
+    // clear armor state and UI
+    try {
+      Object.keys(armorState).forEach(k => delete armorState[k]);
+    } catch(e){}
+    Object.assign(armorState, {
+      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
+      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
+    });
+    try { renderArmorPanel(); } catch(e){}
+
+    // clear weapons state and UI
+    try { Object.keys(weaponsState).forEach(k => delete weaponsState[k]); } catch(e){}
+    clearWeaponsUI();
+
+    // clear other optional per-character state if present
+    try { if (typeof gearState === 'object') { Object.keys(gearState).forEach(k=>delete gearState[k]); } } catch(e){}
+    try { if (typeof backpackState === 'object') { Object.keys(backpackState).forEach(k=>delete backpackState[k]); } } catch(e){}
+
+    // clear UI chips/filters
+    try { $all('.chip').forEach(c => c.classList.remove('active')); } catch(e){}
+
+    // reset avatar image to default (if present)
+    try { const avatar = document.querySelector('.armor-avatar-img'); if (avatar) avatar.src = avatar.dataset.defaultSrc || 'assets/avatars/armor-avatar2.png'; } catch(e){}
+
+    // update derived stats
+    try { updateWalkRunFromEquipment(); } catch(e){}
+    setTimeout(() => { wireStatTitleClicks(); wireHpSlider(); }, 40);
+  } catch (e) { console.error('clearCurrentSheet failed', e); }
+}
+
 // When armor changes, persist it into the currently active saved character (if any)
 function persistActiveCharacterState(){
   try {
@@ -2284,54 +2374,8 @@ function loadCharacter(name) {
     toast("Could not find that character.");
     return;
   }
-  // clear any existing in-memory armor/weapon state and UI so the loaded state applies cleanly
-  try {
-    Object.keys(weaponsState).forEach(k => delete weaponsState[k]);
-    Object.keys(armorState).forEach(k => delete armorState[k]);
-    // reset armorState slots to empty defaults to avoid undefined lookups
-    Object.assign(armorState, {
-      head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightArm: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      leftLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' },
-      rightLeg: { armorValue: '--', reduction: '--', durability: '--', layers: { base: null, mid: null, outer: null }, weight: '--', resistance: '--' }
-    });
-    renderArmorPanel();
-    // clear weapon rows UI
-    $all('.weapon-row').forEach(row => {
-      try {
-        const selector = row.querySelector('.weapon-selector');
-        const imgBox = row.querySelector('.weapon-image-box');
-        const typeEl = row.querySelector('.weapon-type');
-        const dam = row.querySelector('.stat-val.dam');
-        const pen = row.querySelector('.stat-val.pen');
-        const dur = row.querySelector('.stat-val.dur');
-        const hands = row.querySelector('.stat-val.hands');
-        const wt = row.querySelector('.stat-val.wt');
-        const range = row.querySelector('.stat-val.range');
-        const dicePool = row.querySelector('.dice-pool');
-        const diceSize = row.querySelector('.dice-size');
-        if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
-        if (imgBox) imgBox.style.backgroundImage = '';
-        if (dam) dam.textContent = '--';
-        if (pen) pen.textContent = '--';
-        if (dur) dur.textContent = '--';
-        if (hands) hands.textContent = '--';
-        if (wt) wt.textContent = '--';
-        if (range) range.textContent = '--';
-        if (dicePool) dicePool.textContent = '--';
-        if (diceSize) diceSize.textContent = '--';
-        if (typeEl) {
-          const top = typeEl.querySelector && typeEl.querySelector('.type-top');
-          const bot = typeEl.querySelector && typeEl.querySelector('.type-bottom');
-          if (top) top.textContent = '--';
-          if (bot) bot.textContent = '--';
-          if (!top && !bot) typeEl.textContent = '--';
-        }
-      } catch (e) { /* ignore per-row errors */ }
-    });
-  } catch (e) { console.error('Error clearing sheet before load', e); }
+  // show clearing toast, then clear current sheet state/UI so the loaded state applies cleanly
+  try { toast('Clearing existing Ender…'); clearCurrentSheet(); } catch (e) { console.error('Error clearing sheet before load', e); }
 
   setSheetState(state);
   localStorage.setItem(STORAGE_KEY_ACTIVE, name);
@@ -2345,6 +2389,7 @@ async function loadActiveCharacterIfAny() {
   if (saved[active]) {
     // Ensure data (weapons/armor) is loaded before trying to reapply weapon types
     await ensureDataLoaded();
+    try { toast('Clearing existing Ender…'); clearCurrentSheet(); } catch(e) {}
     setSheetState(saved[active]);
     // Re-apply weapon visuals for saved weapons (in case weaponsData provides richer objects)
     try {
