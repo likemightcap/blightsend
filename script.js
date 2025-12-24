@@ -1640,6 +1640,12 @@ function ensureScreens() {
       /* Ensure the big close X sits above the content */
       #_beCompClose { position: absolute; top: 18px; right: 18px; z-index: 1301; background: rgba(0,0,0,0.7); color: #fff; border: 0; width:48px; height:48px; border-radius: 999px; font-size:20px; cursor:pointer; box-shadow:0 8px 26px rgba(0,0,0,0.6); }
       @media (min-width:700px){ #_beCompClose{ width:56px; height:56px; font-size:22px; } }
+
+      /* Small-screen adjustments: keep the overlay pinned so top/bottom aren't clipped and allow scrolling */
+      @media (max-width: 700px) {
+        #compendiumScreen{ align-items: flex-start; padding: 12px; }
+        #compendiumScreen .compendium-wrap{ max-height: calc(100vh - 24px); overflow:auto; border-radius: 12px; }
+      }
     `;
     document.head.appendChild(sx);
 
