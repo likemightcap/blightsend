@@ -171,6 +171,8 @@ function bindFloatingNumHud(){
     // when the input value changes via other means, keep HUD visible briefly
     inp.addEventListener('input', () => scheduleHudHide());
   });
+  // ensure paddings match range band heights after initial render
+  setTimeout(() => { try { adjustAllRangeBandPaddings(); } catch (e) {} }, 40);
 }
 
 // Ensure HUDs are bound when steppers are bound / after sheet is rendered
@@ -1254,8 +1256,8 @@ function injectWeaponStylesOnce(){
   .weapon-selector:active{ transform: none; }
   /* small spacing between selector and type */
   .weapon-selector{ margin-right:6px; }
-  .weapon-type{ font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); font-size:0.82rem; }
-  .weapon-type.two-line{ display:flex; flex-direction:row; gap:6px; align-items:center; font-size:0.82rem; }
+  .weapon-type{ font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); font-size:0.75rem; }
+  .weapon-type.two-line{ display:flex; flex-direction:row; gap:6px; align-items:center; font-size:0.75rem; }
   .weapon-type.two-line .type-top, .weapon-type.two-line .type-bottom{ display:inline-block; }
   .weapon-type.two-line .type-bottom{ color: var(--accent-soft); }
   /* Stats: keep compact and allow wrapping into two rows */
@@ -1271,8 +1273,12 @@ function injectWeaponStylesOnce(){
   .weapon-list{ position:absolute; inset:0; background: rgba(11,11,11,0.98); color:#fff; border-radius:8px; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 26px rgba(0,0,0,0.6); max-height:none; overflow:auto; z-index:120; padding:10px; box-sizing:border-box; }
   .weapon-list .weapon-item{ padding:8px; border-radius:6px; cursor:pointer; }
   .weapon-list .weapon-item:hover{ background:rgba(255,255,255,0.03); }
-  /* Compact range band block: inline labels to save vertical space */
-  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:flex-start; }
+  /* Compact range band block: expand to full width of the weapon-row and be anchored to that row */
+  .range-band-block{ background:linear-gradient(90deg,#3a220f,#4a2e12); padding:6px; border-radius:6px; color:#fff; display:flex; gap:8px; align-items:flex-start; box-sizing:border-box; }
+  /* Position the range-band to span the full weapon-row with small horizontal padding and keep it locked inside the row */
+  .weapon-row .range-band-block{ position:absolute; left:8px; right:8px; bottom:8px; box-sizing:border-box; z-index:0; justify-content:center; }
+  /* Give ranged rows extra bottom padding so the absolute block doesn't overlap content; increase to match block height */
+  .weapon-row[data-category="Ranged"] .weapon-main{ padding-bottom:64px; }
   .rb-title{ font-weight:900; font-size:0.72rem; margin-right:6px; }
   .rb-row{ display:flex; gap:6px; align-items:center; flex-direction:column; }
   .rb-label{ font-weight:900; color:#111; background:var(--accent-soft); padding:2px 6px; border-radius:6px; font-size:0.64rem; }
@@ -1304,8 +1310,8 @@ function injectWeaponStylesOnce(){
   .weapon-row[data-category="Ranged"] .weapon-stats.ranged-stats{ display:flex; flex-direction:row; gap:8px; justify-content:space-between; flex-wrap:nowrap; width:100%; }
   .weapon-row[data-category="Ranged"] .weapon-stats.ranged-stats > .stat{ flex:1 1 0; display:flex; flex-direction:column; align-items:center; min-width:0; }
 
-  /* Range bands centered below the ranged-stats row */
-  .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:flex-start; justify-content:center; }
+  /* Range bands on narrow screens: keep their internal layout but allow absolute positioning to handle width */
+  .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block{ order:2; align-self:center; margin:6px auto 4px; padding:6px 10px; display:flex; gap:12px; align-items:flex-start; justify-content:center; width:auto; }
   .weapon-row[data-category="Ranged"] .weapon-stats .range-band-block .rb-row{ flex-direction:row; align-items:flex-start; gap:10px; }
 
     /* Make placeholders compact and same footprint as values */
@@ -1318,6 +1324,8 @@ function injectWeaponStylesOnce(){
   .weapon-selector{ max-width:70%; min-width:120px; }
   @media (max-width:520px){
     .weapon-selector{ max-width:72%; }
+    /* Shrink weapon-type on small screens for better fit */
+    .weapon-type{ font-size:0.68rem; letter-spacing:0.05em; }
   }
   `;
   document.head.appendChild(s);
@@ -1375,6 +1383,7 @@ function populateWeaponListForRow(row){
   const noneDiv = document.createElement('div');
   noneDiv.className = 'weapon-item none-item';
   noneDiv.textContent = 'NONE';
+  noneDiv.setAttribute('data-value', 'NONE');
   noneDiv.addEventListener('click', (e) => {
     e.stopPropagation();
     clearWeaponRow(row);
@@ -1407,8 +1416,15 @@ function clearWeaponRow(row){
   const diceSize = row.querySelector('.dice-size');
   // clear visuals
   if (imgBox) imgBox.style.backgroundImage = '';
-  if (selector) selector.textContent = selector.dataset.placeholder || '';
-  if (typeEl) typeEl.textContent = '';
+  if (selector) selector.textContent = selector.dataset.placeholder || 'NONE';
+  if (typeEl) {
+    // restore default type structure. If this is a ranged slot we expect a two-line structure
+    if (row.dataset.category && row.dataset.category.toLowerCase() === 'ranged') {
+      typeEl.innerHTML = '<div class="type-top">--</div><div class="type-bottom">--</div>';
+    } else {
+      typeEl.textContent = '--';
+    }
+  }
   if (dicePool) dicePool.textContent = '--';
   if (diceSize) diceSize.textContent = '--';
   // clear stats
@@ -1416,13 +1432,14 @@ function clearWeaponRow(row){
     const el = row.querySelector('.stat-val.' + cls);
     if (el) el.textContent = '--';
   });
-  // clear persisted state for this slot
+  // persist explicit NONE value for this slot so it is saved with the character
   try {
     const slot = row.dataset.slot;
-    if (slot && weaponsState && weaponsState[slot]) {
-      delete weaponsState[slot];
+    if (slot && weaponsState) {
+      weaponsState[slot] = { name: 'NONE' };
       persistActiveCharacterState();
       try { updateWalkRunFromEquipment(); } catch (e) {}
+      try { adjustRangeBandPaddingForRow(row); } catch (e) {}
     }
   } catch (e) { console.error('Failed to clear weapon row', e); }
 }
@@ -1461,13 +1478,19 @@ function applyWeaponToRow(row, item){
   // type / descriptor
   if (typeEl) {
     if (row.dataset.category && row.dataset.category.toLowerCase() === 'melee') {
-      typeEl.textContent = (item.type || '--').toUpperCase();
+      typeEl.textContent = (item.type || item.category || '--').toUpperCase();
     } else {
-      // ranged: show type and description stacked
-      const top = typeEl.querySelector('.type-top');
-      const bot = typeEl.querySelector('.type-bottom');
-      if (top) top.textContent = (item.type || '--').toUpperCase();
-      if (bot) bot.textContent = (item.description || '--');
+      // ranged: ensure the stacked structure exists (it may have been cleared)
+      let top = typeEl.querySelector('.type-top');
+      let bot = typeEl.querySelector('.type-bottom');
+      if (!top || !bot) {
+        // recreate the expected two-line structure
+        typeEl.innerHTML = '<div class="type-top"></div><div class="type-bottom"></div>';
+        top = typeEl.querySelector('.type-top');
+        bot = typeEl.querySelector('.type-bottom');
+      }
+      if (top) top.textContent = (item.type || item.category || '--').toUpperCase();
+      if (bot) bot.textContent = (item.description || item.summary || '--');
     }
   }
 
@@ -1523,7 +1546,8 @@ function applyWeaponToRow(row, item){
       // if a character is active, persist immediately
       persistActiveCharacterState();
       // update Walk/Run since weapon weight may have changed
-      try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
+  try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
+  try { adjustRangeBandPaddingForRow(row); } catch (e) {}
     }
   } catch (e) { console.error('Failed to persist weapon selection', e); }
 }
@@ -1717,7 +1741,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
+                <div class="weapon-selector" data-placeholder="NONE">NONE</div>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1742,7 +1766,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
+                <div class="weapon-selector" data-placeholder="NONE">NONE</div>
                 <div class="weapon-type">--</div>
                 <div class="weapon-stats melee-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -1767,7 +1791,7 @@ function ensureScreens() {
                 <div class="weapon-image-box" aria-hidden="true"></div>
               </div>
               <div class="weapon-main">
-                <div class="weapon-selector" data-placeholder="Select Weapon">Select Weapon</div>
+                <div class="weapon-selector" data-placeholder="NONE">NONE</div>
                 <div class="weapon-type two-line"><div class="type-top">--</div><div class="type-bottom">--</div></div>
                 <div class="weapon-stats ranged-stats">
                   <div class="stat"><div class="stat-label">DAM</div><div class="stat-val dam">--</div></div>
@@ -2243,7 +2267,7 @@ function setSheetState(state) {
             const range = row.querySelector('.stat-val.range');
             const dicePool = row.querySelector('.dice-pool');
             const diceSize = row.querySelector('.dice-size');
-            if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+          if (selector) selector.textContent = selector.dataset.placeholder || 'NONE';
             if (imgBox) imgBox.style.backgroundImage = '';
             if (dam) dam.textContent = '--';
             if (pen) pen.textContent = '--';
@@ -2286,7 +2310,7 @@ function setSheetState(state) {
           const range = row.querySelector('.stat-val.range');
           const dicePool = row.querySelector('.dice-pool');
           const diceSize = row.querySelector('.dice-size');
-          if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+          if (selector) selector.textContent = selector.dataset.placeholder || 'NONE';
           if (imgBox) imgBox.style.backgroundImage = '';
           if (dam) dam.textContent = '--';
           if (pen) pen.textContent = '--';
@@ -2329,7 +2353,7 @@ function clearWeaponsUI() {
         const range = row.querySelector('.stat-val.range');
         const dicePool = row.querySelector('.dice-pool');
         const diceSize = row.querySelector('.dice-size');
-        if (selector) selector.textContent = selector.dataset.placeholder || 'Select Weapon';
+  if (selector) selector.textContent = selector.dataset.placeholder || 'NONE';
         if (imgBox) imgBox.style.backgroundImage = '';
         if (dam) dam.textContent = '--';
         if (pen) pen.textContent = '--';
@@ -2610,7 +2634,7 @@ function renderArmorPanel(){
         <div class="overlay-section" data-layer="base">
           <label class="overlay-label">BASE LAYER</label>
           <div class="overlay-select-wrap">
-            <input class="overlay-input" data-layer="base" placeholder="Choose base..." autocomplete="off" />
+            <input class="overlay-input" data-layer="base" placeholder="NONE" autocomplete="off" />
             <div class="overlay-list be-hidden" data-layer="base"></div>
           </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
@@ -2620,7 +2644,7 @@ function renderArmorPanel(){
         <div class="overlay-section" data-layer="mid">
           <label class="overlay-label">MID LAYER</label>
           <div class="overlay-select-wrap">
-            <input class="overlay-input" data-layer="mid" placeholder="Choose mid..." autocomplete="off" />
+            <input class="overlay-input" data-layer="mid" placeholder="NONE" autocomplete="off" />
             <div class="overlay-list be-hidden" data-layer="mid"></div>
           </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
@@ -2630,7 +2654,7 @@ function renderArmorPanel(){
         <div class="overlay-section" data-layer="outer">
           <label class="overlay-label">OUTER LAYER</label>
           <div class="overlay-select-wrap">
-            <input class="overlay-input" data-layer="outer" placeholder="Choose outer..." autocomplete="off" />
+            <input class="overlay-input" data-layer="outer" placeholder="NONE" autocomplete="off" />
             <div class="overlay-list be-hidden" data-layer="outer"></div>
           </div>
           <div class="overlay-stats-row"><div class="overlay-stat">AV: <span class="ov-av">--</span></div><div class="overlay-stat">DR: <span class="ov-dr">--</span></div><div class="overlay-stat">DUR: <span class="ov-dur">--</span></div></div>
@@ -2882,6 +2906,7 @@ function populateOverlayOptions(slotKey, layerName, overlay){
   const noneDiv = document.createElement('div');
   noneDiv.className = 'overlay-item none-item';
   noneDiv.textContent = 'NONE';
+  noneDiv.setAttribute('data-value', 'NONE');
   noneDiv.tabIndex = 0;
   noneDiv.addEventListener('click', () => {
     const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
@@ -3008,6 +3033,29 @@ function updateWalkRunFromEquipment(){
   if (dispWalk) dispWalk.textContent = String(walk) + '"';
   if (dispRun) dispRun.textContent = String(run) + '"';
 }
+
+// Ensure the absolute-positioned range band doesn't overlap the weapon content
+function adjustRangeBandPaddingForRow(row){
+  try {
+    if (!row) return;
+    const band = row.querySelector('.range-band-block');
+    const main = row.querySelector('.weapon-main');
+    if (!band || !main) return;
+    // measure height (force layout read)
+    const h = Math.ceil(band.getBoundingClientRect().height || 0);
+    // add a small gap (16px) so it sits visually separate
+    main.style.paddingBottom = (h + 16) + 'px';
+  } catch (e) { /* ignore measurement errors */ }
+}
+
+function adjustAllRangeBandPaddings(){
+  try {
+    $all('.weapon-row').forEach(row => adjustRangeBandPaddingForRow(row));
+  } catch (e) {}
+}
+
+// Recompute on resize so responsive wrapping won't cause overlap
+window.addEventListener('resize', () => { try { adjustAllRangeBandPaddings(); } catch(e){} });
 
 /* ===================================================
    5) COMPENDIUM (YOUR EXISTING CODE, WRAPPED)
