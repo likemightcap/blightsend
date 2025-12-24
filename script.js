@@ -757,6 +757,17 @@ function ensureLoadOverlayOnce(){
         #_beCreateOverlay div[style*="grid-template-columns:repeat(4"]{ grid-template-columns: repeat(2, 1fr); }
         #_beCreateOverlay div[style*="grid-template-columns:repeat(3"]{ grid-template-columns: repeat(2, 1fr); }
       }
+      /* responsive grid helpers for create overlay */
+      #_beCreateOverlay .create-grid-4{ grid-template-columns: repeat(4, 1fr); }
+      #_beCreateOverlay .create-grid-3{ grid-template-columns: repeat(3, 1fr); }
+      #_beCreateOverlay .create-grid-2{ grid-template-columns: repeat(2, 1fr); }
+      @media (max-width:720px){
+        #_beCreateOverlay .create-grid-4{ grid-template-columns: repeat(2, 1fr); }
+        #_beCreateOverlay .create-grid-3{ grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width:420px){
+        #_beCreateOverlay .create-grid-4, #_beCreateOverlay .create-grid-3, #_beCreateOverlay .create-grid-2{ grid-template-columns: repeat(1, 1fr); }
+      }
     `;
     document.head.appendChild(css);
   }
@@ -972,25 +983,19 @@ function ensureCreateOverlayOnce(){
           <label style="font-size:0.85rem">Name</label>
           <input id="_beCreate_name" placeholder="Name" class="overlay-input" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.3);color:var(--text-main);" />
 
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-            <!-- Max HP -->
+          <div class="create-grid create-grid-3" style="display:grid;gap:8px;">
             <div>
               <label class="overlay-label">Max HP</label>
               <div class="be-num-wrap"><input id="_beCreate_hpMax" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
             </div>
-            <!-- Stamina -->
             <div>
               <label class="overlay-label">Stamina</label>
               <div class="be-num-wrap"><input id="_beCreate_stamina" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
             </div>
-            <!-- Ephem -->
             <div>
               <label class="overlay-label">Ephem</label>
               <div class="be-num-wrap"><input id="_beCreate_ephem" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
             </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
             <div>
               <label class="overlay-label">Fight</label>
               <div class="be-num-wrap"><input id="_beCreate_fight" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
@@ -1007,9 +1012,6 @@ function ensureCreateOverlayOnce(){
               <label class="overlay-label">Grit</label>
               <div class="be-num-wrap"><input id="_beCreate_grit" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
             </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
             <div>
               <label class="overlay-label">Focus</label>
               <div class="be-num-wrap"><input id="_beCreate_focus" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
