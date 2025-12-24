@@ -1645,6 +1645,9 @@ function ensureScreens() {
       @media (max-width: 700px) {
         #compendiumScreen{ align-items: flex-start; padding: 12px; }
         #compendiumScreen .compendium-wrap{ max-height: calc(100vh - 24px); overflow:auto; border-radius: 12px; }
+        /* hide native scrollbars but preserve scroll behavior */
+        #compendiumScreen .compendium-wrap { -ms-overflow-style: none; scrollbar-width: none; }
+        #compendiumScreen .compendium-wrap::-webkit-scrollbar { display: none; }
       }
     `;
     document.head.appendChild(sx);
