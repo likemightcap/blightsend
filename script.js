@@ -746,7 +746,8 @@ function ensureLoadOverlayOnce(){
       #_beCreateOverlay .be-num-wrap{ display:flex; align-items:center; gap:6px; }
       #_beCreateOverlay .be-num{ width:64px; max-width:100%; box-sizing:border-box; padding:6px 8px; text-align:right; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); color:var(--text-main); }
       #_beCreateOverlay .be-num::placeholder{ color:var(--text-muted); }
-      #_beCreateOverlay .stepper{ display:flex; flex-direction:column; gap:4px; margin-left:4px; }
+  /* force visible steppers inside this overlay (global rules hide permanent steppers elsewhere) */
+  #_beCreateOverlay .stepper{ display:flex !important; flex-direction:column; gap:4px; margin-left:4px; z-index:2; }
       #_beCreateOverlay .stepper button{ width:30px; height:22px; padding:0; border-radius:6px; border:0; background:rgba(255,255,255,0.04); color:var(--text-main); cursor:pointer; }
       #_beCreateOverlay .stepper button:active{ transform:translateY(1px); }
       /* ensure grids wrap on very small screens */
