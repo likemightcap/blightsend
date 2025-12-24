@@ -2211,9 +2211,14 @@ function setSheetState(state) {
         const slot = row.dataset.slot;
         const saved = weaponsState[slot];
         if (saved && saved.name) {
-          // try to find the weapon by name in loaded weaponsData, fallback to saved object
-          const found = (weaponsData || []).find(w => w.name === saved.name) || saved;
-          applyWeaponToRow(row, found);
+          if (saved.name === 'NONE') {
+            // explicit empty slot: clear visuals and keep NONE in state
+            try { clearWeaponRow(row); weaponsState[slot] = { name: 'NONE' }; } catch(e){}
+          } else {
+            // try to find the weapon by name in loaded weaponsData, fallback to saved object
+            const found = (weaponsData || []).find(w => w.name === saved.name) || saved;
+            applyWeaponToRow(row, found);
+          }
         } else {
           // clear the row
           try {
@@ -2450,8 +2455,12 @@ async function loadActiveCharacterIfAny() {
         const slot = row.dataset.slot;
         const savedW = weaponsState[slot];
         if (savedW && savedW.name) {
-          const found = (weaponsData || []).find(w => w.name === savedW.name) || savedW;
-          applyWeaponToRow(row, found);
+          if (savedW.name === 'NONE') {
+            try { clearWeaponRow(row); weaponsState[slot] = { name: 'NONE' }; } catch(e){}
+          } else {
+            const found = (weaponsData || []).find(w => w.name === savedW.name) || savedW;
+            applyWeaponToRow(row, found);
+          }
         }
       });
     } catch (e) { console.error('Failed to reapply saved weapons', e); }
@@ -2866,7 +2875,7 @@ function populateOverlayOptions(slotKey, layerName, overlay){
   noneDiv.tabIndex = 0;
   noneDiv.addEventListener('click', () => {
     const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
-    if (inp) inp.value = '';
+    if (inp) inp.value = 'NONE';
     list.classList.add('be-hidden');
     populateOverlayStatsForLayer(overlay, layerName);
   });
@@ -2900,7 +2909,7 @@ function commitArmorOverlay(){
   ['base','mid','outer'].forEach(layerName => {
     const inp = overlay.querySelector(`.overlay-input[data-layer="${layerName}"]`);
     const val = inp ? inp.value : '';
-    layers[layerName] = val || null;
+    layers[layerName] = val || 'NONE';
   });
 
   // compute sums
