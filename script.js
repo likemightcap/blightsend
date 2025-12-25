@@ -1151,8 +1151,8 @@ function ensureCreateOverlayOnce(){
     const vals = {
       name: (document.getElementById('_beCreate_name').value || '').trim(),
       hpMax: Number.parseInt(document.getElementById('_beCreate_hpMax').value || '0') || 0,
-      // Stamina and Ephem removed from create UI; default to 0
-      stamina: 0,
+  // Stamina removed from create UI; default to 3
+  stamina: 3,
       ephem: 0,
       fight: Number.parseInt(document.getElementById('_beCreate_fight').value || '0') || 0,
       volley: Number.parseInt(document.getElementById('_beCreate_volley').value || '0') || 0,
@@ -1176,7 +1176,7 @@ function ensureCreateOverlayOnce(){
       name: vals.name,
       hp: vals.hpMax,
       hpMax: vals.hpMax,
-      stamina: 0,
+  stamina: 3,
       ephem: 0,
       walk: Number($('#cs_walk')?.value || 0),
       run: Number($('#cs_run')?.value || 0),
