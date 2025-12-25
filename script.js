@@ -79,6 +79,34 @@ function ensureDataLoaded() {
   return _dataLoadPromise;
 }
 
+// Extra styles for Advanced Skills overlays (hide picker scrollbar, color selected labels)
+(function(){
+  try {
+    const s = document.createElement('style');
+    s.id = '_beAdvSkillsExtraStyles';
+    s.textContent = `
+      /* Hide scrollbar for the advanced skill picker list */
+      #_beAdvSkillList { scrollbar-width: none; -ms-overflow-style: none; }
+      #_beAdvSkillList::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+  /* When a box has a selected skill (dataset skill), color its title orange */
+  .adv-skill-box[data-skill] .adv-skill-label { color: #ff8a3c !important; font-weight:900; }
+
+  /* Slight visual polish for adv-skill-box: show a compact title + meta row + short tagline */
+  .adv-skill-box{ padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); cursor:pointer; min-height:64px; display:flex; align-items:center; }
+  .adv-skill-main{ display:flex; flex-direction:column; gap:4px; width:100%; }
+  .adv-skill-label{ color:var(--text-muted); font-weight:800; text-transform:none; letter-spacing:0.02em; font-size:0.86rem; line-height:1.05; }
+  /* meta row: force white, much smaller font using Cinzel regular for consistency */
+  @font-face{ font-family: 'Cinzel-regular-local'; src: url('assets/fonts/cinzel-v26-latin-regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+  .adv-skill-meta{ color:#ffffff; font-size:0.64rem; display:flex; gap:8px; align-items:center; font-family: 'Cinzel-regular-local', sans-serif; }
+  .adv-skill-meta .adv-skill-cost{ color:#6dd36d; font-weight:700; }
+  .adv-skill-meta .adv-skill-req{ color:#f6c44d; font-weight:700; }
+  .adv-skill-tagline{ color: #ffffff; font-size:0.7rem; opacity:0.95; font-family: 'Cinzel-regular-local', sans-serif; }
+    `;
+    document.head.appendChild(s);
+  } catch (e) { console.error('Failed to inject AdvSkills extra styles', e); }
+})();
+
 // --- Floating numeric HUD (single instance) ---
 function createNumHudOnce(){
   if (document.getElementById('_beNumHud')) return;
@@ -1971,6 +1999,12 @@ function ensureScreens() {
     const btnSave = document.getElementById('bnSave');
 
     if (btnComp) btnComp.addEventListener('click', () => { openCompendiumOverlay(); });
+    // Wire Advanced Skills button on sheet
+    const advBtn = document.getElementById('cs_btn_advskills');
+    if (advBtn && !advBtn.dataset.bound) {
+      advBtn.dataset.bound = '1';
+      advBtn.addEventListener('click', () => { openAdvancedSkillsOverlay(); });
+    }
   if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); if (window.openEditOverlay) window.openEditOverlay(); else openCreateOverlay(); });
     if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
     if (btnSave) btnSave.addEventListener('click', () => { closeAllOverlays(); openSaveOverlay(); });
@@ -2013,6 +2047,218 @@ function ensureScreens() {
   // Wire stat title click handlers and HP slider
   wireStatTitleClicks();
   wireHpSlider();
+}
+
+// --- Advanced Skills overlay (sheet-level modal with 10 boxes) ---
+function ensureAdvancedSkillsOverlayOnce(){
+  if (document.getElementById('_beAdvSkillsOverlay')) return;
+  ensureOverlayStylesOnce();
+  const ov = document.createElement('div');
+  ov.id = '_beAdvSkillsOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beAdvSkillsOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Advanced Skills">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h3 style="margin:0">Advanced Skills</h3><button id="_beAdvSkillsClose" aria-label="Close">✕</button></div>
+        <div class="adv-skills-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          ${Array.from({length:10}).map((_,i)=>`<div class="adv-skill-box" data-box-index="${i}" role="button" tabindex="0"> <div class="adv-skill-main"><div class="adv-skill-label">No Advanced Skill</div><div class="adv-skill-meta"><span class="adv-skill-cost"></span><span class="adv-skill-req"></span></div><div class="adv-skill-tagline"></div></div> </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="_beAdvSkillsCancel">Cancel</button><button id="_beAdvSkillsOk">Okay</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beAdvSkillsClose').addEventListener('click', closeAdvancedSkillsOverlay);
+  document.getElementById('_beAdvSkillsCancel').addEventListener('click', closeAdvancedSkillsOverlay);
+  document.getElementById('_beAdvSkillsOk').addEventListener('click', () => { closeAdvancedSkillsOverlay(); });
+  // wire box clicks
+  ov.querySelectorAll('.adv-skill-box').forEach(box => {
+    box.addEventListener('click', (e) => openAdvancedSkillPickerForBox(Number(box.dataset.boxIndex)) );
+    box.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openAdvancedSkillPickerForBox(Number(box.dataset.boxIndex)); });
+  });
+}
+
+function openAdvancedSkillsOverlay(){
+  ensureAdvancedSkillsOverlayOnce();
+  // refresh current labels from state (if stored)
+  const ov = document.getElementById('_beAdvSkillsOverlay');
+  if (!ov) return;
+  // ensure boxes show saved selections if any (use savedAdvancedSkills in localStorage per character)
+  const boxes = ov.querySelectorAll('.adv-skill-box');
+  const saved = (function(){ try { const s = readSavedCharacters(); const active = localStorage.getItem(STORAGE_KEY_ACTIVE); return (active && s[active] && s[active].advancedSkills) ? s[active].advancedSkills : {}; } catch(e){ return {}; } })();
+  boxes.forEach(b => {
+    const idx = b.dataset.boxIndex;
+    const savedItem = saved && saved[idx] ? saved[idx] : null;
+    const labelEl = b.querySelector('.adv-skill-label');
+    const costEl = b.querySelector('.adv-skill-cost');
+    const reqEl = b.querySelector('.adv-skill-req');
+    const tagEl = b.querySelector('.adv-skill-tagline');
+    if (savedItem) {
+      if (labelEl) labelEl.textContent = savedItem.name || 'Unnamed';
+      if (costEl) costEl.textContent = savedItem.cost ? `Cost: ${savedItem.cost}` : '';
+      if (reqEl) reqEl.textContent = savedItem.requirement ? `Req: ${savedItem.requirement}` : '';
+      // prefer effect field for tagline
+      if (tagEl) tagEl.textContent = savedItem.effect || savedItem.summary || savedItem.description || '';
+      try { b.dataset.skill = JSON.stringify(savedItem); } catch(e){}
+    } else {
+      if (labelEl) labelEl.textContent = 'No Advanced Skill';
+      if (costEl) costEl.textContent = '';
+      if (reqEl) reqEl.textContent = '';
+      if (tagEl) tagEl.textContent = '';
+      b.removeAttribute('data-skill');
+    }
+  });
+  ov.classList.remove('be-hidden');
+  try { setBottomNavVisible(false); } catch(e){}
+}
+
+function closeAdvancedSkillsOverlay(){ const ov = document.getElementById('_beAdvSkillsOverlay'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch(e){} }
+
+// Nested overlay: Advanced Skill picker (reuses compendium list style)
+function ensureAdvancedSkillPickerOnce(){
+  if (document.getElementById('_beAdvSkillPicker')) return;
+  ensureOverlayStylesOnce();
+  const ov = document.createElement('div');
+  ov.id = '_beAdvSkillPicker';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beAdvSkillPickerBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Choose Advanced Skill">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h3 style="margin:0">Choose Advanced Skill</h3><button id="_beAdvSkillPickerClose">✕</button></div>
+        <div id="_beAdvSkillList" style="max-height:60vh;overflow:auto;">
+          <!-- list populated dynamically -->
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="_beAdvSkillPickerCancel">Cancel</button><button id="_beAdvSkillPickerOk">Okay</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beAdvSkillPickerClose').addEventListener('click', closeAdvancedSkillPicker);
+  document.getElementById('_beAdvSkillPickerCancel').addEventListener('click', closeAdvancedSkillPicker);
+}
+
+let _advSkillPickerState = { targetBoxIndex: null, selectedSkill: null };
+
+async function openAdvancedSkillPickerForBox(boxIndex){
+  ensureAdvancedSkillPickerOnce();
+  _advSkillPickerState.targetBoxIndex = boxIndex;
+  _advSkillPickerState.selectedSkill = null;
+  const ov = document.getElementById('_beAdvSkillPicker');
+  const list = document.getElementById('_beAdvSkillList');
+  if (!ov || !list) return;
+  // make sure data is loaded
+  try { await ensureDataLoaded(); } catch(e) { console.error('Failed to load advanced skills data', e); }
+  const data = Array.isArray(advancedSkillsData) ? advancedSkillsData : (window.advancedSkillsData || []);
+  list.innerHTML = '';
+  if (!data.length) {
+    const empty = document.createElement('div');
+    empty.style.padding = '12px';
+    empty.textContent = 'No advanced skills available.';
+    list.appendChild(empty);
+  }
+
+  data.forEach((item, idx) => {
+    // Render using the same card layout as the compendium
+    const card = document.createElement('article');
+    card.className = 'item-card';
+    card.dataset.idx = idx;
+    card.dataset.page = 'skills';
+
+    const main = document.createElement('div');
+    main.className = 'item-main';
+
+    const title = document.createElement('div');
+    title.className = 'item-title';
+    title.textContent = item.name || '';
+
+  const meta = document.createElement('div');
+  meta.className = 'item-meta';
+  // show requirement if present, and cost
+  const parts = ['Advanced Skill'];
+  if (item.cost) parts.push('Cost ' + item.cost);
+  if (item.requirement) parts.push('Req: ' + item.requirement);
+  meta.textContent = parts.join(' · ');
+
+    const tagline = document.createElement('div');
+    tagline.className = 'item-tagline';
+    tagline.textContent = item.summary || item.description || item.effect || '';
+
+    main.appendChild(title);
+    main.appendChild(meta);
+    if (tagline.textContent) main.appendChild(tagline);
+
+    const pill = document.createElement('div');
+    pill.className = 'item-pill';
+    pill.textContent = 'Skill';
+
+    card.appendChild(main);
+    card.appendChild(pill);
+
+    // selection handling
+    card.addEventListener('click', () => {
+      _advSkillPickerState.selectedSkill = item;
+      // clear previous highlight
+      list.querySelectorAll('.item-card').forEach(c => c.style.background = '');
+      card.style.background = 'rgba(255,255,255,0.02)';
+    });
+    // double-click to commit immediately
+    card.addEventListener('dblclick', () => {
+      _advSkillPickerState.selectedSkill = item;
+      commitAdvancedSkillToBox(_advSkillPickerState.targetBoxIndex, item);
+      closeAdvancedSkillPicker();
+    });
+
+    // allow preview modal on right-click or shift-click
+    card.addEventListener('contextmenu', (ev) => { ev.preventDefault(); try { openModal(item, 'skills'); } catch(e){} });
+
+    list.appendChild(card);
+  });
+
+  // wire ok button
+  const ok = document.getElementById('_beAdvSkillPickerOk');
+  // remove previous listeners by cloning node (simple noop-safe approach)
+  const okClone = ok.cloneNode(true);
+  ok.parentNode.replaceChild(okClone, ok);
+  okClone.addEventListener('click', () => {
+    if (!_advSkillPickerState.selectedSkill) { toast('Select a skill first'); return; }
+    commitAdvancedSkillToBox(_advSkillPickerState.targetBoxIndex, _advSkillPickerState.selectedSkill);
+    closeAdvancedSkillPicker();
+  });
+
+  ov.classList.remove('be-hidden');
+  try { setBottomNavVisible(false); } catch(e){}
+}
+
+function closeAdvancedSkillPicker(){ const ov = document.getElementById('_beAdvSkillPicker'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch(e){} }
+
+function commitAdvancedSkillToBox(boxIndex, skill){
+  // write into the Advanced Skills area and persist into active character state
+  const advOv = document.getElementById('_beAdvSkillsOverlay');
+  if (!advOv) return;
+  const box = advOv.querySelector(`.adv-skill-box[data-box-index="${boxIndex}"]`);
+  if (!box) return;
+  // update label and attach dataset with minimal snapshot, populate meta fields
+  const lbl = box.querySelector('.adv-skill-label');
+  const costEl = box.querySelector('.adv-skill-cost');
+  const reqEl = box.querySelector('.adv-skill-req');
+  if (lbl) lbl.textContent = skill.name || 'Unnamed';
+  if (costEl) costEl.textContent = skill.cost ? `Cost: ${skill.cost}` : '';
+  if (reqEl) reqEl.textContent = skill.requirement ? `Req: ${skill.requirement}` : '';
+  const tagEl = box.querySelector('.adv-skill-tagline');
+  if (tagEl) tagEl.textContent = skill.effect || skill.summary || skill.description || '';
+  try { box.dataset.skill = JSON.stringify({ name: skill.name, id: skill.id || null, summary: skill.summary || skill.description || '', effect: skill.effect || null, cost: skill.cost || null, requirement: skill.requirement || null }); } catch(e){}
+  // persist into saved character
+  try {
+    const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+    const saved = readSavedCharacters();
+    const state = (active && saved[active]) ? saved[active] : getSheetState();
+    state.advancedSkills = state.advancedSkills || {};
+  state.advancedSkills[boxIndex] = { name: skill.name, id: skill.id || null, summary: skill.summary || skill.description || '', effect: skill.effect || null, cost: skill.cost || null, requirement: skill.requirement || null };
+    saved[active] = state;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+    // reflect on-screen
+    // no further action required
+  } catch (e) { console.error('Failed to persist advanced skill selection', e); }
 }
 
 // ---------------------- Export / Import helpers ----------------------
@@ -2419,17 +2665,7 @@ function clearCurrentSheet(){
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') el.value = '';
       else el.textContent = '';
     });
-    // visible name display
-    const nameVisible = document.getElementById('cs_name_visible'); if (nameVisible) nameVisible.textContent = '--';
-    // hp displays and slider
-    const hpDisplay = document.getElementById('cs_hp_display'); if (hpDisplay) hpDisplay.textContent = '0';
-    const hpMaxDisplay = document.getElementById('cs_hp_max_display'); if (hpMaxDisplay) hpMaxDisplay.textContent = '0';
-    const slider = document.getElementById('cs_hp_slider'); if (slider) { slider.value = 0; slider.max = 1; try { slider.style.setProperty('--hp-fill-pct','0%'); } catch(e){} }
 
-    // clear armor state and UI
-    try {
-      Object.keys(armorState).forEach(k => delete armorState[k]);
-    } catch(e){}
     Object.assign(armorState, {
       head: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
       torso: { armorValue: '--', reduction: '--', durability: '--', layers: { base: 'NONE', mid: 'NONE', outer: 'NONE' }, weight: '--', resistance: '--' },
