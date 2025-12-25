@@ -376,8 +376,9 @@ function injectSheetStylesOnce() {
 
     .stat-strip{
       border-radius: var(--radius-md);
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(80, 140, 160, 0.25);
+      /* orange outline and transparent background */
+      border: 2px solid #ff8a00;
+      background: transparent;
       padding: 0.75rem;
       display:grid;
       grid-template-columns: repeat(5, 1fr);
@@ -799,10 +800,16 @@ function ensureLoadOverlayOnce(){
   ov.innerHTML = `
     <div class="be-overlay-backdrop" id="_beLoadOverlayBackdrop">
       <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Load Ender">
+        <div style="display:flex;justify-content:center;margin-bottom:10px;">
+          <button id="_beCreateNewTop" class="be-create-top">Create New Ender</button>
+        </div>
         <div class="be-overlay-header"><h3>Load Ender</h3><button id="_beLoadClose" aria-label="Close">✕</button></div>
         <div id="_beLoadList" class="be-load-list"></div>
         <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:space-between;align-items:center;">
-          <button id="_beCreateNew">Create New Ender</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="_beImportFile">Import</button>
+            <input id="_beImportFileInput" type="file" accept="application/json" style="display:none" />
+          </div>
           <div style="margin-left:8px;"><button id="_beLoadCancel">Cancel</button></div>
         </div>
       </div>
@@ -838,6 +845,19 @@ function ensureLoadOverlayOnce(){
         #_beCreateOverlay .create-grid-4{ grid-template-columns: repeat(2, 1fr); }
         #_beCreateOverlay .create-grid-3{ grid-template-columns: repeat(2, 1fr); }
       }
+      /* Top create button inside load overlay */
+      #_beLoadOverlay .be-create-top{
+        background: #000;
+        color: #ff8a00;
+        border: 2px solid #ff8a00;
+        padding:12px 18px;
+        border-radius:12px;
+        font-weight:900;
+        font-family: 'Cinzel-900', 'CinzelCustom', serif;
+        cursor:pointer;
+        box-shadow:none;
+      }
+      #_beLoadOverlay .be-create-top:active{ transform: translateY(1px); }
       @media (max-width:420px){
         #_beCreateOverlay .create-grid-4, #_beCreateOverlay .create-grid-3, #_beCreateOverlay .create-grid-2{ grid-template-columns: repeat(1, 1fr); }
       }
@@ -881,10 +901,28 @@ function openLoadOverlay(){
   const ov = document.getElementById('_beLoadOverlay');
   if (ov) ov.classList.remove('be-hidden');
   // wire Create New button
-  const btnCreate = document.getElementById('_beCreateNew');
-  if (btnCreate && !btnCreate.dataset.bound) {
-    btnCreate.dataset.bound = '1';
-    btnCreate.addEventListener('click', () => {
+  // wire Import button + hidden file input
+  const btnImport = document.getElementById('_beImportFile');
+  const fileInput = document.getElementById('_beImportFileInput');
+  if (btnImport && !btnImport.dataset.bound) {
+    btnImport.dataset.bound = '1';
+    btnImport.addEventListener('click', () => {
+      try { fileInput.value = ''; fileInput.click(); } catch (e) { toast('File import not supported.'); }
+    });
+  }
+  if (fileInput && !fileInput.dataset.bound) {
+    fileInput.dataset.bound = '1';
+    fileInput.addEventListener('change', (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (!f) return;
+      importCharacterFromFile(f).catch(err => { console.error(err); toast('Failed to import file.'); });
+    });
+  }
+  // wire top Create New button (large orange) to open create overlay
+  const btnCreateTop = document.getElementById('_beCreateNewTop');
+  if (btnCreateTop && !btnCreateTop.dataset.bound) {
+    btnCreateTop.dataset.bound = '1';
+    btnCreateTop.addEventListener('click', () => {
       closeLoadOverlay();
       openCreateOverlay();
     });
@@ -1928,7 +1966,7 @@ function ensureScreens() {
       + '<button class="be-bottom-btn" id="bnCompendium"><img src="Icons/compendium-icon.png" alt="Compendium" /><div class="be-bottom-label">Compendium</div></button>'
       + '<button class="be-bottom-btn" id="bnEdit"><img src="Icons/edit-icon.png" alt="Edit Ender" /><div class="be-bottom-label">Edit</div></button>'
       + '<button class="be-bottom-btn" id="bnLoad"><img src="Icons/load-icon.png" alt="Load Ender" /><div class="be-bottom-label">Load</div></button>'
-      + '<button class="be-bottom-btn" id="bnSave"><img src="Icons/save-icon.png" alt="Save Ender" /><div class="be-bottom-label">Save</div></button>'
+  + '<button class="be-bottom-btn" id="bnSave"><img src="Icons/save-icon.png" alt="Export Ender" /><div class="be-bottom-label">Export</div></button>'
       + '</div>';
     document.body.appendChild(bn);
 
@@ -2028,8 +2066,9 @@ function ensureScreens() {
       advBtn.addEventListener('click', () => { openAdvancedSkillsOverlay(); });
     }
   if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); if (window.openEditOverlay) window.openEditOverlay(); else openCreateOverlay(); });
-    if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
-    if (btnSave) btnSave.addEventListener('click', () => { closeAllOverlays(); openSaveOverlay(); });
+  if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
+  // bnSave now acts as Export: open the Export overlay which downloads a JSON file locally
+  if (btnSave) btnSave.addEventListener('click', () => { closeAllOverlays(); openExportOverlay(); });
   }
 
   // Hide compendium by default; sheet is the primary visible screen
@@ -2386,6 +2425,44 @@ function sanitizeExportBasename(rawName){
   // Collapse multiple hyphens or spaces into single hyphen and trim
   name = name.replace(/[\s\-]+/g, '-').replace(/^-+|-+$/g, '');
   return name || 'ender';
+}
+
+// Import a character from a local JSON file selected by the user.
+async function importCharacterFromFile(file){
+  if (!file) throw new Error('No file');
+  const text = await file.text();
+  let parsed;
+  try { parsed = JSON.parse(text); } catch (e) { throw new Error('Invalid JSON'); }
+  // Support both wrapped exports and raw character objects
+  let character = null;
+  if (parsed && parsed.character) character = parsed.character;
+  else if (parsed && (parsed.__format || parsed.name)) character = parsed;
+  if (!character) throw new Error('No character found in file');
+
+  // Determine desired name
+  const suggested = (character.name && String(character.name).trim()) || file.name.replace(/\.json$/i, '') || 'imported-ender';
+  let name = suggested;
+  // Ensure name is unique among saved characters; if conflict, append a suffix
+  const saved = readSavedCharacters();
+  let base = sanitizeExportBasename(name) || 'imported-ender';
+  let attempt = base;
+  let i = 1;
+  while (saved[attempt]) { attempt = base + '-' + (++i); }
+  name = attempt;
+
+  // Attach metadata if missing
+  character.updatedAt = Date.now();
+  // Save into saved characters
+  saved[name] = character;
+  localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+  localStorage.setItem(STORAGE_KEY_ACTIVE, name);
+  // Load the character into the sheet
+  try { loadCharacter(name); } catch (e) {}
+  closeLoadOverlay();
+  location.hash = '#sheet';
+  showOnly('sheet');
+  toast(`Imported: ${name}`);
+  return name;
 }
 
 function initImportInput() {
