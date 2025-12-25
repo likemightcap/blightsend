@@ -93,7 +93,9 @@ function ensureDataLoaded() {
   .adv-skill-box[data-skill] .adv-skill-label { color: #ff8a3c !important; font-weight:900; }
 
   /* Slight visual polish for adv-skill-box: show a compact title + meta row + short tagline */
-  .adv-skill-box{ padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); cursor:pointer; min-height:64px; display:flex; align-items:center; }
+  .adv-skill-box{ padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); cursor:pointer; min-height:64px; display:flex; align-items:center; position:relative; }
+  .adv-skill-box .adv-skill-clear{ position:absolute; top:6px; right:6px; background: rgba(0,0,0,0.45); color:#fff; border:0; width:22px; height:22px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; opacity:0; transition:opacity 120ms ease; }
+  .adv-skill-box[data-skill] .adv-skill-clear{ opacity:1; }
   .adv-skill-main{ display:flex; flex-direction:column; gap:4px; width:100%; }
   .adv-skill-label{ color:var(--text-muted); font-weight:800; text-transform:none; letter-spacing:0.02em; font-size:0.86rem; line-height:1.05; }
   /* meta row: force white, much smaller font using Cinzel regular for consistency */
@@ -2061,7 +2063,7 @@ function ensureAdvancedSkillsOverlayOnce(){
       <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Advanced Skills">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h3 style="margin:0">Advanced Skills</h3><button id="_beAdvSkillsClose" aria-label="Close">✕</button></div>
         <div class="adv-skills-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-          ${Array.from({length:10}).map((_,i)=>`<div class="adv-skill-box" data-box-index="${i}" role="button" tabindex="0"> <div class="adv-skill-main"><div class="adv-skill-label">No Advanced Skill</div><div class="adv-skill-meta"><span class="adv-skill-cost"></span><span class="adv-skill-req"></span></div><div class="adv-skill-tagline"></div></div> </div>`).join('')}
+          ${Array.from({length:10}).map((_,i)=>`<div class="adv-skill-box" data-box-index="${i}" role="button" tabindex="0"> <button class="adv-skill-clear" aria-label="Clear">✕</button><div class="adv-skill-main"><div class="adv-skill-label">No Advanced Skill</div><div class="adv-skill-meta"><span class="adv-skill-cost"></span><span class="adv-skill-req"></span></div><div class="adv-skill-tagline"></div></div> </div>`).join('')}
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="_beAdvSkillsCancel">Cancel</button><button id="_beAdvSkillsOk">Okay</button></div>
       </div>
@@ -2073,8 +2075,19 @@ function ensureAdvancedSkillsOverlayOnce(){
   document.getElementById('_beAdvSkillsOk').addEventListener('click', () => { closeAdvancedSkillsOverlay(); });
   // wire box clicks
   ov.querySelectorAll('.adv-skill-box').forEach(box => {
-    box.addEventListener('click', (e) => openAdvancedSkillPickerForBox(Number(box.dataset.boxIndex)) );
+    const idx = Number(box.dataset.boxIndex);
+    // open picker when box body is clicked (but not when pressing the clear button)
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('.adv-skill-clear')) return;
+      openAdvancedSkillPickerForBox(idx);
+    });
     box.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openAdvancedSkillPickerForBox(Number(box.dataset.boxIndex)); });
+    // wire clear button
+    const clearBtn = box.querySelector('.adv-skill-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (ev) => { ev.stopPropagation(); clearAdvancedSkillBox(idx); });
+      clearBtn.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); clearAdvancedSkillBox(idx); } });
+    }
   });
 }
 
@@ -2259,6 +2272,34 @@ function commitAdvancedSkillToBox(boxIndex, skill){
     // reflect on-screen
     // no further action required
   } catch (e) { console.error('Failed to persist advanced skill selection', e); }
+}
+
+function clearAdvancedSkillBox(boxIndex){
+  try {
+    const advOv = document.getElementById('_beAdvSkillsOverlay');
+    if (!advOv) return;
+    const box = advOv.querySelector(`.adv-skill-box[data-box-index="${boxIndex}"]`);
+    if (!box) return;
+    // clear UI
+    const label = box.querySelector('.adv-skill-label'); if (label) label.textContent = 'No Advanced Skill';
+    const costEl = box.querySelector('.adv-skill-cost'); if (costEl) costEl.textContent = '';
+    const reqEl = box.querySelector('.adv-skill-req'); if (reqEl) reqEl.textContent = '';
+    const tagEl = box.querySelector('.adv-skill-tagline'); if (tagEl) tagEl.textContent = '';
+    box.removeAttribute('data-skill');
+
+    // persist removal in saved character
+    try {
+      const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+      if (!active) return;
+      const saved = readSavedCharacters();
+      const state = (saved[active]) ? saved[active] : getSheetState();
+      if (state && state.advancedSkills) {
+        delete state.advancedSkills[boxIndex];
+        saved[active] = state;
+        localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+      }
+    } catch (e) { console.error('Failed to persist clearing advanced skill', e); }
+  } catch (e) { console.error('clearAdvancedSkillBox failed', e); }
 }
 
 // ---------------------- Export / Import helpers ----------------------
