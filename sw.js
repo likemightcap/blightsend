@@ -20,8 +20,8 @@ const ASSETS = (function () {
     root + 'dist/bundle.js',
     // data files used by the app
     root + 'data/echoes.json',
-    root + 'data/weapons.json',
-    root + 'data/skills.json',
+  root + 'data/weapons.json',
+  root + 'data/advancedSkills.json',
     root + 'data/armor.json',
     root + 'data/conditions.json',
     root + 'manifest.json',

@@ -9,7 +9,7 @@ export async function loadAllData() {
   const fetches = await Promise.all([
     fetch(siteRoot + 'data/echoes.json'),
     fetch(siteRoot + 'data/weapons.json'),
-    fetch(siteRoot + 'data/skills.json'),
+    fetch(siteRoot + 'data/advancedSkills.json'),
     fetch(siteRoot + 'data/armor.json'),
     fetch(siteRoot + 'data/conditions.json')
   ]);

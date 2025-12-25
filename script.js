@@ -50,7 +50,7 @@ function ensureDataLoaded() {
       const [echoesR, weaponsR, skillsR, armorR, conditionsR] = await Promise.all([
         fetch(siteRoot + 'data/echoes.json'),
         fetch(siteRoot + 'data/weapons.json'),
-        fetch(siteRoot + 'data/skills.json'),
+        fetch(siteRoot + 'data/advancedSkills.json'),
         fetch(siteRoot + 'data/armor.json'),
         fetch(siteRoot + 'data/conditions.json')
       ]);
@@ -340,6 +340,9 @@ function injectSheetStylesOnce() {
   /* Visual grouping for Walk/Run: subtle outline without changing layout */
   .walk-run-box{ display:contents; }
   .walk-run-box > div{ box-sizing:border-box; border:1px solid rgba(255,255,255,0.04); border-radius:8px; padding:6px 8px; }
+  /* Visual grouping for Stamina / Ephem pair: same styling as Walk/Run */
+  .stat-pair-box{ display:contents; }
+  .stat-pair-box > div{ box-sizing:border-box; border:1px solid rgba(255,255,255,0.04); border-radius:8px; padding:6px 8px; }
 
     .stat-strip{
       border-radius: var(--radius-md);
@@ -1636,15 +1639,17 @@ function ensureScreens() {
         </div>
 
         <div class="sheet-row">
-          <div>
-            <div class="field-label stat-title" data-stat="stamina">Stamina</div>
-            <div class="stat-val-display" id="cs_stamina_display">0</div>
-            <input type="hidden" id="cs_stamina" value="0" />
-          </div>
-          <div>
-            <div class="field-label stat-title" data-stat="ephem">Ephem</div>
-            <div class="stat-val-display" id="cs_ephem_display">0</div>
-            <input type="hidden" id="cs_ephem" value="0" />
+          <div class="stat-pair-box">
+            <div>
+              <div class="field-label stat-title" data-stat="stamina">Stamina</div>
+              <div class="stat-val-display" id="cs_stamina_display">0</div>
+              <input type="hidden" id="cs_stamina" value="0" />
+            </div>
+            <div>
+              <div class="field-label stat-title" data-stat="ephem">Ephem</div>
+              <div class="stat-val-display" id="cs_ephem_display">0</div>
+              <input type="hidden" id="cs_ephem" value="0" />
+            </div>
           </div>
           <div class="walk-run-box">
             <div>
@@ -1688,11 +1693,7 @@ function ensureScreens() {
           </div>
         </div>
 
-        <div class="sheet-buttons">
-          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
-          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
-          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
-        </div>
+        
 
         <!-- Armor panel mockup -->
         <section class="sheet-armor-panel">
@@ -1816,6 +1817,13 @@ function ensureScreens() {
           </div>
         </section>
       </section>
+
+        <div class="sheet-buttons">
+          <button class="sheet-action" type="button" id="cs_btn_advskills">ADVANCED SKILLS</button>
+          <button class="sheet-action" type="button" id="cs_btn_echoes">Echoes</button>
+          <button class="sheet-action" type="button" id="cs_btn_gear">Gear</button>
+          <button class="sheet-action" type="button" id="cs_btn_backpack">Backpack</button>
+        </div>
 
 
       <div id="sheetMenuOverlay" aria-hidden="true">
