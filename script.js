@@ -847,7 +847,7 @@ function ensureLoadOverlayOnce(){
       }
       /* Top create button inside load overlay */
       #_beLoadOverlay .be-create-top{
-        background: #000;
+        background: transparent;
         color: #ff8a00;
         border: 2px solid #ff8a00;
         padding:12px 18px;
@@ -2059,6 +2059,22 @@ function ensureScreens() {
     const btnSave = document.getElementById('bnSave');
 
     if (btnComp) btnComp.addEventListener('click', () => { openCompendiumOverlay(); });
+    // Inject styles for AdvSkills / Echoes button variants (transparent bg + colored border, selected bg states)
+    (function(){
+      if (document.getElementById('_beAdvEchoBtnStyles')) return;
+      const s = document.createElement('style');
+      s.id = '_beAdvEchoBtnStyles';
+      s.textContent = `
+        /* Remove default background for these two buttons and add colored borders */
+        #cs_btn_advskills { background: transparent !important; border: 2px solid rgb(40 0 255) !important; }
+        #cs_btn_echoes { background: transparent !important; border: 2px solid rgb(200 0 255) !important; }
+        /* Selected states: keep border color but change background */
+        #cs_btn_advskills.adv-selected { background: rgb(20 5 83) !important; }
+        #cs_btn_echoes.echo-selected { background: rgb(66 5 83) !important; }
+      `;
+      document.head.appendChild(s);
+    })();
+
     // Wire Advanced Skills button on sheet
     const advBtn = document.getElementById('cs_btn_advskills');
     if (advBtn && !advBtn.dataset.bound) {
@@ -2071,6 +2087,27 @@ function ensureScreens() {
       echoBtn.dataset.bound = '1';
       echoBtn.addEventListener('click', () => { openEchoesOverlay(); });
     }
+
+    // Helpers to update the button selected state based on saved character data
+    function updateAdvSkillsButtonState(){
+      try {
+        const btn = document.getElementById('cs_btn_advskills'); if (!btn) return;
+        const saved = readSavedCharacters(); const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+        const has = !!(active && saved[active] && saved[active].advancedSkills && Object.keys(saved[active].advancedSkills).length);
+        btn.classList.toggle('adv-selected', !!has);
+      } catch(e){ console.error('updateAdvSkillsButtonState failed', e); }
+    }
+    function updateEchoesButtonState(){
+      try {
+        const btn = document.getElementById('cs_btn_echoes'); if (!btn) return;
+        const saved = readSavedCharacters(); const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+        const has = !!(active && saved[active] && saved[active].echoes && Object.keys(saved[active].echoes).length);
+        btn.classList.toggle('echo-selected', !!has);
+      } catch(e){ console.error('updateEchoesButtonState failed', e); }
+    }
+
+    // ensure initial state reflects any existing selections
+    try { updateAdvSkillsButtonState(); updateEchoesButtonState(); } catch(e){}
   if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); if (window.openEditOverlay) window.openEditOverlay(); else openCreateOverlay(); });
   if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
   // bnSave now acts as Export: open the Export overlay which downloads a JSON file locally
@@ -2337,6 +2374,7 @@ function commitAdvancedSkillToBox(boxIndex, skill){
     // reflect on-screen
     // no further action required
   } catch (e) { console.error('Failed to persist advanced skill selection', e); }
+  try { if (typeof updateAdvSkillsButtonState === 'function') updateAdvSkillsButtonState(); } catch(e){}
 }
 
 function clearAdvancedSkillBox(boxIndex){
@@ -2365,6 +2403,7 @@ function clearAdvancedSkillBox(boxIndex){
       }
     } catch (e) { console.error('Failed to persist clearing advanced skill', e); }
   } catch (e) { console.error('clearAdvancedSkillBox failed', e); }
+    try { if (typeof updateAdvSkillsButtonState === 'function') updateAdvSkillsButtonState(); } catch(e){}
 }
 
 // --- Echoes overlay (sheet-level modal with 6 boxes) ---
@@ -2523,6 +2562,7 @@ function commitEchoToBox(boxIndex, echo){
     saved[active] = state;
     localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
   } catch (e) { console.error('Failed to persist echo selection', e); }
+  try { if (typeof updateEchoesButtonState === 'function') updateEchoesButtonState(); } catch(e){}
 }
 
 function clearEchoBox(boxIndex){
@@ -2542,6 +2582,7 @@ function clearEchoBox(boxIndex){
       if (state && state.echoes) { delete state.echoes[boxIndex]; saved[active] = state; localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved)); }
     } catch (e) { console.error('Failed to persist clearing echo', e); }
   } catch (e) { console.error('clearEchoBox failed', e); }
+    try { if (typeof updateEchoesButtonState === 'function') updateEchoesButtonState(); } catch(e){}
 }
 
 // ---------------------- Export / Import helpers ----------------------
