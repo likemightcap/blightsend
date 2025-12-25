@@ -2065,6 +2065,12 @@ function ensureScreens() {
       advBtn.dataset.bound = '1';
       advBtn.addEventListener('click', () => { openAdvancedSkillsOverlay(); });
     }
+    // Wire Echoes button on sheet (mirrors Advanced Skills behavior)
+    const echoBtn = document.getElementById('cs_btn_echoes');
+    if (echoBtn && !echoBtn.dataset.bound) {
+      echoBtn.dataset.bound = '1';
+      echoBtn.addEventListener('click', () => { openEchoesOverlay(); });
+    }
   if (btnEdit) btnEdit.addEventListener('click', () => { closeAllOverlays(); if (window.openEditOverlay) window.openEditOverlay(); else openCreateOverlay(); });
   if (btnLoad) btnLoad.addEventListener('click', () => { closeAllOverlays(); openLoadOverlay(); });
   // bnSave now acts as Export: open the Export overlay which downloads a JSON file locally
@@ -2359,6 +2365,183 @@ function clearAdvancedSkillBox(boxIndex){
       }
     } catch (e) { console.error('Failed to persist clearing advanced skill', e); }
   } catch (e) { console.error('clearAdvancedSkillBox failed', e); }
+}
+
+// --- Echoes overlay (sheet-level modal with 6 boxes) ---
+function ensureEchoesOverlayOnce(){
+  if (document.getElementById('_beEchoesOverlay')) return;
+  ensureOverlayStylesOnce();
+  const ov = document.createElement('div');
+  ov.id = '_beEchoesOverlay';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beEchoesOverlayBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Echoes">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h3 style="margin:0">Echoes</h3><button id="_beEchoesClose" aria-label="Close">✕</button></div>
+        <div class="adv-skills-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          ${Array.from({length:6}).map((_,i)=>`<div class="adv-skill-box" data-box-index="${i}" role="button" tabindex="0"> <button class="adv-skill-clear" aria-label="Clear">✕</button><div class="adv-skill-main"><div class="adv-skill-label">No Echo</div><div class="adv-skill-meta"><span class="adv-skill-cost"></span><span class="adv-skill-req"></span></div><div class="adv-skill-tagline"></div></div> </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="_beEchoesCancel">Cancel</button><button id="_beEchoesOk">Okay</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beEchoesClose').addEventListener('click', closeEchoesOverlay);
+  document.getElementById('_beEchoesCancel').addEventListener('click', closeEchoesOverlay);
+  document.getElementById('_beEchoesOk').addEventListener('click', () => { closeEchoesOverlay(); });
+  // wire box clicks
+  ov.querySelectorAll('.adv-skill-box').forEach(box => {
+    const idx = Number(box.dataset.boxIndex);
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('.adv-skill-clear')) return;
+      openEchoPickerForBox(idx);
+    });
+    box.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openEchoPickerForBox(Number(box.dataset.boxIndex)); });
+    const clearBtn = box.querySelector('.adv-skill-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (ev) => { ev.stopPropagation(); clearEchoBox(idx); });
+      clearBtn.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); clearEchoBox(idx); } });
+    }
+  });
+}
+
+function openEchoesOverlay(){
+  ensureEchoesOverlayOnce();
+  const ov = document.getElementById('_beEchoesOverlay');
+  if (!ov) return;
+  const boxes = ov.querySelectorAll('.adv-skill-box');
+  const saved = (function(){ try { const s = readSavedCharacters(); const active = localStorage.getItem(STORAGE_KEY_ACTIVE); return (active && s[active] && s[active].echoes) ? s[active].echoes : {}; } catch(e){ return {}; } })();
+  boxes.forEach(b => {
+    const idx = b.dataset.boxIndex;
+    const savedItem = saved && saved[idx] ? saved[idx] : null;
+    const labelEl = b.querySelector('.adv-skill-label');
+    const costEl = b.querySelector('.adv-skill-cost');
+    const reqEl = b.querySelector('.adv-skill-req');
+    const tagEl = b.querySelector('.adv-skill-tagline');
+    if (savedItem) {
+      if (labelEl) labelEl.textContent = savedItem.name || 'Unnamed';
+      if (costEl) costEl.textContent = savedItem.cost ? `Cost: ${savedItem.cost}` : '';
+      if (reqEl) reqEl.textContent = savedItem.requirement ? `Req: ${savedItem.requirement}` : '';
+      if (tagEl) tagEl.textContent = savedItem.effect || savedItem.summary || savedItem.description || '';
+      try { b.dataset.skill = JSON.stringify(savedItem); } catch(e){}
+    } else {
+      if (labelEl) labelEl.textContent = 'No Echo';
+      if (costEl) costEl.textContent = '';
+      if (reqEl) reqEl.textContent = '';
+      if (tagEl) tagEl.textContent = '';
+      b.removeAttribute('data-skill');
+    }
+  });
+  ov.classList.remove('be-hidden');
+  try { setBottomNavVisible(false); } catch(e){}
+}
+
+function closeEchoesOverlay(){ const ov = document.getElementById('_beEchoesOverlay'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch(e){} }
+
+// Echo picker (reuses adv skill picker layout)
+function ensureEchoPickerOnce(){
+  if (document.getElementById('_beEchoPicker')) return;
+  ensureOverlayStylesOnce();
+  const ov = document.createElement('div');
+  ov.id = '_beEchoPicker';
+  ov.className = 'be-hidden';
+  ov.innerHTML = `
+    <div class="be-overlay-backdrop" id="_beEchoPickerBackdrop">
+      <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Choose Echo">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h3 style="margin:0">Choose Echo</h3><button id="_beEchoPickerClose">✕</button></div>
+        <div id="_beEchoList" style="max-height:60vh;overflow:auto;"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="_beEchoPickerCancel">Cancel</button><button id="_beEchoPickerOk">Okay</button></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('_beEchoPickerClose').addEventListener('click', closeEchoPicker);
+  document.getElementById('_beEchoPickerCancel').addEventListener('click', closeEchoPicker);
+}
+
+let _echoPickerState = { targetBoxIndex: null, selectedEcho: null };
+
+async function openEchoPickerForBox(boxIndex){
+  ensureEchoPickerOnce();
+  _echoPickerState.targetBoxIndex = boxIndex;
+  _echoPickerState.selectedEcho = null;
+  const ov = document.getElementById('_beEchoPicker');
+  const list = document.getElementById('_beEchoList');
+  if (!ov || !list) return;
+  try { await ensureDataLoaded(); } catch(e) { console.error('Failed to load echoes data', e); }
+  const data = Array.isArray(echoesData) ? echoesData : (window.echoesData || []);
+  list.innerHTML = '';
+  if (!data.length) {
+    const empty = document.createElement('div'); empty.style.padding = '12px'; empty.textContent = 'No echoes available.'; list.appendChild(empty);
+  }
+  data.forEach((item, idx) => {
+    const card = document.createElement('article'); card.className = 'item-card'; card.dataset.idx = idx; card.dataset.page = 'echoes';
+    const main = document.createElement('div'); main.className = 'item-main';
+    const title = document.createElement('div'); title.className = 'item-title'; title.textContent = item.name || '';
+    const meta = document.createElement('div'); meta.className = 'item-meta'; meta.textContent = item.type ? item.type : 'Echo';
+    const tagline = document.createElement('div'); tagline.className = 'item-tagline'; tagline.textContent = item.summary || item.description || item.effect || '';
+    main.appendChild(title); if (meta.textContent) main.appendChild(meta); if (tagline.textContent) main.appendChild(tagline);
+    const pill = document.createElement('div'); pill.className = 'item-pill'; pill.textContent = 'Echo';
+    card.appendChild(main); card.appendChild(pill);
+    card.addEventListener('click', () => {
+      _echoPickerState.selectedEcho = item;
+      list.querySelectorAll('.item-card').forEach(c => c.style.background = '');
+      card.style.background = 'rgba(255,255,255,0.02)';
+    });
+    card.addEventListener('dblclick', () => { _echoPickerState.selectedEcho = item; commitEchoToBox(_echoPickerState.targetBoxIndex, item); closeEchoPicker(); });
+    card.addEventListener('contextmenu', (ev) => { ev.preventDefault(); try { openModal(item, 'echoes'); } catch(e){} });
+    list.appendChild(card);
+  });
+  const ok = document.getElementById('_beEchoPickerOk');
+  const okClone = ok.cloneNode(true); ok.parentNode.replaceChild(okClone, ok);
+  okClone.addEventListener('click', () => {
+    if (!_echoPickerState.selectedEcho) { toast('Select an echo first'); return; }
+    commitEchoToBox(_echoPickerState.targetBoxIndex, _echoPickerState.selectedEcho);
+    closeEchoPicker();
+  });
+  ov.classList.remove('be-hidden');
+  try { setBottomNavVisible(false); } catch(e){}
+}
+
+function closeEchoPicker(){ const ov = document.getElementById('_beEchoPicker'); if (ov) ov.classList.add('be-hidden'); try { setBottomNavVisible(true); } catch(e){} }
+
+function commitEchoToBox(boxIndex, echo){
+  const echoOv = document.getElementById('_beEchoesOverlay'); if (!echoOv) return;
+  const box = echoOv.querySelector(`.adv-skill-box[data-box-index="${boxIndex}"]`); if (!box) return;
+  const lbl = box.querySelector('.adv-skill-label'); const costEl = box.querySelector('.adv-skill-cost'); const reqEl = box.querySelector('.adv-skill-req');
+  if (lbl) lbl.textContent = echo.name || 'Unnamed';
+  if (costEl) costEl.textContent = echo.cost ? `Cost: ${echo.cost}` : '';
+  if (reqEl) reqEl.textContent = echo.requirement ? `Req: ${echo.requirement}` : '';
+  const tagEl = box.querySelector('.adv-skill-tagline'); if (tagEl) tagEl.textContent = echo.effect || echo.summary || echo.description || '';
+  try { box.dataset.skill = JSON.stringify({ name: echo.name, id: echo.id || null, summary: echo.summary || echo.description || '', effect: echo.effect || null, cost: echo.cost || null, requirement: echo.requirement || null }); } catch(e){}
+  try {
+    const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+    const saved = readSavedCharacters();
+    const state = (active && saved[active]) ? saved[active] : getSheetState();
+    state.echoes = state.echoes || {};
+    state.echoes[boxIndex] = { name: echo.name, id: echo.id || null, summary: echo.summary || echo.description || '', effect: echo.effect || null, cost: echo.cost || null, requirement: echo.requirement || null };
+    saved[active] = state;
+    localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved));
+  } catch (e) { console.error('Failed to persist echo selection', e); }
+}
+
+function clearEchoBox(boxIndex){
+  try {
+    const echoOv = document.getElementById('_beEchoesOverlay'); if (!echoOv) return;
+    const box = echoOv.querySelector(`.adv-skill-box[data-box-index="${boxIndex}"]`); if (!box) return;
+    const label = box.querySelector('.adv-skill-label'); if (label) label.textContent = 'No Echo';
+    const costEl = box.querySelector('.adv-skill-cost'); if (costEl) costEl.textContent = '';
+    const reqEl = box.querySelector('.adv-skill-req'); if (reqEl) reqEl.textContent = '';
+    const tagEl = box.querySelector('.adv-skill-tagline'); if (tagEl) tagEl.textContent = '';
+    box.removeAttribute('data-skill');
+    try {
+      const active = localStorage.getItem(STORAGE_KEY_ACTIVE);
+      if (!active) return;
+      const saved = readSavedCharacters();
+      const state = (saved[active]) ? saved[active] : getSheetState();
+      if (state && state.echoes) { delete state.echoes[boxIndex]; saved[active] = state; localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(saved)); }
+    } catch (e) { console.error('Failed to persist clearing echo', e); }
+  } catch (e) { console.error('clearEchoBox failed', e); }
 }
 
 // ---------------------- Export / Import helpers ----------------------
