@@ -901,55 +901,80 @@ function closeLoadOverlay(){
 function ensureStatOverlayOnce(){
   if (document.getElementById('_beStatOverlay')) return;
   ensureOverlayStylesOnce();
+  // create overlay element with a single numeric input + visible steppers
   const ov = document.createElement('div');
   ov.id = '_beStatOverlay';
   ov.className = 'be-hidden';
+
+  // add compact styles for the numeric input and steppers (scoped)
+  if (!document.getElementById('_beStatOverlayStyles')){
+    const css = document.createElement('style');
+    css.id = '_beStatOverlayStyles';
+    css.textContent = `
+      #_beStatOverlay .be-num-wrap{ display:flex; align-items:center; gap:8px; }
+      #_beStatOverlay .be-num{ width:110px; max-width:100%; box-sizing:border-box; padding:8px 10px; text-align:right; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); color:var(--text-main); font-weight:800; }
+      #_beStatOverlay .stepper{ display:flex !important; flex-direction:column; gap:6px; margin-left:6px; }
+      #_beStatOverlay .stepper button{ width:34px; height:26px; padding:0; border-radius:6px; border:0; background:rgba(255,255,255,0.04); color:var(--text-main); cursor:pointer; font-weight:900; }
+      #_beStatOverlay .stepper button:active{ transform:translateY(1px); }
+      @media (max-width:420px){ #_beStatOverlay .be-num{ width:88px; } }
+    `;
+    document.head.appendChild(css);
+  }
+
   ov.innerHTML = `
     <div class="be-overlay-backdrop" id="_beStatOverlayBackdrop">
       <div class="be-overlay-panel" role="dialog" aria-modal="true" aria-label="Edit Stat">
         <div class="be-overlay-header"><h3 id="_beStatTitle">Edit Stat</h3><button id="_beStatClose" aria-label="Close">✕</button></div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <label class="overlay-label">Set Value</label>
-          <input id="_beStatSet" class="overlay-input" />
-          <label class="overlay-label">Or Adjust (+/-)</label>
-          <input id="_beStatAdjust" class="overlay-input" placeholder="e.g. +2 or -1" />
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beStatCancel">Cancel</button><button id="_beStatOk">Apply</button></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label class="overlay-label">Value</label>
+          <div class="be-num-wrap"><input id="_beStatNum" class="be-num" type="number" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beStatCancel" class="overlay-cancel">Cancel</button><button id="_beStatOk" class="overlay-ok">OK</button></div>
         </div>
       </div>
     </div>
   `;
   document.body.appendChild(ov);
+
+  // wire close/cancel
   document.getElementById('_beStatClose').addEventListener('click', closeStatOverlay);
   document.getElementById('_beStatCancel').addEventListener('click', closeStatOverlay);
+
+  // clamp numeric input to integers on input
+  const numInput = ov.querySelector('#_beStatNum');
+  if (numInput) {
+    numInput.addEventListener('input', () => { numInput.value = (numInput.value || '').replace(/[^0-9\-]/g,''); });
+  }
+
+  // steppers
+  const upBtn = ov.querySelector('button[data-step="up"]');
+  const downBtn = ov.querySelector('button[data-step="down"]');
+  const changeBy = (delta) => {
+    if (!numInput) return;
+    const v = parseInt(numInput.value || '0') || 0;
+    const nv = Math.max(0, v + delta);
+    numInput.value = String(nv);
+    numInput.dispatchEvent(new Event('input'));
+  };
+  if (upBtn) upBtn.addEventListener('click', ()=> changeBy(1));
+  if (downBtn) downBtn.addEventListener('click', ()=> changeBy(-1));
+
   document.getElementById('_beStatOk').addEventListener('click', () => {
     const stat = ov.dataset.stat;
     if (!stat) return;
-    const setValRaw = document.getElementById('_beStatSet').value.trim();
-    const adjRaw = document.getElementById('_beStatAdjust').value.trim();
     const hidden = document.getElementById('cs_' + stat);
     if (!hidden) return;
-    let cur = Number(hidden.value || '0');
-    if (setValRaw !== '') {
-      const v = Number.parseInt(setValRaw) || 0;
-      hidden.value = String(v);
-      cur = v;
-    }
-    if (adjRaw) {
-      const m = Number.parseInt(adjRaw);
-      if (!Number.isNaN(m)) {
-        cur = Math.max(0, cur + m);
-        hidden.value = String(cur);
-      }
-    }
+    const raw = (document.getElementById('_beStatNum')?.value || '').trim();
+    const v = Number.parseInt(raw) || 0;
+    const final = Math.max(0, v);
+    hidden.value = String(final);
     // update displays and slider binding
     const disp = document.getElementById('cs_' + stat + '_display');
-    if (disp) disp.textContent = String(cur);
+    if (disp) disp.textContent = String(final);
     if (stat === 'hp') {
       const slider = document.getElementById('cs_hp_slider');
-      if (slider) slider.value = String(cur);
-      const hpDisplay = document.getElementById('cs_hp_display'); if (hpDisplay) hpDisplay.textContent = String(cur);
+      if (slider) slider.value = String(final);
+      const hpDisplay = document.getElementById('cs_hp_display'); if (hpDisplay) hpDisplay.textContent = String(final);
     }
-    // persist to active character
     persistActiveCharacterState();
     closeStatOverlay();
   });
@@ -963,10 +988,13 @@ function openStatOverlay(statName, title){
   try { setBottomNavVisible(false); } catch (e) {}
   ov.dataset.stat = statName;
   document.getElementById('_beStatTitle').textContent = title || `Edit ${statName}`;
-  document.getElementById('_beStatSet').value = '';
-  document.getElementById('_beStatAdjust').value = '';
+  // prefill numeric input with current hidden value
+  const curHidden = document.getElementById('cs_' + statName);
+  const curVal = curHidden ? String(Number(curHidden.value || '0')) : '0';
+  const numEl = document.getElementById('_beStatNum');
+  if (numEl) numEl.value = curVal;
   ov.classList.remove('be-hidden');
-  document.getElementById('_beStatSet').focus();
+  if (numEl) numEl.focus();
 }
 
 function closeStatOverlay(){
@@ -1062,15 +1090,8 @@ function ensureCreateOverlayOnce(){
 
           <div class="create-grid create-grid-3" style="display:grid;gap:8px;">
             <div>
-        
-            <!-- Armor panel mockup -->
-            <div>
-              <label class="overlay-label">Stamina</label>
-              <div class="be-num-wrap"><input id="_beCreate_stamina" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
-            </div>
-            <div>
-              <label class="overlay-label">Ephem</label>
-              <div class="be-num-wrap"><input id="_beCreate_ephem" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
+              <label class="overlay-label">Max HP</label>
+              <div class="be-num-wrap"><input id="_beCreate_hpMax" class="be-num" inputmode="numeric" pattern="[0-9]*" placeholder="0" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
             </div>
             <div>
               <label class="overlay-label">Fight</label>
@@ -1095,7 +1116,7 @@ function ensureCreateOverlayOnce(){
             <div></div>
           </div>
 
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beCreateCancel">Cancel</button><button id="_beCreateOk">Create</button></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;"><button id="_beCreateCancel" class="overlay-cancel">Cancel</button><button id="_beCreateOk" class="overlay-ok">Create</button></div>
         </div>
       </div>
     </div>
@@ -1130,8 +1151,9 @@ function ensureCreateOverlayOnce(){
     const vals = {
       name: (document.getElementById('_beCreate_name').value || '').trim(),
       hpMax: Number.parseInt(document.getElementById('_beCreate_hpMax').value || '0') || 0,
-      stamina: Number.parseInt(document.getElementById('_beCreate_stamina').value || '0') || 0,
-      ephem: Number.parseInt(document.getElementById('_beCreate_ephem').value || '0') || 0,
+      // Stamina and Ephem removed from create UI; default to 0
+      stamina: 0,
+      ephem: 0,
       fight: Number.parseInt(document.getElementById('_beCreate_fight').value || '0') || 0,
       volley: Number.parseInt(document.getElementById('_beCreate_volley').value || '0') || 0,
       guts: Number.parseInt(document.getElementById('_beCreate_guts').value || '0') || 0,
@@ -1154,8 +1176,8 @@ function ensureCreateOverlayOnce(){
       name: vals.name,
       hp: vals.hpMax,
       hpMax: vals.hpMax,
-      stamina: vals.stamina,
-      ephem: vals.ephem,
+      stamina: 0,
+      ephem: 0,
       walk: Number($('#cs_walk')?.value || 0),
       run: Number($('#cs_run')?.value || 0),
       fight: vals.fight,
@@ -1210,10 +1232,8 @@ function ensureCreateOverlayOnce(){
     document.getElementById('_beCreateHeader').textContent = 'Edit Ender';
     document.getElementById('_beCreateOk').textContent = 'Save';
     // prefill values
-    document.getElementById('_beCreate_name').value = st.name || '';
-    document.getElementById('_beCreate_hpMax').value = String(Number(st.hpMax) || 0);
-    document.getElementById('_beCreate_stamina').value = String(Number(st.stamina) || 0);
-    document.getElementById('_beCreate_ephem').value = String(Number(st.ephem) || 0);
+  document.getElementById('_beCreate_name').value = st.name || '';
+  document.getElementById('_beCreate_hpMax').value = String(Number(st.hpMax) || 0);
     document.getElementById('_beCreate_fight').value = String(Number(st.fight) || 0);
     document.getElementById('_beCreate_volley').value = String(Number(st.volley) || 0);
     document.getElementById('_beCreate_guts').value = String(Number(st.guts) || 0);
@@ -1231,7 +1251,7 @@ function openCreateOverlay(){
   if (!ov) return;
   try { setBottomNavVisible(false); } catch (e) {}
   // clear inputs
-  ['_beCreate_name','_beCreate_hpMax','_beCreate_stamina','_beCreate_ephem','_beCreate_walk','_beCreate_run','_beCreate_fight','_beCreate_volley','_beCreate_guts','_beCreate_grit','_beCreate_focus'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['_beCreate_name','_beCreate_hpMax','_beCreate_walk','_beCreate_run','_beCreate_fight','_beCreate_volley','_beCreate_guts','_beCreate_grit','_beCreate_focus'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   ov.classList.remove('be-hidden');
   document.getElementById('_beCreate_name').focus();
 }
