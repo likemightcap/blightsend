@@ -613,6 +613,15 @@ function injectArmorStylesOnce(){
   .armor-stats .stat-label{ color:var(--text-muted); font-weight:700; margin-right:6px; }
   .armor-stats .stat-val{ color:var(--accent-soft); font-weight:900; min-width:20px; display:inline-block; text-align:left; }
     /* Ensure stats stay on one line on narrow screens; reduce font-size slightly if needed */
+    /* Total weight box - make visible on all breakpoints */
+  .total-weight-box{ max-width:900px; margin: 0.6rem auto; padding: 0.45rem 0.6rem; border-radius:8px; box-sizing:border-box; }
+  .total-weight-box .total-weight-inner{ border:1px solid var(--accent-soft); padding:6px 10px; border-radius:6px; display:flex; justify-content:center; align-items:center; gap:8px; background: rgba(0,0,0,0.06); }
+  .total-weight-box .total-weight-inner{ cursor: pointer; }
+  .total-weight-box .tw-label{ color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-family: 'CinzelCustom', inherit; }
+  .total-weight-box .tw-value{ color:var(--accent-soft); font-weight:900; font-family: 'Cinzel-900', 'CinzelCustom', inherit; }
+  .total-weight-breakdown{ margin-top:8px; text-align:center; color:var(--text-muted); font-size:0.92rem; padding:6px 10px; border-radius:6px; background:rgba(0,0,0,0.04); }
+  .total-weight-breakdown.be-hidden{ display:none; }
+
     @media (max-width:599px){
       .armor-grid{ flex-direction:row; }
       .armor-avatar-col{ flex:0 0 50%; }
@@ -631,6 +640,11 @@ function injectArmorStylesOnce(){
   .armor-list-col{ flex: 0 0 44%; max-width:44%; min-width:140px; gap:0.5rem; padding: 0 8px; }
       .armor-slot{ padding:5px 6px; font-size:0.82rem; border-radius:8px; }
       .armor-stats{ font-size:0.75rem; gap:6px; margin-top:3px; }
+  /* Total weight box - thin outlined box with orange accent */
+  .total-weight-box{ max-width:900px; margin: 0.6rem auto; padding: 0.45rem 0.6rem; border-radius:8px; box-sizing:border-box; }
+  .total-weight-box .total-weight-inner{ border:1px solid var(--accent-soft); padding:6px 10px; border-radius:6px; display:flex; justify-content:center; align-items:center; gap:8px; }
+  .total-weight-box .tw-label{ color:var(--text-main); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-family: 'CinzelCustom', inherit; }
+  .total-weight-box .tw-value{ color:var(--accent-soft); font-weight:900; font-family: 'Cinzel-900', 'CinzelCustom', inherit; }
       .overlay-input{ font-size:0.92rem; padding:8px 10px; }
       .overlay-stats-row{ font-size:0.86rem; gap:8px; }
       .overlay-section{ gap:6px; }
@@ -1018,9 +1032,8 @@ function ensureCreateOverlayOnce(){
 
           <div class="create-grid create-grid-3" style="display:grid;gap:8px;">
             <div>
-              <label class="overlay-label">Max HP</label>
-              <div class="be-num-wrap"><input id="_beCreate_hpMax" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
-            </div>
+        
+            <!-- Armor panel mockup -->
             <div>
               <label class="overlay-label">Stamina</label>
               <div class="be-num-wrap"><input id="_beCreate_stamina" class="be-num" inputmode="numeric" pattern="[0-9]*" /><div class="stepper"><button type="button" data-step="up">▲</button><button type="button" data-step="down">▼</button></div></div>
@@ -1550,6 +1563,7 @@ function applyWeaponToRow(row, item){
       persistActiveCharacterState();
       // update Walk/Run since weapon weight may have changed
   try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
+  try { renderTotalWeightBox(); } catch(e){}
   try { adjustRangeBandPaddingForRow(row); } catch (e) {}
     }
   } catch (e) { console.error('Failed to persist weapon selection', e); }
@@ -1665,7 +1679,7 @@ function ensureScreens() {
           </div>
         </div>
 
-        <div class="stat-strip">
+          <div class="stat-strip">
           <div>
             <div class="field-label stat-title" data-stat="fight">Fight</div>
             <div class="stat-val-display" id="cs_fight_display">0</div>
@@ -1694,6 +1708,16 @@ function ensureScreens() {
         </div>
 
         
+
+        
+        <!-- Total weight box (moved here so it's visible on the main sheet) -->
+        <div id="totalWeightBox" class="total-weight-box" aria-live="polite">
+          <div class="total-weight-inner" id="totalWeightInner" role="button" tabindex="0" aria-expanded="false">
+            <span class="tw-label">Total Weight:</span>
+            <span class="tw-value" id="cs_total_weight">0</span>
+          </div>
+          <div id="cs_total_breakdown" class="total-weight-breakdown be-hidden" aria-hidden="true"></div>
+        </div>
 
         <!-- Armor panel mockup -->
         <section class="sheet-armor-panel">
@@ -1984,6 +2008,8 @@ function ensureScreens() {
   renderArmorPanel();
   // Render weapons UI placeholders
   renderWeaponsPanel();
+  // Wire the total weight toggle now that the sheet elements exist
+  try { wireTotalWeightToggle(); } catch(e){}
   // Wire stat title click handlers and HP slider
   wireStatTitleClicks();
   wireHpSlider();
@@ -2882,6 +2908,8 @@ function populateOverlayStatsForLayer(overlay, layerName){
   } else {
     av.textContent = '--'; dr.textContent = '--'; dur.textContent = '--'; res.textContent = '--'; wt.textContent = '--';
   }
+
+  try { renderTotalWeightBox(); } catch(e){}
 }
 
 // Abbreviate common resistance names so they fit better in the overlay
@@ -2984,6 +3012,7 @@ function commitArmorOverlay(){
   persistActiveCharacterState();
   // update Walk/Run based on new equipped weight
   try { updateWalkRunFromEquipment(); } catch (e) { /* ignore */ }
+  try { renderTotalWeightBox(); } catch(e){}
   closeArmorOverlay();
 }
 
@@ -3018,6 +3047,87 @@ function computeTotalEquippedWeight(){
   }
   return total;
 }
+
+// Render total weight into the UI element
+function renderTotalWeightBox(){
+  try {
+    const el = document.getElementById('cs_total_weight');
+    if (!el) return;
+    const total = computeTotalEquippedWeight();
+    // show integer if whole, otherwise one decimal
+    const display = Number.isInteger(total) ? String(total) : String(Number(total.toFixed(1)));
+    el.textContent = display;
+  } catch (e) { console.error('Failed to render total weight', e); }
+}
+
+// Compute breakdown per category (armor, weapons, gear, backpack)
+function computeWeightBreakdown(){
+  const breakdown = { armor: 0, weapons: 0, gear: 0, backpack: 0 };
+  try {
+    if (typeof armorState === 'object' && armorState) {
+      Object.keys(armorState).forEach(k => { const w = Number(armorState[k] && armorState[k].weight); if (Number.isFinite(w) && w > 0) breakdown.armor += w; });
+    }
+    if (typeof weaponsState === 'object' && weaponsState) {
+      Object.keys(weaponsState).forEach(k => { const w = Number(weaponsState[k] && weaponsState[k].weight); if (Number.isFinite(w) && w > 0) breakdown.weapons += w; });
+    }
+    const gearEl = document.getElementById('cs_gear_weight') || document.getElementById('cs_gear');
+    if (gearEl) { const g = Number(gearEl.value || gearEl.textContent || 0); if (Number.isFinite(g) && g > 0) breakdown.gear = g; }
+    const packEl = document.getElementById('cs_backpack_weight') || document.getElementById('cs_backpack');
+    if (packEl) { const p = Number(packEl.value || packEl.textContent || 0); if (Number.isFinite(p) && p > 0) breakdown.backpack = p; }
+    if (typeof gearState === 'object' && gearState) { const gw = Number(gearState.weight); if (Number.isFinite(gw) && gw > 0) breakdown.gear = gw; }
+    if (typeof backpackState === 'object' && backpackState) { const bw = Number(backpackState.weight); if (Number.isFinite(bw) && bw > 0) breakdown.backpack = bw; }
+  } catch (e) { console.error('Error computing weight breakdown', e); }
+  return breakdown;
+}
+
+// Render breakdown into the breakdown container
+function renderTotalWeightBreakdown(){
+  try {
+    const el = document.getElementById('cs_total_breakdown');
+    if (!el) return;
+    const b = computeWeightBreakdown();
+    const parts = [];
+    parts.push(`Armor: ${Number.isInteger(b.armor) ? b.armor : b.armor.toFixed(1)}`);
+    parts.push(`Weapons: ${Number.isInteger(b.weapons) ? b.weapons : b.weapons.toFixed(1)}`);
+    if (b.gear && b.gear > 0) parts.push(`Gear: ${Number.isInteger(b.gear) ? b.gear : b.gear.toFixed(1)}`);
+    if (b.backpack && b.backpack > 0) parts.push(`Backpack: ${Number.isInteger(b.backpack) ? b.backpack : b.backpack.toFixed(1)}`);
+    el.textContent = parts.join(', ');
+  } catch (e) { console.error('Failed to render weight breakdown', e); }
+}
+
+// Toggle breakdown visibility when the total weight box is clicked or key-activated
+function wireTotalWeightToggle(){
+  try {
+    const inner = document.getElementById('totalWeightInner');
+    const box = document.getElementById('totalWeightBox');
+    const bd = document.getElementById('cs_total_breakdown');
+    if (!inner || !box || !bd) return;
+    const toggle = (force) => {
+      const isHidden = bd.classList.contains('be-hidden') && (bd.style.display === '' || bd.style.display === 'none');
+      const show = typeof force === 'boolean' ? force : isHidden;
+      // update both class and inline style for resilience against cascade rules
+      if (show) {
+        bd.classList.remove('be-hidden');
+        bd.style.display = 'block';
+      } else {
+        bd.classList.add('be-hidden');
+        bd.style.display = 'none';
+      }
+      bd.setAttribute('aria-hidden', String(!show));
+      inner.setAttribute('aria-expanded', String(show));
+      if (show) { renderTotalWeightBreakdown(); }
+    };
+    // mouse
+    if (!inner.dataset.bound) {
+      inner.addEventListener('click', () => toggle());
+      inner.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      inner.dataset.bound = '1';
+    }
+  } catch (e) { console.error('Failed to wire total weight toggle', e); }
+}
+
+// ensure toggle wired once on load
+try { wireTotalWeightToggle(); } catch(e){}
 
 // Map weight to Walk/Run values per design and update the sheet display/hidden inputs
 function updateWalkRunFromEquipment(){
